@@ -1,0 +1,7 @@
+{
+  "name": "@ipor/fusion-supabase-mastra",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Supabase database for Mastra application data"
+}

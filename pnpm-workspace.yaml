@@ -1,0 +1,7 @@
+packages:
+  - "packages/*"
+
+catalog:
+  viem: 2.37.9
+  zod: 3.24.1
+  typescript: 5.8.3

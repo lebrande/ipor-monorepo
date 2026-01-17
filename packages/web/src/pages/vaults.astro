@@ -1,0 +1,19 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { VaultDirectory } from '@/vault-directory/vault-directory';
+---
+
+<Layout title="Vault Directory - DeFi Panda">
+  <main class="min-h-screen bg-muted">
+    <div class="container mx-auto px-4 py-8">
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-foreground mb-2">Vault Directory</h1>
+        <p class="text-muted-foreground">
+          Discover and analyze ERC4626 vaults across the DeFi ecosystem
+        </p>
+      </div>
+
+      <VaultDirectory client:load />
+    </div>
+  </main>
+</Layout>

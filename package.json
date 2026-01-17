@@ -1,0 +1,20 @@
+{
+  "name": "fusion-monorepo",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "db:start": "cd packages/supabase-ponder && supabase start",
+    "db:stop": "cd packages/supabase-ponder && supabase stop",
+    "db:status": "cd packages/supabase-ponder && supabase status",
+    "dev:web": "pnpm --filter @ipor/fusion-web dev",
+    "dev:ponder": "pnpm --filter @ipor/fusion-ponder dev",
+    "dev:mastra": "pnpm --filter @ipor/fusion-mastra dev",
+    "build:sdk": "pnpm --filter @ipor/fusion-sdk build",
+    "build:web": "pnpm --filter @ipor/fusion-web build",
+    "test:sdk": "pnpm --filter @ipor/fusion-sdk test",
+    "test:hardhat": "pnpm --filter @ipor/fusion-hardhat-tests test"
+  }
+}

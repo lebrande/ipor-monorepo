@@ -1,0 +1,44 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { VaultDetails } from '@/vault-details/vault-details';
+import { allowedChainIdsSchema } from '@/app/wagmi-provider';
+import { addressSchema } from '@/lib/schema';
+import { getTabConfig, tabSchema } from '@/vault-details/components/vault-tabs';
+
+const {
+  chainId: chainIdParam,
+  address: addressParam,
+  tab: tabParam,
+} = Astro.params;
+
+const chainId = allowedChainIdsSchema.parse(chainIdParam);
+const vaultAddress = addressSchema.parse(addressParam);
+const activeTab = tabSchema.parse(tabParam);
+
+// Validate chainId and address
+// TODO: validate if the vault exists
+// if (vaultExists) {
+//   return Astro.redirect("/vaults");
+// }
+
+const tabConfig = getTabConfig(activeTab);
+
+if (!tabConfig) {
+  throw new Error(`Invalid tab: ${activeTab}`);
+}
+
+const pageTitle = `Vault ${tabConfig.label} - DeFi Panda`;
+---
+
+<Layout title={pageTitle}>
+  <main class="min-h-screen bg-background">
+    <div class="container mx-auto px-4 py-8">
+      <VaultDetails
+        vaultAddress={vaultAddress}
+        chainId={chainId}
+        activeTab={activeTab}
+        client:load
+      />
+    </div>
+  </main>
+</Layout>
