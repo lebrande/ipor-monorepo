@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { PlasmaVault } from '@ipor/fusion-sdk';
 import { NetworkConnection } from 'hardhat/types/network';
 import { network } from 'hardhat';
-import { configVariable } from 'hardhat/config';
+import { env } from '../../lib/env';
 import { ANVIL_TEST_ACCOUNT } from '../../lib/test-accounts';
 import { base } from 'viem/chains';
 
@@ -23,7 +23,7 @@ describe('PlasmaVault - addFuses', { timeout: 60_000 }, () => {
       override: {
         chainId: base.id,
         forking: {
-          url: configVariable('RPC_URL_BASE'),
+          url: env.RPC_URL_BASE,
           blockNumber: BLOCK_NUMBER,
         },
       },

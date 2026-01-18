@@ -2,7 +2,7 @@ import { base } from 'viem/chains';
 import { expect } from 'chai';
 import { PlasmaVault } from '@ipor/fusion-sdk';
 import { ANVIL_TEST_ACCOUNT } from '../../lib/test-accounts';
-import { configVariable } from 'hardhat/config';
+import { env } from '../../lib/env';
 import { NetworkConnection } from 'hardhat/types/network';
 import { after, before, describe, it } from 'node:test';
 import { network } from 'hardhat';
@@ -26,7 +26,7 @@ describe('PlasmaVault - addSubstrates', () => {
       override: {
         chainId: base.id,
         forking: {
-          url: configVariable('RPC_URL_BASE'),
+          url: env.RPC_URL_BASE,
           blockNumber: BLOCK_NUMBER,
         },
       },

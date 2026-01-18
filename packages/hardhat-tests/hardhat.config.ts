@@ -1,11 +1,10 @@
 import type { HardhatUserConfig } from 'hardhat/config';
-import { configVariable } from 'hardhat/config';
 import { base, mainnet } from 'viem/chains';
 
 import hardhatToolboxViemPlugin from '@nomicfoundation/hardhat-toolbox-viem';
 import '@nomicfoundation/hardhat-node-test-runner';
 
-import 'dotenv/config';
+import { env } from './lib/env';
 
 // @ts-expect-error
 BigInt.prototype.toJSON = function () {
@@ -23,7 +22,7 @@ const config: HardhatUserConfig = {
       chainType: 'l1',
       chainId: mainnet.id,
       forking: {
-        url: configVariable('RPC_URL_MAINNET'),
+        url: env.RPC_URL_MAINNET,
       },
     },
     hardhatBase: {
@@ -31,7 +30,7 @@ const config: HardhatUserConfig = {
       chainType: 'op',
       chainId: base.id,
       forking: {
-        url: configVariable('RPC_URL_BASE'),
+        url: env.RPC_URL_BASE,
       },
     },
   },

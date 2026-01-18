@@ -2,7 +2,7 @@ import { before, describe, it, after } from 'node:test';
 import { expect } from 'chai';
 import { NetworkConnection } from 'hardhat/types/network';
 import { network } from 'hardhat';
-import { configVariable } from 'hardhat/config';
+import { env } from '../../lib/env';
 import { mainnet } from 'viem/chains';
 import { Address, decodeEventLog, parseAbi } from 'viem';
 
@@ -38,7 +38,7 @@ describe(
         override: {
           chainId: mainnet.id,
           forking: {
-            url: configVariable('RPC_URL_MAINNET'),
+            url: env.RPC_URL_MAINNET,
             blockNumber: BLOCK_NUMBER,
           },
         },

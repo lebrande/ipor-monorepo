@@ -3,7 +3,7 @@ import { assert, expect } from 'chai';
 import { before, describe, it, after } from 'node:test';
 import { network } from 'hardhat';
 import { NetworkConnection } from 'hardhat/types/network';
-import { configVariable } from 'hardhat/config';
+import { env } from '../../lib/env';
 import { toHex, zeroAddress } from 'viem';
 
 describe('PlasmaVault - setPreHookImplementations', () => {
@@ -40,7 +40,7 @@ describe('PlasmaVault - setPreHookImplementations', () => {
       chainType: 'l1',
       override: {
         forking: {
-          url: configVariable('RPC_URL_MAINNET'),
+          url: env.RPC_URL_MAINNET,
           blockNumber: BLOCK_NUMBER,
         },
         gasPrice: 20000000000, // 20 gwei

@@ -1,7 +1,7 @@
 import { before, describe, it, after } from 'node:test';
 import { network } from 'hardhat';
 import { NetworkConnection } from 'hardhat/types/network';
-import { configVariable } from 'hardhat/config';
+import { env } from '../../../lib/env';
 import { base } from 'viem/chains';
 import {
   PlasmaVault,
@@ -38,7 +38,7 @@ describe('Plasma Vault Morpho price feeds validation on Base chain', () => {
       override: {
         chainId: base.id,
         forking: {
-          url: configVariable('RPC_URL_BASE'),
+          url: env.RPC_URL_BASE,
           blockNumber: BLOCK_NUMBER,
         },
       },

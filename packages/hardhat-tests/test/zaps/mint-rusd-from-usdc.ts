@@ -8,7 +8,7 @@ import {
 import { mintRusdFromUsdc } from '@ipor/fusion-sdk/src/markets/reservoir/zaps/mint-rusd-from-usdc';
 import { NetworkConnection } from 'hardhat/types/network';
 import { network } from 'hardhat';
-import { configVariable } from 'hardhat/config';
+import { env } from '../../lib/env';
 import { ANVIL_TEST_ACCOUNT } from '../../lib/test-accounts';
 import { expectApproximately } from '../../lib/expect-approximately';
 import { mainnet } from 'viem/chains';
@@ -40,7 +40,7 @@ describe('PlasmaVault - zapIn - mintRusdFromUsdc', { timeout: 100_000 }, () => {
       chainType: 'l1',
       override: {
         forking: {
-          url: configVariable('RPC_URL_MAINNET'),
+          url: env.RPC_URL_MAINNET,
           blockNumber: BLOCK_NUMBER,
         },
         gasPrice: 20000000000, // 20 gwei

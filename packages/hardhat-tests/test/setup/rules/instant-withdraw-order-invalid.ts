@@ -1,7 +1,7 @@
 import { before, describe, it, after } from 'node:test';
 import { network } from 'hardhat';
 import { NetworkConnection } from 'hardhat/types/network';
-import { configVariable } from 'hardhat/config';
+import { env } from '../../../lib/env';
 import { base } from 'viem/chains';
 import { PlasmaVault, validateSetup, SETUP_RULE } from '@ipor/fusion-sdk';
 import { expect } from 'chai';
@@ -33,7 +33,7 @@ describe('Setup rule INSTANT_WITHDRAW_ORDER_INVALID', () => {
       override: {
         chainId: base.id,
         forking: {
-          url: configVariable('RPC_URL_BASE'),
+          url: env.RPC_URL_BASE,
           blockNumber: BLOCK_NUMBER,
         },
       },
