@@ -1,4 +1,4 @@
-import { onchainTable, PgColumnsBuilders, primaryKey } from 'ponder';
+import { index, onchainTable, PgColumnsBuilders, primaryKey } from 'ponder';
 
 export const transferEvent = onchainTable('transfer_event', (t) => ({
   id: t.text().primaryKey(),
@@ -147,5 +147,26 @@ export const depositor = onchainTable(
     pk: primaryKey({
       columns: [table.chainId, table.vaultAddress, table.depositorAddress],
     }),
+  }),
+);
+
+// Fuse Events
+
+export const fuseEvent = onchainTable(
+  'fuse_event',
+  (t) => ({
+    id: t.text().primaryKey(),
+    chainId: t.integer().notNull(),
+    vaultAddress: t.hex().notNull(),
+    blockNumber: t.bigint().notNull(),
+    timestamp: t.integer().notNull(),
+    transactionHash: t.hex().notNull(),
+    logIndex: t.integer().notNull(),
+    eventName: t.text().notNull(),
+    args: t.json().notNull(),
+  }),
+  (table) => ({
+    vaultIdx: index().on(table.chainId, table.vaultAddress, table.timestamp),
+    eventNameIdx: index().on(table.eventName),
   }),
 );
