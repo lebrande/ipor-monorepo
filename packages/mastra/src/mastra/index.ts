@@ -1,8 +1,8 @@
 import { Mastra } from '@mastra/core/mastra';
 import { LibSQLStore } from '@mastra/libsql';
 import { PinoLogger } from '@mastra/loggers';
-import { sqlAgent } from './agents/sql-agent';
-import { databaseQueryWorkflow } from './workflows/database-query-workflow';
+import { sqlAgent } from '../agents/sql-agent';
+import { databaseQueryWorkflow } from '../workflows/database-query-workflow';
 
 export const mastra = new Mastra({
   agents: { sqlAgent },
