@@ -16,14 +16,14 @@ This project provides a Mastra workflow system for database introspection and na
 src/
 ├── mastra/
 │   ├── agents/
-│   │   └── sql-agent.ts                    # SQL agent for query generation
+│   │   └── sql-agent.ts                    # SQL agent for Fusion Ponder database
 │   ├── tools/
 │   │   ├── database-introspection-tool.ts  # Database schema analysis
-│   │   ├── database-seeding-tool.ts        # Database seeding
 │   │   ├── sql-generation-tool.ts          # Natural language to SQL conversion
 │   │   └── sql-execution-tool.ts           # Safe SQL query execution
 │   ├── workflows/
 │   │   └── database-query-workflow.ts      # Main workflow orchestration
+│   ├── env.ts                              # Environment validation with Zod
 │   └── index.ts                           # Mastra instance configuration
 
 ```
@@ -43,19 +43,7 @@ Analyzes a PostgreSQL database to extract:
 **Input**: Database connection string
 **Output**: Complete schema information with summary statistics
 
-### 2. Database Seeding Tool (`database-seeding-tool.ts`)
-
-Seeds databases with sample data for testing:
-
-- Creates cities table with proper schema
-- Imports data from CSV or generates sample data
-- Handles batch insertions efficiently
-- Returns seeding statistics and metadata
-
-**Input**: Database connection string
-**Output**: Seeding results with record counts and success status
-
-### 3. SQL Generation Tool (`sql-generation-tool.ts`)
+### 2. SQL Generation Tool (`sql-generation-tool.ts`)
 
 Converts natural language queries to SQL using OpenAI's GPT-4:
 
@@ -67,7 +55,7 @@ Converts natural language queries to SQL using OpenAI's GPT-4:
 **Input**: Natural language query + database schema
 **Output**: SQL query with metadata and explanations
 
-### 4. SQL Execution Tool (`sql-execution-tool.ts`)
+### 3. SQL Execution Tool (`sql-execution-tool.ts`)
 
 Safely executes SQL queries:
 
@@ -101,21 +89,6 @@ const result = await sqlAgent.generate(
 );
 ```
 
-#### **🌱 Database Seeding**
-
-```typescript
-const result = await sqlAgent.generate(
-  [
-    {
-      role: 'user',
-      content:
-        'Seed the database with comprehensive business data including companies, employees, projects, and skills',
-    },
-  ],
-  { maxSteps: 3 },
-);
-```
-
 #### **🧠 Natural Language Queries**
 
 ```typescript
@@ -136,38 +109,28 @@ const result = await sqlAgent.generate(
 ✅ **Schema-Aware Queries** - Understands database structure for accurate SQL generation
 ✅ **Safe Execution** - Only allows SELECT queries with proper error handling
 ✅ **Conversational Interface** - Natural language interaction with detailed explanations
-✅ **Complete Workflow** - Handles connection → seeding → introspection → querying → execution
+✅ **Read-Only** - Agent is pre-configured for Fusion Ponder database with no write capabilities
 
 ## Workflows
 
 ### Database Query Workflow (Multi-Step with Suspend/Resume)
 
-The main workflow (`databaseQueryWorkflow`) is a multi-step interactive workflow that performs:
+The main workflow (`databaseQueryWorkflow`) is a multi-step interactive workflow pre-configured for the Fusion Ponder database:
 
-#### Step 1: Database Connection
-
-- **Suspends** to collect database connection string from user
-- **Validates** connection to ensure database is accessible
-
-#### Step 2: Database Seeding (Optional)
-
-- **Suspends** to ask if user wants to seed database with sample data
-- **Creates** cities table with sample data if requested
-- **Provides** immediate data for testing and demonstration
-
-#### Step 3: Schema Introspection
+#### Step 1: Schema Introspection
 
 - **Automatically** introspects database schema (tables, columns, relationships, indexes)
 - **Generates** human-readable schema presentation
 - **Analyzes** database structure and relationships
+- **Pre-configured** for Fusion Ponder database (no connection string needed)
 
-#### Step 4: Natural Language to SQL Generation
+#### Step 2: Natural Language to SQL Generation
 
 - **Suspends** to collect natural language query from user
 - **Shows** database schema information to help user formulate queries
 - **Generates** SQL query using AI with confidence scores and explanations
 
-#### Step 5: SQL Review and Execution
+#### Step 3: SQL Review and Execution
 
 - **Suspends** to show generated SQL and get user approval
 - **Allows** user to modify the SQL query if needed
@@ -180,30 +143,18 @@ The main workflow (`databaseQueryWorkflow`) is a multi-step interactive workflow
 const workflow = mastra.getWorkflow('databaseQueryWorkflow');
 const run = await workflow.createRunAsync();
 
-// Start workflow (will suspend for connection string)
+// Start workflow - automatically introspects the Fusion Ponder database
 let result = await run.start({ inputData: {} });
 
-// Step 1: Provide connection string
-result = await run.resume({
-  step: 'get-connection',
-  resumeData: { connectionString: 'postgresql://...' },
-});
+// Step 1: Database introspection happens automatically
 
-// Step 2: Choose whether to seed database
-result = await run.resume({
-  step: 'seed-database',
-  resumeData: { seedDatabase: true },
-});
-
-// Step 3: Database introspection happens automatically
-
-// Step 4: Provide natural language query
+// Step 2: Provide natural language query
 result = await run.resume({
   step: 'generate-sql',
-  resumeData: { naturalLanguageQuery: 'Show me top 10 cities by population' },
+  resumeData: { naturalLanguageQuery: 'Show me top 10 deposits by amount' },
 });
 
-// Step 5: Review and approve SQL
+// Step 3: Review and approve SQL
 result = await run.resume({
   step: 'review-and-execute',
   resumeData: {
@@ -222,62 +173,36 @@ pnpm install
 ```
 
 2. **Environment Setup**:
-   Create a `.env` file with your database connection:
+   Create a `.env` file with required environment variables:
 
 ```env
 OPENAI_API_KEY=your-openai-api-key
+PONDER_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54342/postgres
 ```
+
+Note: `PONDER_DATABASE_URL` is required and validated with Zod at startup.
 
 ## Security Notes
 
-- Only SELECT queries are allowed for security
-- Connection strings should be securely managed
+- Only SELECT queries are allowed for security (read-only operations)
+- Database connection is pre-configured via environment variable
 - The system uses connection pooling for efficiency
 - All database operations are logged for audit trails
 
 ## Current Features
 
+✅ **Pre-configured for Fusion Ponder** - Automatically connects to the IPOR Fusion Ponder database
 ✅ **Database Schema Introspection** - Automatically analyzes database structure
-✅ **Database Seeding** - Optional sample data creation for testing and demos
 ✅ **Human-readable Documentation** - Generates beautiful schema presentations
 ✅ **Natural Language to SQL** - AI-powered query generation with explanations
 ✅ **Interactive Workflows** - Multi-step suspend/resume for human-in-the-loop
 ✅ **Conversational Agent** - Enhanced SQL agent with full workflow capabilities
 ✅ **SQL Review & Editing** - User can approve or modify generated queries
 ✅ **Safe Query Execution** - Only allows SELECT queries with result display
+✅ **Read-Only Operations** - No write capabilities for data safety
 ✅ **Multi-tool Orchestration** - Agent automatically uses appropriate tools
 ✅ **Type Safety** - Full TypeScript support with Zod validation
 ✅ **Error Handling** - Comprehensive error management throughout workflow
-
-## Enhanced Dataset
-
-The seeding tool now provides a comprehensive business dataset with realistic relationships:
-
-### **📊 Dataset Overview**
-
-- **5 Companies** across different industries (Technology, Finance, Healthcare, etc.)
-- **7 Office Locations** with geographic distribution
-- **14 Departments** with budgets and head counts
-- **20 Job Titles** with career levels (Junior, Mid, Senior, Staff, Management)
-- **20 Skills** across programming languages, frameworks, and tools
-- **~100-150 Employees** with realistic salary distributions
-- **~40-60 Projects** with various statuses and budgets
-- **Relationships**: Employee-skill mappings, project assignments, salary history
-
-### **💡 Query Ideas**
-
-The enhanced dataset supports queries about:
-
-- Employee hierarchies and reporting structures
-- Skill distributions and proficiency levels
-- Project team compositions and allocations
-- Salary analysis and career progression
-- Cross-company comparisons and analytics
-- Geographic workforce distribution
-- Department budgets and performance
-- Employee-skill matching for projects
-- Compensation history and trends
-- Multi-table joins with complex relationships
 
 ## Dependencies
 

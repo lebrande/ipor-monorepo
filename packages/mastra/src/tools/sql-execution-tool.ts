@@ -1,6 +1,7 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { Client } from 'pg';
+import { FUSION_PONDER_CONNECTION_STRING } from '../env';
 
 const createDatabaseConnection = (connectionString: string) => {
   return new Client({
@@ -25,12 +26,11 @@ const executeQuery = async (client: Client, query: string) => {
 export const sqlExecutionTool = createTool({
   id: 'sql-execution',
   inputSchema: z.object({
-    connectionString: z.string().describe('PostgreSQL connection string'),
     query: z.string().describe('SQL query to execute'),
   }),
-  description: 'Executes SQL queries against a PostgreSQL database',
-  execute: async ({ context: { connectionString, query } }) => {
-    const client = createDatabaseConnection(connectionString);
+  description: 'Executes SQL queries against the Fusion Ponder PostgreSQL database. Pre-configured for the Fusion blockchain indexing database containing ERC4626 vault events.',
+  execute: async ({ context: { query } }) => {
+    const client = createDatabaseConnection(FUSION_PONDER_CONNECTION_STRING);
 
     try {
       console.log('🔌 Connecting to PostgreSQL for query execution...');

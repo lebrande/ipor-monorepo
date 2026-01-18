@@ -1,6 +1,7 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { Client } from 'pg';
+import { FUSION_PONDER_CONNECTION_STRING } from '../env';
 
 const createDatabaseConnection = (connectionString: string) => {
   return new Client({
@@ -22,12 +23,10 @@ const executeQuery = async (client: Client, query: string) => {
 
 export const databaseIntrospectionTool = createTool({
   id: 'database-introspection',
-  inputSchema: z.object({
-    connectionString: z.string().describe('PostgreSQL connection string'),
-  }),
-  description: 'Introspects a PostgreSQL database to understand its schema, tables, columns, and relationships',
-  execute: async ({ context: { connectionString } }) => {
-    const client = createDatabaseConnection(connectionString);
+  inputSchema: z.object({}),
+  description: 'Introspects the Fusion Ponder PostgreSQL database to understand its schema, tables, columns, and relationships. Pre-configured for the Fusion blockchain indexing database containing ERC4626 vault events.',
+  execute: async () => {
+    const client = createDatabaseConnection(FUSION_PONDER_CONNECTION_STRING);
 
     try {
       console.log('🔌 Connecting to PostgreSQL for introspection...');

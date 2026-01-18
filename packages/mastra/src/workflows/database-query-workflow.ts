@@ -3,145 +3,17 @@ import { z } from 'zod';
 import { databaseIntrospectionTool } from '../tools/database-introspection-tool';
 import { sqlGenerationTool } from '../tools/sql-generation-tool';
 import { sqlExecutionTool } from '../tools/sql-execution-tool';
-import { databaseSeedingTool } from '../tools/database-seeding-tool';
 import { RuntimeContext } from '@mastra/core/di';
 
-// Step 1: Get connection string
-const getConnectionStep = createStep({
-  id: 'get-connection',
-  inputSchema: z.object({}),
-  outputSchema: z.object({
-    connectionString: z.string(),
-  }),
-  resumeSchema: z.object({
-    connectionString: z.string(),
-  }),
-  suspendSchema: z.object({
-    message: z.string(),
-  }),
-  execute: async ({ resumeData, suspend }) => {
-    if (!resumeData?.connectionString) {
-      await suspend({
-        message:
-          'Please provide your PostgreSQL connection string (e.g., postgresql://user:password@localhost:5432/database):',
-      });
-
-      return {
-        connectionString: '',
-      };
-    }
-
-    const { connectionString } = resumeData;
-    return { connectionString };
-  },
-});
-
-// Step 2: Ask if user wants to seed database
-const seedDatabaseStep = createStep({
-  id: 'seed-database',
-  inputSchema: z.object({
-    connectionString: z.string(),
-  }),
-  outputSchema: z.object({
-    connectionString: z.string(),
-    seeded: z.boolean(),
-    seedResult: z
-      .object({
-        success: z.boolean(),
-        message: z.string(),
-        recordCount: z.number().optional(),
-        tablesCreated: z.array(z.string()).optional(),
-      })
-      .optional(),
-  }),
-  resumeSchema: z.object({
-    seedDatabase: z.boolean().optional(),
-  }),
-  suspendSchema: z.object({
-    message: z.string(),
-  }),
-  execute: async ({ inputData, resumeData, suspend, runtimeContext }) => {
-    const { connectionString } = inputData;
-
-    if (resumeData === undefined) {
-      await suspend({
-        message:
-          "Would you like to seed the database with sample cities data? This will create a 'cities' table with sample data for testing. (true/false):",
-      });
-
-      return {
-        connectionString,
-        seeded: false,
-      };
-    }
-
-    const { seedDatabase } = resumeData;
-
-    if (!seedDatabase) {
-      return {
-        connectionString,
-        seeded: false,
-      };
-    }
-
-    try {
-      // Use the database seeding tool
-      if (!databaseSeedingTool.execute) {
-        throw new Error('Database seeding tool is not available');
-      }
-
-      const seedResult = await databaseSeedingTool.execute({
-        context: { connectionString },
-        runtimeContext: runtimeContext || new RuntimeContext(),
-      });
-
-      // Type guard to ensure we have seed result
-      if (!seedResult || typeof seedResult !== 'object') {
-        throw new Error('Invalid seed result returned from seeding tool');
-      }
-
-      return {
-        connectionString,
-        seeded: true,
-        seedResult: seedResult as any,
-      };
-    } catch (error) {
-      throw new Error(`Failed to seed database: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  },
-});
-
-// Step 3: Introspect database
+// Step 1: Introspect database (pre-configured for Fusion Ponder)
 const introspectDatabaseStep = createStep({
   id: 'introspect-database',
-  inputSchema: z.object({
-    connectionString: z.string(),
-    seeded: z.boolean(),
-    seedResult: z
-      .object({
-        success: z.boolean(),
-        message: z.string(),
-        recordCount: z.number().optional(),
-        tablesCreated: z.array(z.string()).optional(),
-      })
-      .optional(),
-  }),
+  inputSchema: z.object({}),
   outputSchema: z.object({
-    connectionString: z.string(),
     schema: z.any(),
     schemaPresentation: z.string(),
-    seeded: z.boolean(),
-    seedResult: z
-      .object({
-        success: z.boolean(),
-        message: z.string(),
-        recordCount: z.number().optional(),
-        tablesCreated: z.array(z.string()).optional(),
-      })
-      .optional(),
   }),
-  execute: async ({ inputData, runtimeContext }) => {
-    const { connectionString, seeded, seedResult } = inputData;
+  execute: async ({ runtimeContext }) => {
 
     try {
       // Use the database introspection tool
@@ -150,7 +22,7 @@ const introspectDatabaseStep = createStep({
       }
 
       const schemaData = await databaseIntrospectionTool.execute({
-        context: { connectionString },
+        context: {},
         runtimeContext: runtimeContext || new RuntimeContext(),
       });
 
@@ -163,11 +35,8 @@ const introspectDatabaseStep = createStep({
       const schemaPresentation = createSchemaPresentation(schemaData);
 
       return {
-        connectionString,
         schema: schemaData,
         schemaPresentation,
-        seeded,
-        seedResult,
       };
     } catch (error) {
       throw new Error(`Failed to introspect database: ${error instanceof Error ? error.message : String(error)}`);
@@ -175,25 +44,14 @@ const introspectDatabaseStep = createStep({
   },
 });
 
-// Step 4: Get natural language query and generate SQL
+// Step 2: Get natural language query and generate SQL
 const generateSQLStep = createStep({
   id: 'generate-sql',
   inputSchema: z.object({
-    connectionString: z.string(),
     schema: z.any(),
     schemaPresentation: z.string(),
-    seeded: z.boolean(),
-    seedResult: z
-      .object({
-        success: z.boolean(),
-        message: z.string(),
-        recordCount: z.number().optional(),
-        tablesCreated: z.array(z.string()).optional(),
-      })
-      .optional(),
   }),
   outputSchema: z.object({
-    connectionString: z.string(),
     naturalLanguageQuery: z.string(),
     generatedSQL: z.object({
       sql: z.string(),
@@ -203,7 +61,6 @@ const generateSQLStep = createStep({
       tables_used: z.array(z.string()),
     }),
     schemaPresentation: z.string(),
-    seeded: z.boolean(),
   }),
   resumeSchema: z.object({
     naturalLanguageQuery: z.string(),
@@ -211,29 +68,17 @@ const generateSQLStep = createStep({
   suspendSchema: z.object({
     schemaPresentation: z.string(),
     message: z.string(),
-    seeded: z.boolean(),
-    seedResult: z
-      .object({
-        success: z.boolean(),
-        message: z.string(),
-        recordCount: z.number().optional(),
-        tablesCreated: z.array(z.string()).optional(),
-      })
-      .optional(),
   }),
   execute: async ({ inputData, resumeData, suspend, runtimeContext }) => {
-    const { connectionString, schema, schemaPresentation, seeded, seedResult } = inputData;
+    const { schema, schemaPresentation } = inputData;
 
     if (!resumeData?.naturalLanguageQuery) {
       await suspend({
         schemaPresentation,
         message: "Please enter your natural language query (e.g., 'Show me the top 10 cities by population'):",
-        seeded,
-        seedResult,
       });
 
       return {
-        connectionString,
         naturalLanguageQuery: '',
         generatedSQL: {
           sql: '',
@@ -243,7 +88,6 @@ const generateSQLStep = createStep({
           tables_used: [],
         },
         schemaPresentation,
-        seeded,
       };
     }
 
@@ -269,11 +113,9 @@ const generateSQLStep = createStep({
       }
 
       return {
-        connectionString,
         naturalLanguageQuery,
         generatedSQL: generatedSQL as any,
         schemaPresentation,
-        seeded,
       };
     } catch (error) {
       throw new Error(`Failed to generate SQL: ${error instanceof Error ? error.message : String(error)}`);
@@ -281,11 +123,10 @@ const generateSQLStep = createStep({
   },
 });
 
-// Step 5: Review SQL and execute query
+// Step 3: Review SQL and execute query
 const reviewAndExecuteStep = createStep({
   id: 'review-and-execute',
   inputSchema: z.object({
-    connectionString: z.string(),
     naturalLanguageQuery: z.string(),
     generatedSQL: z.object({
       sql: z.string(),
@@ -295,7 +136,6 @@ const reviewAndExecuteStep = createStep({
       tables_used: z.array(z.string()),
     }),
     schemaPresentation: z.string(),
-    seeded: z.boolean(),
   }),
   outputSchema: z.object({
     success: z.boolean(),
@@ -320,7 +160,7 @@ const reviewAndExecuteStep = createStep({
     message: z.string(),
   }),
   execute: async ({ inputData, resumeData, suspend, runtimeContext }) => {
-    const { connectionString, naturalLanguageQuery, generatedSQL } = inputData;
+    const { naturalLanguageQuery, generatedSQL } = inputData;
 
     if (!resumeData) {
       await suspend({
@@ -356,7 +196,6 @@ const reviewAndExecuteStep = createStep({
 
       const result = await sqlExecutionTool.execute({
         context: {
-          connectionString,
           query: finalSQL,
         },
         runtimeContext: runtimeContext || new RuntimeContext(),
@@ -388,7 +227,7 @@ const reviewAndExecuteStep = createStep({
   },
 });
 
-// Define the main database query workflow
+// Define the main database query workflow (pre-configured for Fusion Ponder)
 export const databaseQueryWorkflow = createWorkflow({
   id: 'database-query-workflow',
   inputSchema: z.object({}),
@@ -399,12 +238,10 @@ export const databaseQueryWorkflow = createWorkflow({
     modifications: z.string().optional(),
     rowCount: z.number().optional(),
   }),
-  steps: [getConnectionStep, seedDatabaseStep, introspectDatabaseStep, generateSQLStep, reviewAndExecuteStep],
+  steps: [introspectDatabaseStep, generateSQLStep, reviewAndExecuteStep],
 });
 
 databaseQueryWorkflow
-  .then(getConnectionStep)
-  .then(seedDatabaseStep)
   .then(introspectDatabaseStep)
   .then(generateSQLStep)
   .then(reviewAndExecuteStep)
