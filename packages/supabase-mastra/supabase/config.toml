@@ -2,12 +2,12 @@
 # https://supabase.com/docs/guides/local-development/cli/config
 # A string used to distinguish different Supabase projects on the same host. Defaults to the
 # working directory name when running `supabase init`.
-project_id = "fusion-ponder-db"
+project_id = "fusion-mastra"
 
 [api]
 enabled = true
 # Port to use for the API URL.
-port = 54341
+port = 54351
 # Schemas to expose in your API. Tables, views and stored procedures in this schema will get API
 # endpoints. `public` and `graphql_public` schemas are included by default.
 schemas = ["public", "graphql_public"]
@@ -23,9 +23,9 @@ enabled = false
 
 [db]
 # Port to use for the local database URL.
-port = 54342
+port = 54352
 # Port used by db diff command to initialize the shadow database.
-shadow_port = 54340
+shadow_port = 54350
 # The database major version to use. This has to be the same as your remote database's. Run `SHOW
 # server_version;` on the remote database to check.
 major_version = 15
@@ -33,7 +33,7 @@ major_version = 15
 [db.pooler]
 enabled = false
 # Port to use for the local connection pooler.
-port = 54349
+port = 54359
 # Specifies when a server connection can be reused by other clients.
 # Configure one of the supported pooler modes: `transaction`, `session`.
 pool_mode = "transaction"
@@ -55,36 +55,37 @@ enabled = false
 sql_paths = []
 
 [realtime]
-# Disabled - Ponder indexes blockchain data, doesn't need realtime subscriptions
-# Saves ~244MB RAM
+# Disabled - Mastra only uses PostgresStore for direct DB access, not realtime subscriptions
+# Saves ~244MB RAM and ~0.6% CPU
 enabled = false
 
 [studio]
-# Enabled for SQL access and database inspection
-enabled = true
+# Disabled - Mastra DB is internal storage, use other Studio instances for content management
+# Saves ~183MB RAM (can enable temporarily for debugging if needed)
+enabled = false
 # Port to use for Supabase Studio.
-port = 54343
+port = 54353
 # External URL of the API server that frontend connects to.
 api_url = "http://127.0.0.1"
 # OpenAI API Key to use for Supabase AI in the Supabase Studio.
 openai_api_key = "env(OPENAI_API_KEY)"
 
+# Email testing server. Emails sent with the local dev setup are not actually sent - rather, they
+# are monitored, and you can view the emails that would have been sent from the web interface.
 [inbucket]
-# Disabled - Ponder doesn't send emails
+# Disabled - Mastra doesn't send emails (pure database storage for agent state)
 enabled = false
 # Port to use for the email testing server web interface.
-port = 54344
+port = 54354
 
 [storage]
-# Disabled - Ponder only stores indexed blockchain data, no file storage needed
-# Saves ~50MB RAM
+# Disabled - Mastra only stores text data (agent memory, threads). File storage handled elsewhere.
 enabled = false
 # The maximum file size allowed (e.g. "5MB", "500KB").
 file_size_limit = "50MiB"
 
 [auth]
-# Disabled - Ponder is a backend indexer with direct DB access, no auth needed
-# Saves ~100MB RAM
+# Disabled - Mastra uses direct database connection (PostgresStore), no Supabase Auth
 enabled = false
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
@@ -106,6 +107,8 @@ enable_anonymous_sign_ins = false
 enable_manual_linking = false
 # Passwords shorter than this value will be rejected as weak. Minimum 6, recommended 8 or more.
 minimum_password_length = 6
+# Passwords that do not meet the following requirements will be rejected as weak. Supported values
+# are: `letters_digits`, `lower_upper_letters_digits`, `lower_upper_letters_digits_symbols`
 password_requirements = ""
 
 [auth.email]
@@ -125,22 +128,46 @@ otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
 otp_expiry = 3600
 
+[auth.sms]
+# Allow/disallow new user signups via SMS to your project.
+enable_signup = false
+# If enabled, users need to confirm their phone number before signing in.
+enable_confirmations = false
+# Template for sending OTP to users
+template = "Your code is {{ .Code }}"
+# Controls the minimum amount of time that must pass before sending another sms otp.
+max_frequency = "5s"
+
+[auth.mfa]
+# Control how many MFA factors can be enrolled at once per user.
+max_enrolled_factors = 10
+
+[auth.mfa.totp]
+enroll_enabled = false
+verify_enabled = false
+
+[auth.mfa.phone]
+enroll_enabled = false
+verify_enabled = false
+otp_length = 6
+template = "Your code is {{ .Code }}"
+max_frequency = "5s"
+
 [edge_runtime]
-# Disabled - All backend logic runs via Ponder/Node.js, not Edge Functions
-# Saves ~100MB RAM
+# Disabled - Not using Supabase Edge Functions (Mastra runs as a separate Node.js process)
 enabled = false
 # Configure one of the supported request policies: `oneshot`, `per_worker`.
 # Use `oneshot` for hot reload, or `per_worker` for load testing.
 policy = "oneshot"
 # Port to attach the Chrome inspector for debugging edge functions.
-inspector_port = 8084
+inspector_port = 8085
 # The Deno major version to use.
 deno_version = 1
 
 [analytics]
 # Disabled to save ~1.3GB RAM and ~5% CPU - not needed for local development
 enabled = false
-port = 54347
+port = 54357
 # Configure one of the supported backends: `postgres`, `bigquery`.
 backend = "postgres"
 
