@@ -1,0 +1,3 @@
+[submodule "ipor-fusion"]
+	path = external/ipor-fusion
+	url = https://github.com/IPOR-Labs/ipor-fusion.git
