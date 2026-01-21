@@ -16,5 +16,10 @@
     "build:web": "pnpm --filter @ipor/fusion-web build",
     "test:sdk": "pnpm --filter @ipor/fusion-sdk test",
     "test:hardhat": "pnpm --filter @ipor/fusion-hardhat-tests test"
+  },
+  "pnpm": {
+    "overrides": {
+      "viem": "2.37.9"
+    }
   }
 }

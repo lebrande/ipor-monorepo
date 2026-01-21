@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "remeda": "2.27.2",
-    "viem": "2.37.9",
+    "viem": "catalog:",
     "zod": "4.0.5"
   },
   "devDependencies": {

@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "3.0.12",
+    "@ipor/fusion-sdk": "workspace:*",
     "@mastra/core": "latest",
     "@mastra/libsql": "latest",
     "@mastra/loggers": "latest",
@@ -25,6 +26,7 @@
     "ai": "^6.0.39",
     "dotenv": "^17.0.1",
     "pg": "^8.16.3",
+    "viem": "catalog:",
     "zod": "^3.25.76"
   },
   "devDependencies": {

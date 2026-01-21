@@ -20,10 +20,19 @@ const envSchema = z.object({
     .url('PONDER_DATABASE_URL must be a valid PostgreSQL connection URL'),
 
   /**
-   * OpenAI model to use for the SQL Agent
-   * Defaults to 'openai/gpt-4.1-mini' if not specified
+   * Model to use for agents
+   * Defaults to 'openrouter/anthropic/claude-3-5-haiku-20241022' (Claude Haiku 4.5)
+   * This model handles parallel tool calls excellently
    */
-  MODEL: z.string().optional().default('openai/gpt-4.1-mini'),
+  MODEL: z.string().optional().default('openrouter/anthropic/claude-3-5-haiku-20241022'),
+
+  /**
+   * RPC URLs for blockchain connections
+   * Used by Plasma Vault Agent tools for on-chain data fetching
+   */
+  ETHEREUM_RPC_URL: z.string().url().optional(),
+  ARBITRUM_RPC_URL: z.string().url().optional(),
+  BASE_RPC_URL: z.string().url().optional(),
 });
 
 /**
@@ -38,3 +47,12 @@ export const env = envSchema.parse(process.env);
  * Pre-validated PostgreSQL connection URL for the Fusion blockchain indexing database
  */
 export const FUSION_PONDER_CONNECTION_STRING = env.PONDER_DATABASE_URL;
+
+/**
+ * RPC URL configuration by chain ID
+ */
+export const RPC_URLS: Record<number, string | undefined> = {
+  1: env.ETHEREUM_RPC_URL, // Ethereum Mainnet
+  42161: env.ARBITRUM_RPC_URL, // Arbitrum One
+  8453: env.BASE_RPC_URL, // Base
+};
