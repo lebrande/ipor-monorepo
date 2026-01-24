@@ -1,5 +1,5 @@
 ---
-import Layout from '@/layouts/Layout.astro';
+import SidebarLayout from '@/layouts/SidebarLayout.astro';
 import { VaultDetails } from '@/vault-details/vault-details';
 import { allowedChainIdsSchema } from '@/app/wagmi-provider';
 import { addressSchema } from '@/lib/schema';
@@ -15,12 +15,6 @@ const chainId = allowedChainIdsSchema.parse(chainIdParam);
 const vaultAddress = addressSchema.parse(addressParam);
 const activeTab = tabSchema.parse(tabParam);
 
-// Validate chainId and address
-// TODO: validate if the vault exists
-// if (vaultExists) {
-//   return Astro.redirect("/vaults");
-// }
-
 const tabConfig = getTabConfig(activeTab);
 
 if (!tabConfig) {
@@ -30,8 +24,8 @@ if (!tabConfig) {
 const pageTitle = `Vault ${tabConfig.label} - DeFi Panda`;
 ---
 
-<Layout title={pageTitle}>
-  <main class="min-h-screen bg-background">
+<SidebarLayout title={pageTitle}>
+  <div class="min-h-screen bg-background">
     <div class="container mx-auto px-4 py-8">
       <VaultDetails
         vaultAddress={vaultAddress}
@@ -40,5 +34,5 @@ const pageTitle = `Vault ${tabConfig.label} - DeFi Panda`;
         client:load
       />
     </div>
-  </main>
-</Layout>
+  </div>
+</SidebarLayout>

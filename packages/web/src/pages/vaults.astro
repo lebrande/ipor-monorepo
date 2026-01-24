@@ -1,10 +1,10 @@
 ---
-import Layout from '@/layouts/Layout.astro';
+import SidebarLayout from '@/layouts/SidebarLayout.astro';
 import { VaultDirectory } from '@/vault-directory/vault-directory';
 ---
 
-<Layout title="Vault Directory - DeFi Panda">
-  <main class="min-h-screen bg-muted">
+<SidebarLayout title="Vault Directory - DeFi Panda">
+  <div class="min-h-screen bg-muted">
     <div class="container mx-auto px-4 py-8">
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-foreground mb-2">Vault Directory</h1>
@@ -15,5 +15,5 @@ import { VaultDirectory } from '@/vault-directory/vault-directory';
 
       <VaultDirectory client:load />
     </div>
-  </main>
-</Layout>
+  </div>
+</SidebarLayout>
