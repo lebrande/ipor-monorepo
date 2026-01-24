@@ -37,3 +37,6 @@ tmp
 
 # TypeScript
 *.tsbuildinfo
+
+# Playwright MCP screenshots
+.playwright-mcp
