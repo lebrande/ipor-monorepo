@@ -11,6 +11,8 @@ export const DEFAULT_FILTERS: VaultFilters = {
   depositorRange: null,
   netFlow: 'all',
   underlyingAssets: [],
+  chains: [],
+  protocols: [],
 };
 
 // Constants
@@ -35,6 +37,8 @@ export const updateURLParams = (params: {
   url.searchParams.delete('depositors');
   url.searchParams.delete('net_flow');
   url.searchParams.delete('assets');
+  url.searchParams.delete('chains');
+  url.searchParams.delete('protocols');
 
   // Set new parameters
   if (currentPage > 1) {
@@ -58,8 +62,16 @@ export const updateURLParams = (params: {
     url.searchParams.set('net_flow', filters.netFlow);
   }
 
-  if (filters.underlyingAssets.length > 0) {
+  if (filters.underlyingAssets?.length > 0) {
     url.searchParams.set('assets', filters.underlyingAssets.join(','));
+  }
+
+  if (filters.chains?.length > 0) {
+    url.searchParams.set('chains', filters.chains.join(','));
+  }
+
+  if (filters.protocols?.length > 0) {
+    url.searchParams.set('protocols', filters.protocols.join(','));
   }
 
   window.history.replaceState({}, '', url.toString());
@@ -78,6 +90,13 @@ export const parseURLParams = (): {
     depositorRange: null,
     netFlow: (params.get('net_flow') as NetFlowOption) || 'all',
     underlyingAssets: params.get('assets')?.split(',').filter(Boolean) || [],
+    chains:
+      params
+        .get('chains')
+        ?.split(',')
+        .map(Number)
+        .filter((n) => !isNaN(n)) || [],
+    protocols: params.get('protocols')?.split(',').filter(Boolean) || [],
   };
 
   // Parse TVL range
@@ -169,21 +188,80 @@ export const convertFiltersToAPIParams = (
     params.net_flow = filters.netFlow;
   }
 
-  if (filters.underlyingAssets.length > 0) {
+  if (filters.underlyingAssets?.length > 0) {
     params.underlying_assets = filters.underlyingAssets.join(',');
+  }
+
+  if (filters.chains?.length > 0) {
+    params.chains = filters.chains.join(',');
+  }
+
+  if (filters.protocols?.length > 0) {
+    params.protocols = filters.protocols.join(',');
   }
 
   return params;
 };
 
+// Logarithmic scale utilities
+// Converts a value to a slider position (0-100) using log scale
+export const valueToLogSlider = (value: number, min: number, max: number): number => {
+  if (value <= min) return 0;
+  if (value >= max) return 100;
+
+  // Use log10 for the conversion
+  // Add 1 to avoid log(0) issues
+  const minLog = Math.log10(min + 1);
+  const maxLog = Math.log10(max + 1);
+  const valueLog = Math.log10(value + 1);
+
+  return ((valueLog - minLog) / (maxLog - minLog)) * 100;
+};
+
+// Converts a slider position (0-100) back to a value using log scale
+export const logSliderToValue = (slider: number, min: number, max: number): number => {
+  if (slider <= 0) return min;
+  if (slider >= 100) return max;
+
+  const minLog = Math.log10(min + 1);
+  const maxLog = Math.log10(max + 1);
+
+  const valueLog = minLog + (slider / 100) * (maxLog - minLog);
+  return Math.pow(10, valueLog) - 1;
+};
+
+// Format large numbers for display (e.g., $1.5M, $250K)
+export const formatCompactNumber = (value: number): string => {
+  if (value >= 1_000_000_000) {
+    return `$${(value / 1_000_000_000).toFixed(1)}B`;
+  }
+  if (value >= 1_000_000) {
+    return `$${(value / 1_000_000).toFixed(1)}M`;
+  }
+  if (value >= 1_000) {
+    return `$${(value / 1_000).toFixed(1)}K`;
+  }
+  return `$${value.toFixed(0)}`;
+};
+
+export const formatCompactCount = (value: number): string => {
+  if (value >= 1_000_000) {
+    return `${(value / 1_000_000).toFixed(1)}M`;
+  }
+  if (value >= 1_000) {
+    return `${(value / 1_000).toFixed(1)}K`;
+  }
+  return value.toFixed(0);
+};
+
 // Filter validation utilities
-export const validateTVLRange = (range: {
-  min: number;
-  max: number;
-}): boolean => {
+export const validateTVLRange = (
+  range: { min: number; max: number },
+  maxTvl: number = MAX_TVL_VALUE,
+): boolean => {
   return (
     range.min >= MIN_TVL_VALUE &&
-    range.max <= MAX_TVL_VALUE &&
+    range.max <= maxTvl &&
     range.min <= range.max
   );
 };
@@ -193,6 +271,8 @@ export const isFiltersActive = (filters: VaultFilters): boolean => {
     filters.tvlRange !== null ||
     filters.depositorRange !== null ||
     filters.netFlow !== 'all' ||
-    filters.underlyingAssets.length > 0
+    (filters.underlyingAssets?.length ?? 0) > 0 ||
+    (filters.chains?.length ?? 0) > 0 ||
+    (filters.protocols?.length ?? 0) > 0
   );
 };

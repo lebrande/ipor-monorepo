@@ -14,6 +14,8 @@ export interface VaultAPIParams {
   depositors_max?: number;
   net_flow?: 'positive' | 'negative';
   underlying_assets?: string; // Comma-separated
+  chains?: string; // Comma-separated chain IDs
+  protocols?: string; // Comma-separated protocol names
 }
 
 const vaultDataSchema = z.object({

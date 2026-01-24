@@ -19,6 +19,7 @@ import {
 } from '@/vault-directory/vault-directory.utils';
 import { useVaultsQuery } from '@/vault-directory/queries/use-vaults-query';
 import { useAssetsQuery } from '@/vault-directory/queries/use-assets-query';
+import { useVaultsMetadataQuery } from '@/vault-directory/queries/use-vaults-metadata-query';
 
 export const useVaultDirectory = () => {
   // Initialize state from URL parameters or localStorage
@@ -33,14 +34,22 @@ export const useVaultDirectory = () => {
       const urlParams = parseURLParams();
       const savedFilters = loadFiltersFromLocalStorage();
 
-      // URL parameters take precedence over localStorage
-      const initialFilters =
+      // Check if URL has any active filters
+      const hasUrlFilters =
         urlParams.filters.tvlRange ||
         urlParams.filters.depositorRange ||
         urlParams.filters.netFlow !== 'all' ||
-        urlParams.filters.underlyingAssets.length > 0
-          ? urlParams.filters
-          : savedFilters || DEFAULT_FILTERS;
+        urlParams.filters.underlyingAssets.length > 0 ||
+        urlParams.filters.chains.length > 0 ||
+        urlParams.filters.protocols.length > 0;
+
+      // URL parameters take precedence over localStorage
+      // Merge with DEFAULT_FILTERS to ensure all fields exist (handles old localStorage data)
+      const initialFilters = hasUrlFilters
+        ? { ...DEFAULT_FILTERS, ...urlParams.filters }
+        : savedFilters
+          ? { ...DEFAULT_FILTERS, ...savedFilters }
+          : DEFAULT_FILTERS;
 
       setFilters(initialFilters);
       setSortBy(urlParams.sortBy);
@@ -55,6 +64,8 @@ export const useVaultDirectory = () => {
   });
 
   const { data: availableAssets } = useAssetsQuery();
+
+  const { data: metadata, isLoading: isMetadataLoading } = useVaultsMetadataQuery();
 
   // Debounced URL parameter updates
   useEffect(() => {
@@ -99,6 +110,14 @@ export const useVaultDirectory = () => {
       setFilters((prev) => ({ ...prev, underlyingAssets: assets }));
     }, []),
 
+    updateChains: useCallback((chains: number[]) => {
+      setFilters((prev) => ({ ...prev, chains }));
+    }, []),
+
+    updateProtocols: useCallback((protocols: string[]) => {
+      setFilters((prev) => ({ ...prev, protocols }));
+    }, []),
+
     clearFilters: useCallback(() => {
       setFilters(DEFAULT_FILTERS);
     }, []),
@@ -132,6 +151,8 @@ export const useVaultDirectory = () => {
     totalPages: data?.pagination.totalPages || 0,
     totalVaults: data?.pagination.totalCount || 0,
     availableAssets,
+    metadata,
+    isMetadataLoading,
 
     // State
     filters,

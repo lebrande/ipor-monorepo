@@ -6,6 +6,8 @@ export interface VaultFilters {
   depositorRange: DepositorRange | null;
   netFlow: NetFlowOption;
   underlyingAssets: string[]; // Symbols of selected underlying assets
+  chains: number[]; // Chain IDs
+  protocols: string[]; // Protocol names
 }
 
 export interface TVLRange {
@@ -48,6 +50,8 @@ export interface FilterActions {
   updateDepositorRange: (range: DepositorRange | null) => void;
   updateNetFlow: (option: NetFlowOption) => void;
   updateUnderlyingAssets: (assets: string[]) => void;
+  updateChains: (chains: number[]) => void;
+  updateProtocols: (protocols: string[]) => void;
   clearFilters: () => void;
 }
 
