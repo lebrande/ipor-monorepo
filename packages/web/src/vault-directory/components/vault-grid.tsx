@@ -1,6 +1,7 @@
-import React from 'react';
-import { VaultCard } from './vault-card';
-import { VaultGridSkeleton } from './vault-grid-skeleton';
+import { Table, TableBody } from '@/components/ui/table';
+import { VaultTableHeader } from './vault-table-header';
+import { VaultTableRow } from './vault-table-row';
+import { VaultTableSkeleton } from './vault-table-skeleton';
 import { useVaultDirectoryContext } from '@/vault-directory/vault-directory.context';
 import { AlertCircle, Package } from 'lucide-react';
 
@@ -10,7 +11,7 @@ export const VaultGrid = () => {
 
   // Show loading skeleton
   if (loading) {
-    return <VaultGridSkeleton />;
+    return <VaultTableSkeleton />;
   }
 
   // Show error state
@@ -49,16 +50,21 @@ export const VaultGrid = () => {
     );
   }
 
-  // Show vault grid
+  // Show vault table
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {vaults.map((vault) => (
-        <VaultCard
-          key={vault.address}
-          vault={vault}
-          onVaultClick={navigateToVault}
-        />
-      ))}
+    <div className="rounded-md border">
+      <Table>
+        <VaultTableHeader />
+        <TableBody>
+          {vaults.map((vault) => (
+            <VaultTableRow
+              key={vault.address}
+              vault={vault}
+              onVaultClick={navigateToVault}
+            />
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 };
