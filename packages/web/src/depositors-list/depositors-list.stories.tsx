@@ -55,7 +55,7 @@ const defaultParams = satisifyType<DepositorsListParams>({
   isLoading: false,
   isError: false,
   paginationActions: {
-    goToPage: () => { },
+    goToPage: () => {},
   },
 });
 
@@ -106,4 +106,3 @@ export const NoData: Story = {
     }),
   },
 };
-

@@ -1,4 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/spinner';
 import { SortControls } from '@/vault-directory/components/sort-controls';
 import { useVaultDirectoryContext } from '@/vault-directory/vault-directory.context';
 
@@ -13,8 +14,8 @@ export const VaultToolbar = () => {
         <div className="flex items-center">
           <h3 className="text-lg font-medium">
             {loading ? (
-              <span className="flex items-center">
-                <div className="w-4 h-4 mr-2 bg-muted rounded animate-pulse"></div>
+              <span className="flex items-center gap-2">
+                <Spinner />
                 Loading vaults...
               </span>
             ) : (

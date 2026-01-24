@@ -19,7 +19,7 @@ export const UnderlyingAssetFilter = ({ value, onChange, options }: Props) => {
     if (selectedCount === 0) {
       return 'All assets';
     }
-    if (selectedCount === 1) {
+    if (selectedCount === 1 && selectedItems[0]) {
       return selectedItems[0].label;
     }
     return `${selectedCount} assets selected`;

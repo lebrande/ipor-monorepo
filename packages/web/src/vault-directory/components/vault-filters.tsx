@@ -72,7 +72,9 @@ export const VaultFilters = () => {
             <Label>Underlying Assets</Label>
             <UnderlyingAssetFilter
               value={filters.underlyingAssets}
-              onChange={(assets) => filterActions.updateUnderlyingAssets(assets)}
+              onChange={(assets) =>
+                filterActions.updateUnderlyingAssets(assets)
+              }
               options={availableAssets}
             />
           </div>

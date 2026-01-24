@@ -1,29 +1,30 @@
-import React from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from '@/components/ui/card';
 
 const VaultCardSkeleton = () => (
-  <div className="bg-white rounded-lg border border-border shadow-sm">
-    <div className="p-6">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
+  <Card>
+    <CardHeader>
+      <div className="flex items-start justify-between">
         <div className="flex-1">
           <Skeleton className="h-6 w-3/4 mb-2" />
           <Skeleton className="h-4 w-1/2" />
         </div>
-        <div className="ml-4">
-          <Skeleton className="w-10 h-10 rounded-full" />
-        </div>
+        <Skeleton className="w-10 h-10 rounded-full ml-4" />
       </div>
+    </CardHeader>
 
+    <CardContent className="space-y-4">
       {/* Metrics Grid */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        {/* TVL */}
+      <div className="grid grid-cols-2 gap-4">
         <div>
           <Skeleton className="h-3 w-full mb-2" />
           <Skeleton className="h-6 w-3/4" />
         </div>
-
-        {/* Depositors */}
         <div>
           <Skeleton className="h-3 w-full mb-2" />
           <Skeleton className="h-6 w-1/2" />
@@ -31,27 +32,25 @@ const VaultCardSkeleton = () => (
       </div>
 
       {/* Secondary Metrics */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        {/* Net Flow */}
+      <div className="grid grid-cols-2 gap-4">
         <div>
           <Skeleton className="h-3 w-full mb-2" />
           <Skeleton className="h-5 w-2/3" />
         </div>
-
-        {/* Share Price */}
         <div>
           <Skeleton className="h-3 w-full mb-2" />
           <Skeleton className="h-5 w-3/4" />
         </div>
       </div>
+    </CardContent>
 
-      {/* Footer */}
-      <div className="flex items-center justify-between pt-4 border-t border-border">
+    <CardFooter className="border-t">
+      <div className="flex items-center justify-between w-full">
         <Skeleton className="h-6 w-16 rounded-full" />
         <Skeleton className="h-3 w-24" />
       </div>
-    </div>
-  </div>
+    </CardFooter>
+  </Card>
 );
 
 export const VaultGridSkeleton = () => {

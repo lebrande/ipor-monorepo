@@ -26,7 +26,7 @@ export const ChainFilter = ({ value, onChange, options }: Props) => {
     selectedItems: { value: string; label: string }[],
   ) => {
     if (selectedCount === 0) return 'All chains';
-    if (selectedCount === 1) return selectedItems[0].label;
+    if (selectedCount === 1 && selectedItems[0]) return selectedItems[0].label;
     return `${selectedCount} chains selected`;
   };
 

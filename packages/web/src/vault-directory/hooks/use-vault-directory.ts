@@ -65,7 +65,8 @@ export const useVaultDirectory = () => {
 
   const { data: availableAssets } = useAssetsQuery();
 
-  const { data: metadata, isLoading: isMetadataLoading } = useVaultsMetadataQuery();
+  const { data: metadata, isLoading: isMetadataLoading } =
+    useVaultsMetadataQuery();
 
   // Debounced URL parameter updates
   useEffect(() => {

@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 
 interface Props {
@@ -8,16 +9,14 @@ interface Props {
 
 export const ErrorBoundary = ({ error, onRetry }: Props) => {
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-      <div className="max-w-md">
-        <div className="mb-4">
-          <AlertTriangle className="mx-auto h-12 w-12 text-destructive" />
-        </div>
-        <h3 className="text-lg font-medium text-foreground mb-2">
-          Something went wrong
-        </h3>
-        <p className="text-muted-foreground mb-6">{error}</p>
-        <Button onClick={onRetry} className="w-full">
+    <div className="flex flex-col items-center justify-center py-12 px-4">
+      <div className="max-w-md w-full">
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Something went wrong</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+        <Button onClick={onRetry} className="w-full mt-4">
           Try Again
         </Button>
       </div>

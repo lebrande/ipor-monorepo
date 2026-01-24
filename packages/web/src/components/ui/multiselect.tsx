@@ -6,6 +6,15 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { Badge } from '@/components/ui/badge';
 import { ChevronDownIcon, XIcon } from 'lucide-react';
 
 interface Option {
@@ -70,7 +79,7 @@ export const MultiSelect = ({
       return placeholder;
     }
 
-    if (selectedCount === 1) {
+    if (selectedCount === 1 && selectedItems[0]) {
       return selectedItems[0].label;
     }
 
@@ -89,75 +98,62 @@ export const MultiSelect = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="start">
-        {/* Search Input */}
-        <div className="p-3 border-b">
-          <input
-            type="text"
+        <Command shouldFilter={false}>
+          <CommandInput
             placeholder={searchPlaceholder}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:border-ring focus:ring-ring"
+            onValueChange={setSearchTerm}
           />
-        </div>
-
-        {/* Actions */}
-        <div className="p-2 border-b flex justify-between">
-          <button
-            onClick={handleSelectAll}
-            className="text-sm text-primary hover:text-primary/80"
-            disabled={filteredOptions.length === 0}
-          >
-            Select all
-          </button>
-          <button
-            onClick={handleClearAll}
-            className="text-sm text-muted-foreground hover:text-foreground"
-            disabled={selectedCount === 0}
-          >
-            Clear all
-          </button>
-        </div>
-
-        {/* Items List */}
-        <div className="max-h-48 overflow-y-auto">
-          {filteredOptions.length === 0 ? (
-            <div className="p-4 text-sm text-muted-foreground text-center">
-              No items found
-            </div>
-          ) : (
-            filteredOptions.map((option) => (
-              <label
-                key={option.value}
-                className="flex items-center px-4 py-2 hover:bg-accent cursor-pointer"
-              >
-                <Checkbox
-                  checked={value.includes(option.value)}
-                  onCheckedChange={() => handleToggleItem(option.value)}
-                  className="mr-3"
-                />
-                <span className="text-sm text-foreground">{option.label}</span>
-              </label>
-            ))
-          )}
-        </div>
+          <div className="flex justify-between px-2 py-1.5 border-b">
+            <button
+              onClick={handleSelectAll}
+              className="text-sm text-primary hover:text-primary/80 disabled:opacity-50"
+              disabled={filteredOptions.length === 0}
+            >
+              Select all
+            </button>
+            <button
+              onClick={handleClearAll}
+              className="text-sm text-muted-foreground hover:text-foreground disabled:opacity-50"
+              disabled={selectedCount === 0}
+            >
+              Clear all
+            </button>
+          </div>
+          <CommandList className="max-h-48">
+            <CommandEmpty>No items found</CommandEmpty>
+            <CommandGroup>
+              {filteredOptions.map((option) => (
+                <CommandItem
+                  key={option.value}
+                  value={option.value}
+                  onSelect={() => handleToggleItem(option.value)}
+                >
+                  <Checkbox
+                    checked={value.includes(option.value)}
+                    className="mr-2"
+                  />
+                  {option.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
 
         {/* Selected Items Display */}
         {selectedCount > 0 && (
           <div className="p-2 border-t bg-muted">
             <div className="flex flex-wrap gap-1">
               {selectedItems.slice(0, maxDisplayItems).map((item) => (
-                <span
-                  key={item.value}
-                  className="inline-flex items-center px-2 py-1 bg-primary/10 text-primary rounded-full text-xs"
-                >
+                <Badge key={item.value} variant="secondary" className="gap-1">
                   {item.label}
                   <button
                     onClick={() => handleToggleItem(item.value)}
-                    className="ml-1 hover:text-primary/80"
+                    className="hover:text-foreground/80"
                   >
                     <XIcon className="w-3 h-3" />
                   </button>
-                </span>
+                </Badge>
               ))}
               {selectedCount > maxDisplayItems && (
                 <span className="text-xs text-muted-foreground">

@@ -10,6 +10,7 @@ import {
   CardContent,
   CardFooter,
 } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import type { ChainId } from '@/app/wagmi-provider';
 
 interface Props {
@@ -114,9 +115,7 @@ export const VaultCard = ({ vault, onVaultClick }: Props) => {
       <CardFooter className="border-t">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center space-x-2">
-            <div className="px-2 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
-              {vault.underlyingAsset}
-            </div>
+            <Badge variant="secondary">{vault.underlyingAsset}</Badge>
           </div>
           <div className="text-xs text-muted-foreground">
             Created {formatDate(vault.creationDate)}

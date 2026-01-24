@@ -49,7 +49,9 @@ export const DepositorCountFilter = ({ value, onChange, max }: Props) => {
     if (!value) return 'All depositor counts';
     const minText = formatCompactCount(value.min);
     const maxText =
-      value.max >= max ? `${formatCompactCount(max)}+` : formatCompactCount(value.max);
+      value.max >= max
+        ? `${formatCompactCount(max)}+`
+        : formatCompactCount(value.max);
     return `${minText} - ${maxText} depositors`;
   };
 

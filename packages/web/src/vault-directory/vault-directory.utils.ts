@@ -205,7 +205,11 @@ export const convertFiltersToAPIParams = (
 
 // Logarithmic scale utilities
 // Converts a value to a slider position (0-100) using log scale
-export const valueToLogSlider = (value: number, min: number, max: number): number => {
+export const valueToLogSlider = (
+  value: number,
+  min: number,
+  max: number,
+): number => {
   if (value <= min) return 0;
   if (value >= max) return 100;
 
@@ -219,7 +223,11 @@ export const valueToLogSlider = (value: number, min: number, max: number): numbe
 };
 
 // Converts a slider position (0-100) back to a value using log scale
-export const logSliderToValue = (slider: number, min: number, max: number): number => {
+export const logSliderToValue = (
+  slider: number,
+  min: number,
+  max: number,
+): number => {
   if (slider <= 0) return min;
   if (slider >= 100) return max;
 
@@ -260,9 +268,7 @@ export const validateTVLRange = (
   maxTvl: number = MAX_TVL_VALUE,
 ): boolean => {
   return (
-    range.min >= MIN_TVL_VALUE &&
-    range.max <= maxTvl &&
-    range.min <= range.max
+    range.min >= MIN_TVL_VALUE && range.max <= maxTvl && range.min <= range.max
   );
 };
 
