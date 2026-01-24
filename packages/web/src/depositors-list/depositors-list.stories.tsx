@@ -1,4 +1,4 @@
-import type { Decorator, Meta, StoryObj } from '@storybook/react-vite';
+import type { Decorator, Meta, StoryObj } from '@storybook/react';
 import {
   DepositorsList,
   DepositorsListContent,

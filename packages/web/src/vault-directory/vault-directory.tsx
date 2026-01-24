@@ -1,3 +1,5 @@
+'use client';
+
 import { VaultDirectoryProvider } from './vault-directory.context';
 import { AppProviders } from '@/app/app-providers';
 import { useVaultDirectoryContext } from '@/vault-directory/vault-directory.context';

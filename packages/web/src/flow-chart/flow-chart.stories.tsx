@@ -1,4 +1,4 @@
-import type { Meta, StoryObj, Decorator } from '@storybook/react-vite';
+import type { Meta, StoryObj, Decorator } from '@storybook/react';
 import { FlowChart, FlowChartContent } from './flow-chart';
 import { withAppProviders } from '@/app/app-providers-decorator';
 import { withVault } from '@/vault/vault-decorator';

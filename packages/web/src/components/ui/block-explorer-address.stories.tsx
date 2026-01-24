@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react';
 
 import { BlockExplorerAddress } from '@/components/ui/block-explorer-address';
 import { ALLOWED_CHAIN_IDS } from '@/app/wagmi-provider';

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react';
 import { DepositorsListItem } from './depositors-list-item';
 import { AppProviders } from '@/app/app-providers';
 import { VaultProvider } from '@/vault/vault.context';

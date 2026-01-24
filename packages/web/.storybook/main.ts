@@ -1,9 +1,5 @@
 import type { StorybookConfig } from '@storybook/react-vite';
-import { loadEnv } from 'vite';
 import path from 'path';
-
-// Load environment variables
-const env = loadEnv('', process.cwd(), '');
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
@@ -21,20 +17,23 @@ const config: StorybookConfig = {
   },
   env: (config) => ({
     ...config,
-    PUBLIC_API_URL: env.PUBLIC_API_URL,
-    PUBLIC_VITE_RPC_URL_MAINNET: env.PUBLIC_VITE_RPC_URL_MAINNET,
-    PUBLIC_VITE_RPC_URL_ARBITRUM: env.PUBLIC_VITE_RPC_URL_ARBITRUM,
-    PUBLIC_VITE_RPC_URL_BASE: env.PUBLIC_VITE_RPC_URL_BASE,
+    NEXT_PUBLIC_API_URL:
+      process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+    NEXT_PUBLIC_RPC_URL_MAINNET: process.env.NEXT_PUBLIC_RPC_URL_MAINNET,
+    NEXT_PUBLIC_RPC_URL_ARBITRUM: process.env.NEXT_PUBLIC_RPC_URL_ARBITRUM,
+    NEXT_PUBLIC_RPC_URL_BASE: process.env.NEXT_PUBLIC_RPC_URL_BASE,
   }),
   viteFinal: async (config) => {
-    if (config.resolve) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        '@': path.resolve(__dirname, '../src'),
-      };
-    }
-
-    return config;
+    return {
+      ...config,
+      resolve: {
+        ...config.resolve,
+        alias: {
+          ...config.resolve?.alias,
+          '@': path.resolve(__dirname, '../src'),
+        },
+      },
+    };
   },
 };
 

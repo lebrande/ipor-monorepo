@@ -17,14 +17,8 @@
   "quoteProps": "as-needed",
   "requirePragma": false,
   "proseWrap": "preserve",
-  "plugins": ["prettier-plugin-astro"],
+  "plugins": [],
   "overrides": [
-    {
-      "files": "*.astro",
-      "options": {
-        "parser": "astro"
-      }
-    },
     {
       "files": "*.json",
       "options": {

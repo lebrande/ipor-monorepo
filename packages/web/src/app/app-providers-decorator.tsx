@@ -1,4 +1,4 @@
-import type { Decorator } from '@storybook/react-vite';
+import type { Decorator } from '@storybook/react';
 import { AppProviders } from '@/app/app-providers';
 
 /**

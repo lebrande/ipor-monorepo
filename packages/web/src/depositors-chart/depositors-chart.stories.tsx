@@ -2,7 +2,7 @@ import { withAppProviders } from '@/app/app-providers-decorator';
 import { DepositorsChart, DepositorsChartContent } from './depositors-chart';
 import { DepositorsChartContext } from './depositors-chart.context';
 import type { DepositorsChartParams } from './depositors-chart.params';
-import type { Decorator, Meta, StoryObj } from '@storybook/react-vite';
+import type { Decorator, Meta, StoryObj } from '@storybook/react';
 import { depositorsMock } from '@/depositors-chart/__mocks__/depositors.mock';
 import { metricsMock } from '@/depositors-chart/__mocks__/metrics.mock';
 import { satisifyType } from '@/lib/utils';

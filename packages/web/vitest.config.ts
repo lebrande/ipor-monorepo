@@ -4,7 +4,7 @@ import { resolve } from 'path';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
-import checker from 'vite-plugin-checker';
+import react from '@vitejs/plugin-react';
 
 const dirname =
   typeof __dirname !== 'undefined'
@@ -13,6 +13,22 @@ const dirname =
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
+  plugins: [react()],
+  define: {
+    'process.env': {
+      NEXT_PUBLIC_API_URL:
+        JSON.stringify(process.env.NEXT_PUBLIC_API_URL) || '"http://localhost:3001"',
+      NEXT_PUBLIC_RPC_URL_MAINNET: JSON.stringify(
+        process.env.NEXT_PUBLIC_RPC_URL_MAINNET || ''
+      ),
+      NEXT_PUBLIC_RPC_URL_ARBITRUM: JSON.stringify(
+        process.env.NEXT_PUBLIC_RPC_URL_ARBITRUM || ''
+      ),
+      NEXT_PUBLIC_RPC_URL_BASE: JSON.stringify(
+        process.env.NEXT_PUBLIC_RPC_URL_BASE || ''
+      ),
+    },
+  },
   test: {
     environment: 'jsdom',
     globals: true,
@@ -23,11 +39,6 @@ export default defineConfig({
         test: {
           include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
         },
-        plugins: [
-          checker({
-            typescript: true,
-          }),
-        ],
       },
       {
         extends: true,

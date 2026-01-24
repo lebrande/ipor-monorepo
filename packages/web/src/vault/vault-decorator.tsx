@@ -1,4 +1,4 @@
-import type { Decorator } from '@storybook/react-vite';
+import type { Decorator } from '@storybook/react';
 import { VaultContext, type ContextValue } from '@/vault/vault.context';
 import { pick } from 'remeda';
 

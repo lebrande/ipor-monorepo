@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react';
 import { Account } from './account';
 import { mainnet } from 'viem/chains';
 import { withAppProviders } from '@/app/app-providers-decorator';

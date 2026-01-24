@@ -1,3 +1,5 @@
+'use client';
+
 import {
   DepositorsListContext,
   useDepositorsListContext,

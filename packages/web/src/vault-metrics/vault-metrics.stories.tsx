@@ -1,4 +1,4 @@
-import type { Decorator, Meta, StoryObj } from '@storybook/react-vite';
+import type { Decorator, Meta, StoryObj } from '@storybook/react';
 import { VaultMetricsContent } from './vault-metrics';
 import { withAppProviders } from '@/app/app-providers-decorator';
 import { mainnet } from 'viem/chains';

@@ -1,3 +1,5 @@
+'use client';
+
 import { QueryClientProviderWrapper } from './query-client-provider';
 import { WagmiProviderWrapper } from './wagmi-provider';
 

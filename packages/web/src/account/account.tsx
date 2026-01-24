@@ -1,3 +1,5 @@
+'use client';
+
 import { AccountContext, useAccountContext } from './account.context';
 import type { ChainId } from '@/app/wagmi-provider';
 import type { Address } from 'viem';

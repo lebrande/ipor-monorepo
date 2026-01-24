@@ -1,3 +1,5 @@
+'use client';
+
 import { VaultDetailsProvider } from '@/vault-details/vault-details.context';
 import { VaultProvider } from '@/vault/vault.context';
 import { useVaultDetailsContext } from '@/vault-details/vault-details.context';

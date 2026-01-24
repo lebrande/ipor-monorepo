@@ -1,43 +1,15 @@
+'use client';
+
 import { cn } from '@/lib/utils';
 import { useVaultContext } from '@/vault/vault.context';
-import z from 'zod';
+import {
+  TABS,
+  getTabConfig,
+  type TabId,
+} from '@/vault-details/vault-tabs.config';
 
-interface TabConfig {
-  label: string;
-  description: string;
-  id: string;
-}
-
-const TABS = [
-  {
-    id: 'overview',
-    label: 'Overview',
-    description: 'Key metrics and flow analysis',
-  },
-  {
-    id: 'depositors',
-    label: 'Depositors',
-    description: 'Depositor information and statistics',
-  },
-  {
-    id: 'activity',
-    label: 'Activity',
-    description: 'Recent transactions and activity',
-  },
-  {
-    id: 'performance',
-    label: 'Performance',
-    description: 'Performance metrics and analytics',
-  },
-] as const satisfies TabConfig[];
-
-export type TabId = (typeof TABS)[number]['id'];
-
-export const getTabConfig = (id: TabId) => {
-  return TABS.find((tab) => tab.id === id);
-};
-
-export const tabSchema = z.enum(TABS.map((tab) => tab.id));
+// Re-export for backwards compatibility
+export { getTabConfig, isValidTab, tabSchema, type TabId } from '@/vault-details/vault-tabs.config';
 
 interface Props {
   activeTab: TabId;
