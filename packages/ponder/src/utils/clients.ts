@@ -1,6 +1,6 @@
 import { createPublicClient, extractChain, http } from 'viem';
 import { ChainId, chains } from './chains';
-import { arbitrum, base, mainnet, unichain } from 'viem/chains';
+import { arbitrum, avalanche, base, mainnet, plasma, unichain } from 'viem/chains';
 
 export const getPublicClient = (chainId: ChainId) => {
   const chain = extractChain({
@@ -10,7 +10,9 @@ export const getPublicClient = (chainId: ChainId) => {
 
   return createPublicClient({
     chain,
-    transport: http(RPC_URL[chainId]),
+    transport: http(RPC_URL[chainId], {
+      timeout: 10_000, // 10 second timeout
+    }),
   });
 };
 
@@ -19,4 +21,6 @@ const RPC_URL: Record<ChainId, string> = {
   [arbitrum.id]: process.env.PONDER_RPC_URL_ARBITRUM!,
   [base.id]: process.env.PONDER_RPC_URL_BASE!,
   [unichain.id]: process.env.PONDER_RPC_URL_UNICHAIN!,
+  [avalanche.id]: process.env.PONDER_RPC_URL_AVALANCHE!,
+  [plasma.id]: process.env.PONDER_RPC_URL_PLASMA!,
 };
