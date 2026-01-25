@@ -6,7 +6,7 @@ import {
 import { VaultDirectoryServer } from './vault-directory-server';
 
 export const metadata = {
-  title: 'Vault Directory - Fusion by IPOR',
+  title: 'Vaults List - Fusion by IPOR',
 };
 
 interface PageProps {

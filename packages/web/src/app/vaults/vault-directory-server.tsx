@@ -21,10 +21,10 @@ export function VaultDirectoryServer({
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Vault Directory
+            Vaults List
           </h1>
           <p className="text-muted-foreground">
-            Discover and analyze ERC4626 vaults across the DeFi ecosystem
+            Browse and explore IPOR Fusion vaults
           </p>
         </div>
         <VaultDirectoryContent

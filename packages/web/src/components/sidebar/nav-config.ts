@@ -8,12 +8,12 @@ export interface NavItem {
 
 export const navItems: NavItem[] = [
   {
-    title: 'Home',
+    title: 'Dashboard',
     url: '/',
     icon: Home,
   },
   {
-    title: 'Vault Directory',
+    title: 'Vaults List',
     url: '/vaults',
     icon: Vault,
   },
