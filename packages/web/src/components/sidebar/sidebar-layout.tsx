@@ -25,7 +25,11 @@ export function SidebarLayout({ children, pathname }: SidebarLayoutProps) {
             orientation="vertical"
             className="mr-2 hidden h-4 md:block"
           />
-          <span className="font-semibold md:hidden">Fusion</span>
+          <img
+            src="/assets/logo-fusion-by-ipor.svg"
+            alt="Fusion by IPOR"
+            className="h-8 w-auto md:hidden"
+          />
         </header>
         <div className="flex-1 pb-16 md:pb-0">{children}</div>
       </SidebarInset>

@@ -17,15 +17,12 @@ export function AppSidebar({ pathname, ...props }: AppSidebarProps) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-2">
+        <div className="flex items-center px-2 py-3">
           <img
             src="/assets/logo-fusion-by-ipor.svg"
             alt="Fusion by IPOR"
-            className="h-8 w-8"
+            className="h-10 w-auto"
           />
-          <span className="font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
-            Fusion
-          </span>
         </div>
       </SidebarHeader>
       <SidebarContent>
