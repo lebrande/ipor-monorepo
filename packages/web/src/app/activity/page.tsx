@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Activity - DeFi Panda',
+  title: 'Activity - Fusion by IPOR',
 };
 
 export default function ActivityPage() {

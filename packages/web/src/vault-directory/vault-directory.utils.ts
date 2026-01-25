@@ -3,7 +3,21 @@ import type {
   NetFlowOption,
   SortOption,
 } from '@/vault-directory/vault-directory.types';
-import type { VaultAPIParams } from '@/vault-directory/queries/use-vaults-query';
+
+// VaultAPIParams type definition (previously from use-vaults-query)
+export interface VaultAPIParams {
+  page: number;
+  limit: number;
+  sort: 'tvl' | 'depositors' | 'age';
+  tvl_min?: number;
+  tvl_max?: number;
+  depositors_min?: number;
+  depositors_max?: number;
+  net_flow?: 'positive' | 'negative';
+  underlying_assets?: string;
+  chains?: string;
+  protocols?: string;
+}
 
 // Default filter values
 export const DEFAULT_FILTERS: VaultFilters = {

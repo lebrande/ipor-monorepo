@@ -1,4 +1,4 @@
-import type { VaultData } from '@/vault-directory/queries/use-vaults-query';
+import type { VaultData } from '@/vault-directory/fetch-vaults';
 
 // Filter state management
 export interface VaultFilters {

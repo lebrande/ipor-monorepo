@@ -19,12 +19,12 @@ export function AppSidebar({ pathname, ...props }: AppSidebarProps) {
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-2">
           <img
-            src="/favicon.png"
-            alt="DeFi Panda"
-            className="h-8 w-8 rounded-lg"
+            src="/assets/logo-fusion-by-ipor.svg"
+            alt="Fusion by IPOR"
+            className="h-8 w-8"
           />
           <span className="font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
-            DeFi Panda
+            Fusion
           </span>
         </div>
       </SidebarHeader>

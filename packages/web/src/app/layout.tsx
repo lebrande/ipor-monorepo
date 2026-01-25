@@ -2,10 +2,10 @@ import type { Metadata } from 'next';
 import '../styles/global.css';
 
 export const metadata: Metadata = {
-  title: 'DeFi Panda',
+  title: 'Fusion by IPOR',
   description: 'ERC4626 Vault Analytics Dashboard',
   icons: {
-    icon: '/favicon.png',
+    icon: '/assets/logo-fusion-by-ipor.svg',
   },
 };
 

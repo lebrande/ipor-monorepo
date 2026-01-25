@@ -1,9 +1,31 @@
-import { VaultDirectoryPage } from './vault-directory-page';
+import {
+  fetchVaults,
+  fetchVaultsMetadata,
+  type VaultSearchParams,
+} from '@/vault-directory/fetch-vaults';
+import { VaultDirectoryServer } from './vault-directory-server';
 
 export const metadata = {
-  title: 'Vault Directory - DeFi Panda',
+  title: 'Vault Directory - Fusion by IPOR',
 };
 
-export default function VaultsPage() {
-  return <VaultDirectoryPage />;
+interface PageProps {
+  searchParams: Promise<VaultSearchParams>;
+}
+
+export default async function VaultsPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+
+  const [vaultsData, vaultsMetadata] = await Promise.all([
+    fetchVaults(params),
+    fetchVaultsMetadata(),
+  ]);
+
+  return (
+    <VaultDirectoryServer
+      initialData={vaultsData}
+      metadata={vaultsMetadata}
+      searchParams={params}
+    />
+  );
 }

@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: PageProps) {
   const tabConfig = getTabConfig(activeTab);
 
   return {
-    title: `Vault ${tabConfig?.label || 'Details'} - DeFi Panda`,
+    title: `Vault ${tabConfig?.label || 'Details'} - Fusion by IPOR`,
   };
 }
 
