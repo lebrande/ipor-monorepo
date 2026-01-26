@@ -1,14 +1,34 @@
+import {
+  fetchActivity,
+  fetchActivityInflows,
+  fetchActivityMetadata,
+  type ActivitySearchParams,
+} from '@/activity/fetch-activity';
+import { ActivityServer } from './activity-server';
+
 export const metadata = {
   title: 'Activity - Fusion by IPOR',
 };
 
-export default function ActivityPage() {
+interface PageProps {
+  searchParams: Promise<ActivitySearchParams>;
+}
+
+export default async function ActivityPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+
+  const [activityData, inflowsData, metadataData] = await Promise.all([
+    fetchActivity(params),
+    fetchActivityInflows(params.chains),
+    fetchActivityMetadata(),
+  ]);
+
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-foreground mb-2">Activity</h1>
-        <p className="text-muted-foreground">Coming soon...</p>
-      </div>
-    </div>
+    <ActivityServer
+      initialData={activityData}
+      inflows={inflowsData}
+      metadata={metadataData}
+      searchParams={params}
+    />
   );
 }

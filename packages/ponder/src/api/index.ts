@@ -5,6 +5,7 @@ import { graphql } from 'ponder';
 
 import { vaults } from './vaults';
 import { assets } from './assets';
+import { activityRouter } from './activity';
 
 const app = new Hono();
 
@@ -16,5 +17,6 @@ const api = app.basePath('/api');
 
 api.route('/', vaults);
 api.route('/', assets);
+api.route('/', activityRouter);
 
 export default app;

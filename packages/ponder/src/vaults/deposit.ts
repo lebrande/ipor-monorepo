@@ -50,5 +50,6 @@ ponder.on('ERC4626:Deposit', async ({ event, context }) => {
     assets: event.args.assets,
     shares: event.args.shares,
     timestamp: Number(timestamp),
+    transactionHash: event.transaction.hash,
   });
 });

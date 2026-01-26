@@ -51,5 +51,6 @@ ponder.on('ERC4626:Withdraw', async ({ event, context }) => {
     assets: event.args.assets,
     shares: event.args.shares,
     timestamp: Number(timestamp),
+    transactionHash: event.transaction.hash,
   });
 });

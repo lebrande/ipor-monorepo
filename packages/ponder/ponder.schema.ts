@@ -17,6 +17,7 @@ export const depositEvent = onchainTable('deposit_event', (t) => ({
   assets: t.bigint().notNull(),
   shares: t.bigint().notNull(),
   timestamp: t.integer().notNull(),
+  transactionHash: t.hex().notNull(),
 }));
 
 export const withdrawalEvent = onchainTable('withdrawal_event', (t) => ({
@@ -29,6 +30,7 @@ export const withdrawalEvent = onchainTable('withdrawal_event', (t) => ({
   assets: t.bigint().notNull(),
   shares: t.bigint().notNull(),
   timestamp: t.integer().notNull(),
+  transactionHash: t.hex().notNull(),
 }));
 
 // Withdrawal Buckets
