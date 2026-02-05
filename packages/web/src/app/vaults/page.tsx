@@ -16,16 +16,39 @@ interface PageProps {
 export default async function VaultsPage({ searchParams }: PageProps) {
   const params = await searchParams;
 
-  const [vaultsData, vaultsMetadata] = await Promise.all([
-    fetchVaults(params),
-    fetchVaultsMetadata(),
-  ]);
+  try {
+    const [vaultsData, vaultsMetadata] = await Promise.all([
+      fetchVaults(params),
+      fetchVaultsMetadata(),
+    ]);
 
-  return (
-    <VaultDirectoryServer
-      initialData={vaultsData}
-      metadata={vaultsMetadata}
-      searchParams={params}
-    />
-  );
+    return (
+      <VaultDirectoryServer
+        initialData={vaultsData}
+        metadata={vaultsMetadata}
+        searchParams={params}
+      />
+    );
+  } catch {
+    return (
+      <div className="min-h-screen bg-muted">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              Vaults List
+            </h1>
+            <p className="text-muted-foreground">
+              Browse and explore IPOR Fusion vaults
+            </p>
+          </div>
+          <div className="rounded-lg border bg-card p-8 text-center">
+            <p className="text-muted-foreground">
+              Unable to connect to the API server. Please ensure the backend is
+              running and try again.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 }

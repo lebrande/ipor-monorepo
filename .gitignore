@@ -40,3 +40,5 @@ tmp
 
 # Playwright MCP screenshots
 .playwright-mcp
+
+packages/sdk/tsconfig.tsbuildinfo
