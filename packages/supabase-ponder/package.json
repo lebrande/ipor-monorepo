@@ -1,9 +1,9 @@
 {
   "name": "@ipor/fusion-supabase-ponder",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "type": "module",
-  "description": "Supabase database client for Ponder indexed data",
+  "description": "Supabase client for Ponder indexed blockchain data",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
@@ -15,22 +15,13 @@
   },
   "scripts": {
     "test": "tsx src/test-connection.ts",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "gen:types": "npx supabase gen types typescript --local --project-id fusion-ponder-db > src/types.ts"
   },
-  "keywords": ["supabase", "database", "ponder", "blockchain", "indexing"],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "drizzle-orm": "^0.29.0",
-    "postgres": "^3.4.3",
-    "zod": "^3.25.76"
+    "@supabase/supabase-js": "catalog:"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
-    "drizzle-kit": "^0.20.0",
     "dotenv": "^17.2.3",
     "tsx": "^4.20.6",
     "typescript": "^5.8.3"

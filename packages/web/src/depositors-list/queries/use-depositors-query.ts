@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
-import { apiClient } from '@/lib/api-client';
 import { useVaultContext } from '@/vault/vault.context';
 import { addressSchema } from '@/lib/schema';
 import { keepPreviousData } from '@tanstack/react-query';
@@ -35,13 +34,18 @@ const fetchDepositors = async (
   vaultAddress: string,
   params: DepositorsAPIParams,
 ) => {
-  const response = await apiClient.get(
-    `/api/vaults/${chainId}/${vaultAddress}/depositors`,
-    {
-      params,
-    },
+  const searchParams = new URLSearchParams({
+    page: params.page.toString(),
+    limit: params.limit.toString(),
+  });
+  const response = await fetch(
+    `/api/vaults/${chainId}/${vaultAddress}/depositors?${searchParams.toString()}`,
   );
-  return depositorsResponseSchema.parse(response.data);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch depositors: ${response.statusText}`);
+  }
+  const data = await response.json();
+  return depositorsResponseSchema.parse(data);
 };
 
 export const useDepositorsQuery = ({

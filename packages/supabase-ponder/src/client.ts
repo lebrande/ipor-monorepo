@@ -1,63 +1,41 @@
 /**
- * Ponder Database Drizzle Client
- * 
- * Connects to the Ponder Supabase database using Drizzle ORM.
+ * Ponder Database Supabase Client
+ *
+ * Connects to the Ponder Supabase database using @supabase/supabase-js.
  * Uses PONDER_DB_* prefixed environment variables to avoid conflicts with other databases.
- * 
- * Based on: https://supabase.com/docs/guides/database/drizzle
  */
 
-import 'dotenv/config';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import * as schema from './schema';
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from './types';
 
-// Validate environment variables
-// Uses PONDER_DB_* prefix to distinguish from other Supabase instances
-let connectionString = process.env.PONDER_DB_DATABASE_URL || process.env.PONDER_DATABASE_URL;
+const supabaseUrl = process.env.PONDER_DB_SUPABASE_URL;
+const supabaseKey = process.env.PONDER_DB_SUPABASE_SERVICE_ROLE_KEY;
 
-if (!connectionString) {
+if (!supabaseUrl || !supabaseKey) {
   throw new Error(
-    'Missing Ponder Database connection string.\n' +
-    'Please set PONDER_DB_DATABASE_URL or PONDER_DATABASE_URL environment variable.\n\n' +
-    'For local development with Supabase:\n' +
-    '  PONDER_DB_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54332/postgres\n\n' +
-    'Or use the connection pooler:\n' +
-    '  PONDER_DB_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54339/postgres\n\n' +
+    'Missing Ponder Database credentials.\n' +
+    'Please set PONDER_DB_SUPABASE_URL and PONDER_DB_SUPABASE_SERVICE_ROLE_KEY environment variables.\n\n' +
+    'For local development:\n' +
+    '  PONDER_DB_SUPABASE_URL=http://127.0.0.1:54341\n' +
+    '  PONDER_DB_SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>\n\n' +
     'See: packages/supabase-ponder/README.md for setup instructions.'
   );
 }
 
-// Handle Docker resolver for local Supabase (from Supabase docs)
-if (connectionString.includes('postgres:postgres@supabase_db_')) {
-  const url = new URL(connectionString);
-  const hostname = url.hostname;
-  if (hostname.includes('_')) {
-    url.hostname = hostname.split('_')[1];
-    connectionString = url.href;
-  }
-}
-
-// Disable prefetch as it is not supported for "Transaction" pool mode
-// This is required when using Supabase connection pooler
-export const client = postgres(connectionString, { prepare: false });
-
 /**
- * Drizzle database client for the Ponder database
- * Includes schema for type-safe queries
+ * Supabase client for the Ponder database
+ * Type-safe with auto-generated Database types
+ * Uses service role key for server-side access (bypasses RLS)
  */
-export const db = drizzle(client, { schema });
+export const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 
 /**
  * Get the Ponder database connection details
  * Useful for debugging and logging
  */
-export const getPonderDatabaseInfo = () => {
-  const url = new URL(connectionString);
-  return {
-    host: url.hostname,
-    port: url.port,
-    database: url.pathname.replace('/', ''),
-    isLocal: url.hostname === '127.0.0.1' || url.hostname === 'localhost',
-  };
-};
+export const getPonderDatabaseInfo = () => ({
+  url: supabaseUrl,
+  project: supabaseUrl?.includes('127.0.0.1')
+    ? 'fusion-ponder-db (local)'
+    : supabaseUrl?.replace('https://', '').replace('.supabase.co', '') || 'unknown',
+});

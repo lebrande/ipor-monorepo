@@ -1,7 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
 import type { TimeRange } from '../flow-chart.types';
-import { apiClient } from '@/lib/api-client';
 import type { Address } from 'viem';
 import type { ChainId } from '@/app/wagmi-provider';
 
@@ -29,13 +28,15 @@ const fetchFlowChartData = async (
   chainId: ChainId,
   timeRange: TimeRange,
 ) => {
-  const response = await apiClient.get(
-    `/api/vaults/${chainId}/${address}/flow-chart`,
-    {
-      params: { timeRange },
-    },
+  const params = new URLSearchParams({ timeRange });
+  const response = await fetch(
+    `/api/vaults/${chainId}/${address}/flow-chart?${params.toString()}`,
   );
-  return vaultFlowChartSchema.parse(response.data);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch flow chart: ${response.statusText}`);
+  }
+  const data = await response.json();
+  return vaultFlowChartSchema.parse(data);
 };
 
 interface FlowChartQueryOptions {

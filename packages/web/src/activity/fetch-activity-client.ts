@@ -1,4 +1,3 @@
-import { apiClient } from '@/lib/api-client';
 import { z } from 'zod';
 import { addressSchema } from '@/lib/schema';
 import { isHex } from 'viem';
@@ -54,6 +53,10 @@ export async function fetchActivityClient(
 
   searchParams.set('limit', '50');
 
-  const response = await apiClient.get(`/api/activity?${searchParams.toString()}`);
-  return activityResponseSchema.parse(response.data);
+  const response = await fetch(`/api/activity?${searchParams.toString()}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch activity: ${response.statusText}`);
+  }
+  const data = await response.json();
+  return activityResponseSchema.parse(data);
 }

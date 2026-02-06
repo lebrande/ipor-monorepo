@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
-import { apiClient } from '@/lib/api-client';
 import { useVaultContext } from '@/vault/vault.context';
 
 export const vaultMetricsResponseSchema = z.object({
@@ -20,10 +19,14 @@ export const useVaultMetricsQuery = () => {
   return useQuery({
     queryKey: ['vault-metrics', chainId, vaultAddress],
     queryFn: async () => {
-      const response = await apiClient.get(
+      const response = await fetch(
         `/api/vaults/${chainId}/${vaultAddress}/metrics`,
       );
-      return vaultMetricsResponseSchema.parse(response.data);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch vault metrics: ${response.statusText}`);
+      }
+      const data = await response.json();
+      return vaultMetricsResponseSchema.parse(data);
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
