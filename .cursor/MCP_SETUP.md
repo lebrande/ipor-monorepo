@@ -1,42 +1,60 @@
 # MCP Server Configuration
 
-This directory contains the MCP (Model Context Protocol) server configuration for Cursor.
+## Supabase Ponder Database (MCP)
 
-## Configuration File
+Both Claude Code and Cursor connect to the local Supabase Ponder instance via the official Supabase MCP endpoint.
 
-The `.cursor/mcp.json` file configures MCP servers that Cursor can use to interact with your local database and documentation.
+**Endpoint**: `http://127.0.0.1:54341/mcp`
 
-## Configured Servers
+Reference: https://supabase.com/docs/guides/getting-started/mcp
 
-### 1. Mastra MCP Server
+### Prerequisites
 
-The `mastra` server provides access to Mastra AI documentation. It automatically downloads and uses the latest version via `npx`.
-
-### 2. Supabase Ponder Database
-
-The `supabase-ponder-db` server connects to your local Supabase instance via HTTP endpoint at `http://127.0.0.1:54331/mcp`.
-
-This is the same Supabase instance that Ponder uses for blockchain indexing. Configuration is in `packages/supabase-ponder/`.
-
-## Starting the Database
-
-Before using MCP or running Ponder, start the local Supabase instance:
+Start the local Supabase instance:
 
 ```bash
-cd packages/supabase-ponder
-supabase start
+pnpm db:start
 ```
 
 This starts:
-- **Port 54331** - Supabase API (REST, used by MCP)
-- **Port 54332** - PostgreSQL database (used by Ponder)
-- **Port 54333** - Supabase Studio (database browser)
+- **Port 54341** — Supabase API (REST + MCP endpoint)
+- **Port 54342** — PostgreSQL database (used by Ponder)
+- **Port 54343** — Supabase Studio (database browser)
 
-## Verification
+### Claude Code
 
-After starting Supabase:
+Configured in `.mcp.json` (project root):
 
-1. Restart Cursor
-2. Go to **Settings → Features → MCP Servers**
-3. Verify that both servers show as active (green status)
-4. Check that tools are available for each server
+```json
+{
+  "mcpServers": {
+    "supabase": {
+      "url": "http://127.0.0.1:54341/mcp"
+    }
+  }
+}
+```
+
+Verify: restart Claude Code, then run `/mcp` to check server status.
+
+### Cursor
+
+Configured in `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "supabase-ponder-db": {
+      "url": "http://127.0.0.1:54341/mcp"
+    }
+  }
+}
+```
+
+Verify: restart Cursor, then go to **Settings > Tools & MCP** to check server status.
+
+## Other MCP Servers
+
+- **Mastra** (Cursor only) — Mastra AI documentation server
+- **Playwright** (Claude Code) — Browser automation
+- **shadcn** (Claude Code) — UI component registry
