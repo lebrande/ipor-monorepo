@@ -15,6 +15,7 @@ const memory = new Memory({
 });
 
 export const sqlAgent = new Agent({
+  id: 'sql-agent',
   name: 'SQL Agent',
   instructions: `You are an advanced PostgreSQL database assistant pre-configured for the **IPOR Fusion Ponder database**.
 

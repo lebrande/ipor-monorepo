@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { databaseIntrospectionTool } from '../tools/database-introspection-tool';
 import { sqlGenerationTool } from '../tools/sql-generation-tool';
 import { sqlExecutionTool } from '../tools/sql-execution-tool';
-import { RequestContext } from '@mastra/core/di';
 
 // Step 1: Introspect database (pre-configured for Fusion Ponder)
 const introspectDatabaseStep = createStep({
@@ -13,7 +12,7 @@ const introspectDatabaseStep = createStep({
     schema: z.any(),
     schemaPresentation: z.string(),
   }),
-  execute: async ({ runtimeContext }) => {
+  execute: async ({ requestContext }) => {
 
     try {
       // Use the database introspection tool
@@ -21,10 +20,10 @@ const introspectDatabaseStep = createStep({
         throw new Error('Database introspection tool is not available');
       }
 
-      const schemaData = await databaseIntrospectionTool.execute({
-        context: {},
-        runtimeContext: runtimeContext || new RequestContext(),
-      });
+      const schemaData = await databaseIntrospectionTool.execute(
+        {},
+        { requestContext },
+      );
 
       // Type guard to ensure we have schema data
       if (!schemaData || typeof schemaData !== 'object') {
@@ -69,7 +68,7 @@ const generateSQLStep = createStep({
     schemaPresentation: z.string(),
     message: z.string(),
   }),
-  execute: async ({ inputData, resumeData, suspend, runtimeContext }) => {
+  execute: async ({ inputData, resumeData, suspend, requestContext }) => {
     const { schema, schemaPresentation } = inputData;
 
     if (!resumeData?.naturalLanguageQuery) {
@@ -99,13 +98,13 @@ const generateSQLStep = createStep({
         throw new Error('SQL generation tool is not available');
       }
 
-      const generatedSQL = await sqlGenerationTool.execute({
-        context: {
+      const generatedSQL = await sqlGenerationTool.execute(
+        {
           naturalLanguageQuery,
           databaseSchema: schema,
         },
-        runtimeContext: runtimeContext || new RequestContext(),
-      });
+        { requestContext },
+      );
 
       // Type guard for generated SQL
       if (!generatedSQL || typeof generatedSQL !== 'object') {
@@ -159,7 +158,7 @@ const reviewAndExecuteStep = createStep({
     }),
     message: z.string(),
   }),
-  execute: async ({ inputData, resumeData, suspend, runtimeContext }) => {
+  execute: async ({ inputData, resumeData, suspend, requestContext }) => {
     const { naturalLanguageQuery, generatedSQL } = inputData;
 
     if (!resumeData) {
@@ -194,12 +193,10 @@ const reviewAndExecuteStep = createStep({
         throw new Error('SQL execution tool is not available');
       }
 
-      const result = await sqlExecutionTool.execute({
-        context: {
-          query: finalSQL,
-        },
-        runtimeContext: runtimeContext || new RequestContext(),
-      });
+      const result = await sqlExecutionTool.execute(
+        { query: finalSQL },
+        { requestContext },
+      );
 
       // Type guard for execution result
       if (!result || typeof result !== 'object') {

@@ -1,16 +1,7 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { openai } from '@ai-sdk/openai';
-import { generateObject } from 'ai';
-
-// Define the schema for SQL generation output
-const sqlGenerationSchema = z.object({
-  sql: z.string().describe('The generated SQL query'),
-  explanation: z.string().describe('Explanation of what the query does'),
-  confidence: z.number().min(0).max(1).describe('Confidence level in the generated query (0-1)'),
-  assumptions: z.array(z.string()).describe('Any assumptions made while generating the query'),
-  tables_used: z.array(z.string()).describe('List of tables used in the query'),
-});
+import { generateText } from 'ai';
 
 export const sqlGenerationTool = createTool({
   id: 'sql-generation',
@@ -99,28 +90,35 @@ QUERY ANALYSIS:
 - Think about appropriate filtering conditions
 - Consider ordering and limiting results
 
-Provide a high-confidence SQL query that accurately answers the user's question.`;
+You MUST respond with ONLY a valid JSON object (no markdown, no code blocks) matching this exact format:
+{
+  "sql": "the SQL query",
+  "explanation": "explanation of what the query does",
+  "confidence": 0.9,
+  "assumptions": ["assumption 1", "assumption 2"],
+  "tables_used": ["table1", "table2"]
+}`;
 
-      const userPrompt = `Generate a SQL query for this question: "${naturalLanguageQuery}"
+      const userPrompt = `Generate a SQL query for this question: "${naturalLanguageQuery}"`;
 
-Please provide:
-1. The SQL query
-2. A clear explanation of what the query does
-3. Your confidence level (0-1)
-4. Any assumptions you made
-5. List of tables used`;
-
-      const result = await generateObject({
+      const result = await generateText({
         model: openai('gpt-4o'),
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        schema: sqlGenerationSchema,
-        temperature: 0.1, // Low temperature for more deterministic results
+        temperature: 0.1,
       });
 
-      return result.object;
+      const parsed = JSON.parse(result.text);
+
+      return {
+        sql: String(parsed.sql || ''),
+        explanation: String(parsed.explanation || ''),
+        confidence: Number(parsed.confidence || 0),
+        assumptions: Array.isArray(parsed.assumptions) ? parsed.assumptions.map(String) : [],
+        tables_used: Array.isArray(parsed.tables_used) ? parsed.tables_used.map(String) : [],
+      };
     } catch (error) {
       throw new Error(`Failed to generate SQL query: ${error instanceof Error ? error.message : String(error)}`);
     }

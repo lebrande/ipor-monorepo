@@ -26,6 +26,7 @@ const memory = new Memory({
 });
 
 export const plasmaVaultAgent = new Agent({
+  id: 'plasma-vault-agent',
   name: 'Plasma Vault Agent',
   instructions: `You are an expert assistant for IPOR Fusion Plasma Vaults - a DeFi yield optimization protocol.
 

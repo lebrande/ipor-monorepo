@@ -1,22 +1,16 @@
-
 import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
 import { LibSQLStore } from '@mastra/libsql';
 import { Observability, DefaultExporter, CloudExporter, SensitiveDataFilter } from '@mastra/observability';
-import { weatherWorkflow } from './workflows/weather-workflow';
-import { weatherAgent } from './agents/weather-agent';
-import { toolCallAppropriatenessScorer, completenessScorer, translationScorer } from './scorers/weather-scorer';
 import { sqlAgent } from '../agents/sql-agent';
 import { plasmaVaultAgent } from '../agents/plasma-vault-agent';
 import { databaseQueryWorkflow } from '../workflows/database-query-workflow';
 
 export const mastra = new Mastra({
-  workflows: { weatherWorkflow, databaseQueryWorkflow },
-  agents: { weatherAgent, sqlAgent, plasmaVaultAgent },
-  scorers: { toolCallAppropriatenessScorer, completenessScorer, translationScorer },
+  workflows: { databaseQueryWorkflow },
+  agents: { sqlAgent, plasmaVaultAgent },
   storage: new LibSQLStore({
     id: "mastra-storage",
-    // stores observability, scores, ... into persistent file storage
     url: "file:./mastra.db",
   }),
   logger: new PinoLogger({
@@ -28,11 +22,11 @@ export const mastra = new Mastra({
       default: {
         serviceName: 'mastra',
         exporters: [
-          new DefaultExporter(), // Persists traces to storage for Mastra Studio
-          new CloudExporter(), // Sends traces to Mastra Cloud (if MASTRA_CLOUD_ACCESS_TOKEN is set)
+          new DefaultExporter(),
+          new CloudExporter(),
         ],
         spanOutputProcessors: [
-          new SensitiveDataFilter(), // Redacts sensitive data like passwords, tokens, keys
+          new SensitiveDataFilter(),
         ],
       },
     },

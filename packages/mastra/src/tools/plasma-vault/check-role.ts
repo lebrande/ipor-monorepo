@@ -55,7 +55,7 @@ Returns whether the address is a member and any execution delay configured.`,
     const publicClient = getPublicClient(chainId);
     const vaultEntry = getVaultByAddress(vaultAddress, chainId);
 
-    const vault = await PlasmaVault.create(publicClient, vaultAddress as Address);
+    const vault = await PlasmaVault.create(publicClient as any, vaultAddress as Address);
 
     const { isMember, executionDelay } = await vault.hasRole(role, accountAddress as Address);
 

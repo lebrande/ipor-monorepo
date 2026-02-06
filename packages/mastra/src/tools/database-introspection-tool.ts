@@ -117,7 +117,7 @@ export const databaseIntrospectionTool = createTool({
       const indexes = await executeQuery(client, indexesQuery);
 
       // Get table row counts (sample)
-      const rowCountsPromises = tables.map(async table => {
+      const rowCountsPromises = tables.map(async (table: { schema_name: string; table_name: string }) => {
         try {
           const countQuery = `SELECT COUNT(*) as row_count FROM "${table.schema_name}"."${table.table_name}";`;
           const result = await executeQuery(client, countQuery);

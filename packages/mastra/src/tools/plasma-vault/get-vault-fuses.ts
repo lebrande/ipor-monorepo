@@ -34,7 +34,7 @@ Also returns the market IDs associated with the fuses.`,
     const publicClient = getPublicClient(chainId);
     const vaultEntry = getVaultByAddress(vaultAddress, chainId);
 
-    const vault = await PlasmaVault.create(publicClient, vaultAddress as Address);
+    const vault = await PlasmaVault.create(publicClient as any, vaultAddress as Address);
 
     const result: {
       vaultName?: string;

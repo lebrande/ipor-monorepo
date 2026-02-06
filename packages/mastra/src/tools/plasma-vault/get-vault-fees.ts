@@ -55,7 +55,7 @@ Fee values are in 18 decimals precision (divide by 1e18 to get percentage as dec
     const publicClient = getPublicClient(chainId);
     const vaultEntry = getVaultByAddress(vaultAddress, chainId);
 
-    const vault = await PlasmaVault.create(publicClient, vaultAddress as Address);
+    const vault = await PlasmaVault.create(publicClient as any, vaultAddress as Address);
 
     // Fetch all fee data in parallel
     const [

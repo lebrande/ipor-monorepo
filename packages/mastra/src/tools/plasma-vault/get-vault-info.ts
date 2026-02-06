@@ -32,7 +32,7 @@ Use this to understand the vault's basic configuration before querying more spec
     const vaultEntry = getVaultByAddress(vaultAddress, chainId);
 
     // Create PlasmaVault instance to fetch on-chain data
-    const vault = await PlasmaVault.create(publicClient, vaultAddress as Address);
+    const vault = await PlasmaVault.create(publicClient as any, vaultAddress as Address);
 
     return {
       vaultAddress: vault.address,
