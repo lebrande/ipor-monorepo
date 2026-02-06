@@ -20,6 +20,7 @@ const activityItemSchema = z.object({
   amount: z.number(),
   assetAmount: z.string(),
   assetSymbol: z.string(),
+  assetAddress: addressSchema,
   assetDecimals: z.number(),
   transactionHash: txHashSchema,
   timestamp: z.number(),

@@ -11,6 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { ChainIcon } from '@/components/chain-icon';
+import { TokenIcon } from '@/components/token-icon';
 import type { ActivityMetadata, ActivitySearchParams } from '../fetch-activity';
 
 interface Props {
@@ -98,8 +101,8 @@ export function ActivityFilterBar({ metadata, searchParams }: Props) {
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Activity</SelectItem>
-          <SelectItem value="deposit">Add Liquidity</SelectItem>
-          <SelectItem value="withdraw">Remove Liquidity</SelectItem>
+          <SelectItem value="deposit">Deposits</SelectItem>
+          <SelectItem value="withdraw">Withdrawals</SelectItem>
         </SelectContent>
       </Select>
 
@@ -109,35 +112,36 @@ export function ActivityFilterBar({ metadata, searchParams }: Props) {
         onValueChange={handleVaultChange}
         disabled={isPending}
       >
-        <SelectTrigger className="w-[200px]">
+        <SelectTrigger className="w-[280px]">
           <SelectValue placeholder="All Vaults" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Vaults</SelectItem>
           {metadata.vaults.map((vault) => (
             <SelectItem key={vault.address} value={vault.address.toLowerCase()}>
-              {vault.name}
+              <div className="flex items-center gap-2">
+                <ChainIcon chainId={vault.chainId} className="w-4 h-4" />
+                <TokenIcon chainId={vault.chainId} address={vault.assetAddress} className="w-4 h-4" />
+                <span>{vault.name}</span>
+              </div>
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
 
-      {/* Min Amount Filter */}
-      <Select
+      {/* Min Amount Filter (Toggle Group) */}
+      <ToggleGroup
+        type="single"
+        variant="outline"
         value={currentMinAmount}
-        onValueChange={handleMinAmountChange}
+        onValueChange={(value) => handleMinAmountChange(value || 'all')}
         disabled={isPending}
       >
-        <SelectTrigger className="w-[130px]">
-          <SelectValue placeholder="All Values" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Values</SelectItem>
-          <SelectItem value="100">&gt;$100</SelectItem>
-          <SelectItem value="1000">&gt;$1k</SelectItem>
-          <SelectItem value="10000">&gt;$10k</SelectItem>
-        </SelectContent>
-      </Select>
+        <ToggleGroupItem value="all">All</ToggleGroupItem>
+        <ToggleGroupItem value="100">&gt;$100</ToggleGroupItem>
+        <ToggleGroupItem value="1000">&gt;$1K</ToggleGroupItem>
+        <ToggleGroupItem value="10000">&gt;$10K</ToggleGroupItem>
+      </ToggleGroup>
 
       {/* Depositor Address Input */}
       <form onSubmit={handleDepositorSubmit} className="flex-1 min-w-[200px] max-w-[300px]">

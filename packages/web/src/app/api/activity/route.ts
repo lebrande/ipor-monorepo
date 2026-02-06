@@ -177,6 +177,7 @@ export async function GET(request: NextRequest) {
         amount: assetAmount,
         assetAmount: String(activity.assets),
         assetSymbol: rpcData?.assetSymbol ?? 'UNKNOWN',
+        assetAddress: (rpcData?.assetAddress ?? '0x0000000000000000000000000000000000000000') as Address,
         assetDecimals: rpcData?.assetDecimals ?? 18,
         transactionHash: activity.transaction_hash as Address,
         timestamp: activity.timestamp,

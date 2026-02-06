@@ -20,6 +20,10 @@ function formatCompactCurrency(amount: number): string {
   return `$${amount.toFixed(0)}`;
 }
 
+function getColorClass(value: number): string {
+  return value >= 0 ? 'text-green-500' : 'text-red-500';
+}
+
 export function TotalInflows({ inflows }: Props) {
   return (
     <div className="flex items-center gap-6 text-sm">
@@ -27,19 +31,19 @@ export function TotalInflows({ inflows }: Props) {
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1.5">
           <span className="text-muted-foreground">1D</span>
-          <span className="font-medium text-green-500">
+          <span className={`font-medium ${getColorClass(inflows.day1.net)}`}>
             {formatCompactCurrency(inflows.day1.net)}
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-muted-foreground">7D</span>
-          <span className="font-medium text-green-500">
+          <span className={`font-medium ${getColorClass(inflows.day7.net)}`}>
             {formatCompactCurrency(inflows.day7.net)}
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-muted-foreground">30D</span>
-          <span className="font-medium text-green-500">
+          <span className={`font-medium ${getColorClass(inflows.day30.net)}`}>
             {formatCompactCurrency(inflows.day30.net)}
           </span>
         </div>

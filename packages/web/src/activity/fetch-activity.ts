@@ -25,6 +25,7 @@ const activityItemSchema = z.object({
   amount: z.number(),
   assetAmount: z.string(),
   assetSymbol: z.string(),
+  assetAddress: addressSchema,
   assetDecimals: z.number(),
   transactionHash: txHashSchema,
   timestamp: z.number(),
@@ -69,6 +70,8 @@ const vaultMetadataSchema = z.object({
   chainId: z.number(),
   address: addressSchema,
   name: z.string(),
+  assetAddress: addressSchema,
+  assetSymbol: z.string(),
 });
 
 const activityMetadataSchema = z.object({
@@ -247,6 +250,7 @@ export async function fetchActivity(
         amount: assetAmount,
         assetAmount: String(activity.assets),
         assetSymbol: rpcData?.assetSymbol ?? 'UNKNOWN',
+        assetAddress: (rpcData?.assetAddress ?? '0x0000000000000000000000000000000000000000') as Address,
         assetDecimals: rpcData?.assetDecimals ?? 18,
         transactionHash: activity.transaction_hash as Address,
         timestamp: activity.timestamp,
@@ -362,11 +366,24 @@ export async function fetchActivityMetadata(): Promise<ActivityMetadata> {
       name: CHAIN_NAMES[chainId] || `Chain ${chainId}`,
     }));
 
-  const vaultList = ERC4626_VAULTS.map((vault) => ({
-    chainId: vault.chainId,
-    address: vault.address as Address,
-    name: vault.name,
+  // Fetch RPC data for asset info
+  const vaultsForRpc = ERC4626_VAULTS.map((v) => ({
+    chainId: v.chainId,
+    address: v.address,
   }));
+  const rpcDataMap = await fetchAllVaultsRpcData(vaultsForRpc);
+
+  const vaultList = ERC4626_VAULTS.map((vault) => {
+    const rpcKey = getCacheKey(vault.chainId, vault.address);
+    const rpcData = rpcDataMap.get(rpcKey);
+    return {
+      chainId: vault.chainId,
+      address: vault.address as Address,
+      name: vault.name,
+      assetAddress: (rpcData?.assetAddress ?? '0x0000000000000000000000000000000000000000') as Address,
+      assetSymbol: rpcData?.assetSymbol ?? 'UNKNOWN',
+    };
+  });
 
   return activityMetadataSchema.parse({
     chains: chainList,
