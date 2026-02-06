@@ -40,7 +40,7 @@ export const CHART_COLORS = {
 export const CHART_CONFIG = {
   margin: {
     top: 20,
-    right: 30,
+    right: 10,
     left: 0,
     bottom: 5,
   },

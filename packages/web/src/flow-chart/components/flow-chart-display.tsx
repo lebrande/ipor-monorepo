@@ -88,25 +88,41 @@ export const FlowChartDisplay = ({
                 minTickGap={50}
               />
               <YAxis
+                yAxisId="left"
+                className="text-xs fill-muted-foreground"
+                tick={{ fontSize: 12 }}
+                tickFormatter={yAxisFormatter}
+              />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
                 className="text-xs fill-muted-foreground"
                 tick={{ fontSize: 12 }}
                 tickFormatter={yAxisFormatter}
               />
               <Tooltip content={tooltipContent} />
-              <ReferenceLine y={0} stroke="#374151" strokeDasharray="2 2" />
+              <ReferenceLine
+                yAxisId="left"
+                y={0}
+                stroke="#374151"
+                strokeDasharray="2 2"
+              />
               <Bar
+                yAxisId="left"
                 dataKey="inflow"
                 fill={CHART_COLORS.inflow}
                 name="Inflow"
                 stackId="flow"
               />
               <Bar
+                yAxisId="left"
                 dataKey="outflow"
                 fill={CHART_COLORS.outflow}
                 name="Outflow"
                 stackId="flow"
               />
               <Line
+                yAxisId="right"
                 type="monotone"
                 dataKey="netFlow"
                 stroke={CHART_COLORS.netFlow}
