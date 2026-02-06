@@ -53,8 +53,7 @@ Use this tool first to discover available vaults before querying specific vault 
       })
       .optional(),
   }),
-  execute: async ({ context }) => {
-    const { chainId, tags, nameContains, showStats } = context;
+  execute: async ({ chainId, tags, nameContains, showStats }) => {
 
     const vaults = filterVaults({ chainId, tags, nameContains });
 

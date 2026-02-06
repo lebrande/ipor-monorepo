@@ -27,8 +27,7 @@ Returns matching protocols and fuses with their Solidity and TypeScript file nam
       })
     ),
   }),
-  execute: async ({ context }) => {
-    const { query } = context;
+  execute: async ({ query }) => {
     const results = searchFuses(query);
 
     return {

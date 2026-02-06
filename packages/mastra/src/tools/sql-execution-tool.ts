@@ -29,7 +29,7 @@ export const sqlExecutionTool = createTool({
     query: z.string().describe('SQL query to execute'),
   }),
   description: 'Executes SQL queries against the Fusion Ponder PostgreSQL database. Pre-configured for the Fusion blockchain indexing database containing ERC4626 vault events.',
-  execute: async ({ context: { query } }) => {
+  execute: async ({ query }) => {
     const client = createDatabaseConnection(FUSION_PONDER_CONNECTION_STRING);
 
     try {

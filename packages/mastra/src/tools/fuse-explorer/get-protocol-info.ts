@@ -46,8 +46,7 @@ Use this to understand how a protocol's fuses work and their capabilities.`,
     readme: z.string().optional(),
     error: z.string().optional(),
   }),
-  execute: async ({ context }) => {
-    const { protocolId, includeReadme } = context;
+  execute: async ({ protocolId, includeReadme }) => {
 
     const protocol = getProtocolById(protocolId);
     if (!protocol) {

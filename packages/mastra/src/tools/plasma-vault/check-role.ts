@@ -50,8 +50,7 @@ Returns whether the address is a member and any execution delay configured.`,
     isMember: z.boolean(),
     executionDelay: z.number().describe('Execution delay in seconds (0 if no delay)'),
   }),
-  execute: async ({ context }) => {
-    const { vaultAddress, chainId, accountAddress, role } = context;
+  execute: async ({ vaultAddress, chainId, accountAddress, role }) => {
 
     const publicClient = getPublicClient(chainId);
     const vaultEntry = getVaultByAddress(vaultAddress, chainId);

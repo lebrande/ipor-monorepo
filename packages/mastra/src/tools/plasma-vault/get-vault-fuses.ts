@@ -29,8 +29,7 @@ Also returns the market IDs associated with the fuses.`,
     marketIds: z.array(z.string()),
     instantWithdrawalFuses: z.array(z.string()),
   }),
-  execute: async ({ context }) => {
-    const { vaultAddress, chainId, fuseType } = context;
+  execute: async ({ vaultAddress, chainId, fuseType }) => {
 
     const publicClient = getPublicClient(chainId);
     const vaultEntry = getVaultByAddress(vaultAddress, chainId);

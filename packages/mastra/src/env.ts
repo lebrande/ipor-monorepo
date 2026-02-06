@@ -14,9 +14,7 @@ const envSchema = z.object({
    * Example: postgresql://postgres:postgres@127.0.0.1:54342/postgres
    */
   PONDER_DATABASE_URL: z
-    .string({
-      required_error: 'PONDER_DATABASE_URL environment variable is required for Fusion Ponder database connection',
-    })
+    .string()
     .url('PONDER_DATABASE_URL must be a valid PostgreSQL connection URL'),
 
   /**

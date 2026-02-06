@@ -50,8 +50,7 @@ Fee values are in 18 decimals precision (divide by 1e18 to get percentage as dec
       managementFeePercent: z.string(),
     }),
   }),
-  execute: async ({ context }) => {
-    const { vaultAddress, chainId } = context;
+  execute: async ({ vaultAddress, chainId }) => {
 
     const publicClient = getPublicClient(chainId);
     const vaultEntry = getVaultByAddress(vaultAddress, chainId);

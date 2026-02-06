@@ -87,8 +87,7 @@ Use this to understand fuse architecture and capabilities.`,
       .optional(),
     howFusesWork: z.string(),
   }),
-  execute: async ({ context }) => {
-    const { interfaceName, includeFuseTypes } = context;
+  execute: async ({ interfaceName, includeFuseTypes }) => {
 
     const interfaces =
       interfaceName === 'all'

@@ -8,8 +8,9 @@
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "outDir": "dist",
-    "resolveJsonModule": true
+    "outDir": "dist"
   },
-  "include": ["src/**/*", "../../plasma-vaults.json"]
+  "include": [
+    "src/**/*"
+  ]
 }

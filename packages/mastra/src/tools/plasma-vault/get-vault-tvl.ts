@@ -40,8 +40,7 @@ All USD values are in 18 decimals precision.`,
     note: z.string().optional().describe('Additional notes about the data'),
     error: z.string().optional().describe('Error message if the operation failed'),
   }),
-  execute: async ({ context }) => {
-    const { vaultAddress, chainId } = context;
+  execute: async ({ vaultAddress, chainId }) => {
 
     try {
       const publicClient = getPublicClient(chainId);

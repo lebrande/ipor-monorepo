@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { databaseIntrospectionTool } from '../tools/database-introspection-tool';
 import { sqlGenerationTool } from '../tools/sql-generation-tool';
 import { sqlExecutionTool } from '../tools/sql-execution-tool';
-import { RuntimeContext } from '@mastra/core/di';
+import { RequestContext } from '@mastra/core/di';
 
 // Step 1: Introspect database (pre-configured for Fusion Ponder)
 const introspectDatabaseStep = createStep({
@@ -23,7 +23,7 @@ const introspectDatabaseStep = createStep({
 
       const schemaData = await databaseIntrospectionTool.execute({
         context: {},
-        runtimeContext: runtimeContext || new RuntimeContext(),
+        runtimeContext: runtimeContext || new RequestContext(),
       });
 
       // Type guard to ensure we have schema data
@@ -104,7 +104,7 @@ const generateSQLStep = createStep({
           naturalLanguageQuery,
           databaseSchema: schema,
         },
-        runtimeContext: runtimeContext || new RuntimeContext(),
+        runtimeContext: runtimeContext || new RequestContext(),
       });
 
       // Type guard for generated SQL
@@ -198,7 +198,7 @@ const reviewAndExecuteStep = createStep({
         context: {
           query: finalSQL,
         },
-        runtimeContext: runtimeContext || new RuntimeContext(),
+        runtimeContext: runtimeContext || new RequestContext(),
       });
 
       // Type guard for execution result

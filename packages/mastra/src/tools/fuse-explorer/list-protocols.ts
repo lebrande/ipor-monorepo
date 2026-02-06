@@ -35,8 +35,7 @@ Returns protocol name, description, available fuses, and whether documentation e
       })
     ),
   }),
-  execute: async ({ context }) => {
-    const { category } = context;
+  execute: async ({ category }) => {
 
     const protocols =
       category === 'all' ? FUSE_PROTOCOLS : getProtocolsByCategory(category);

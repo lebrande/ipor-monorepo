@@ -24,8 +24,7 @@ Use this to understand the vault's basic configuration before querying more spec
     priceOracleAddress: z.string(),
     appUrl: z.string().optional(),
   }),
-  execute: async ({ context }) => {
-    const { vaultAddress, chainId } = context;
+  execute: async ({ vaultAddress, chainId }) => {
 
     const publicClient = getPublicClient(chainId);
 
