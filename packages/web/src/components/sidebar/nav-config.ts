@@ -1,4 +1,4 @@
-import { Home, Vault, Activity, type LucideIcon } from 'lucide-react';
+import { Home, Vault, Activity, Users, type LucideIcon } from 'lucide-react';
 
 export interface NavItem {
   title: string;
@@ -16,6 +16,11 @@ export const navItems: NavItem[] = [
     title: 'Vaults List',
     url: '/vaults',
     icon: Vault,
+  },
+  {
+    title: 'Depositors',
+    url: '/depositors',
+    icon: Users,
   },
   {
     title: 'Activity',
