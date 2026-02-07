@@ -39,6 +39,22 @@ const parseVaults = (): ParsedVault[] => {
 
 export const ERC4626_VAULTS = parseVaults();
 
+// Build lookup map once at module level for O(1) lookups
+const VAULT_LOOKUP = new Map<string, ParsedVault>();
+for (const vault of ERC4626_VAULTS) {
+  VAULT_LOOKUP.set(
+    `${vault.chainId}:${vault.address.toLowerCase()}`,
+    vault,
+  );
+}
+
+export function getVaultFromRegistry(
+  chainId: number,
+  address: string,
+): ParsedVault | undefined {
+  return VAULT_LOOKUP.get(`${chainId}:${address.toLowerCase()}`);
+}
+
 const CHAIN_NAMES: Record<number, string> = {
   1: 'Ethereum',
   42161: 'Arbitrum',
