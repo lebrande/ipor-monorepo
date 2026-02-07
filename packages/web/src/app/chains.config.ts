@@ -1,4 +1,4 @@
-import { arbitrum, base, mainnet } from 'wagmi/chains';
+import { arbitrum, base, mainnet } from 'viem/chains';
 import z from 'zod';
 
 export const ALLOWED_CHAINS = [mainnet, arbitrum, base] as const;
