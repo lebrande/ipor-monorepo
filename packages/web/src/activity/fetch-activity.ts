@@ -277,10 +277,14 @@ export async function fetchActivity(
 
 // Fetch inflows summary (server-side)
 export async function fetchActivityInflows(
-  chains?: string
+  chains?: string,
+  vaults?: string
 ): Promise<InflowsResponse> {
   const chainIds = chains
     ? chains.split(',').map((c) => parseInt(c.trim(), 10)).filter((c) => !isNaN(c))
+    : null;
+  const vaultAddresses = vaults
+    ? vaults.split(',').map((v) => v.trim().toLowerCase())
     : null;
 
   const now = new Date();
@@ -295,6 +299,7 @@ export async function fetchActivityInflows(
       .gte('timestamp', sinceTimestamp);
 
     if (chainIds) q = q.in('chain_id', chainIds);
+    if (vaultAddresses) q = q.in('vault_address', vaultAddresses);
 
     const { data } = await q;
     return data?.reduce((acc, r) => acc + BigInt(r.assets), 0n) ?? 0n;
@@ -307,6 +312,7 @@ export async function fetchActivityInflows(
       .gte('timestamp', sinceTimestamp);
 
     if (chainIds) q = q.in('chain_id', chainIds);
+    if (vaultAddresses) q = q.in('vault_address', vaultAddresses);
 
     const { data } = await q;
     return data?.reduce((acc, r) => acc + BigInt(r.assets), 0n) ?? 0n;
