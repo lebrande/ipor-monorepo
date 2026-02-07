@@ -4,9 +4,10 @@ import type { NetFlowOption } from '@/vault-directory/vault-directory.types';
 interface Props {
   value: NetFlowOption;
   onChange: (option: NetFlowOption) => void;
+  className?: string;
 }
 
-export const NetFlowFilter = ({ value, onChange }: Props) => {
+export const NetFlowFilter = ({ value, onChange, className }: Props) => {
   const options: { value: NetFlowOption; label: string }[] = [
     { value: 'all', label: 'All' },
     { value: 'positive', label: 'Positive' },
@@ -23,7 +24,7 @@ export const NetFlowFilter = ({ value, onChange }: Props) => {
           onChange(newValue as NetFlowOption);
         }
       }}
-      className="w-full"
+      className={className ?? "w-full"}
     >
       {options.map((option) => (
         <ToggleGroupItem

@@ -1,6 +1,7 @@
 'use client';
 
 import { VaultDataTable } from './components/vault-data-table';
+import { VaultFilterBar } from './components/vault-filter-bar';
 import { VaultFilterPopover } from './components/vault-filter-popover';
 import { VaultPagination } from './components/vault-pagination';
 import { SortSelect } from './components/sort-select';
@@ -32,24 +33,23 @@ export function VaultDirectoryContent({
   const currentSort = searchParams.sort || 'tvl';
   const currentPage = Number(searchParams.page) || 1;
 
-  // Count active filters
-  const activeFilterCount = [
+  // Count active "More filters" (TVL Range + Depositor Count only)
+  const moreFilterCount = [
     searchParams.tvl_min || searchParams.tvl_max,
     searchParams.depositors_min || searchParams.depositors_max,
-    searchParams.net_flow && searchParams.net_flow !== 'all',
-    searchParams.underlying_assets,
-    searchParams.chains,
-    searchParams.protocols,
   ].filter(Boolean).length;
 
   return (
     <div className="space-y-4">
+      {/* Visible Filters */}
+      <VaultFilterBar metadata={metadata} />
+
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
           <VaultFilterPopover
             metadata={metadata}
-            activeFilterCount={activeFilterCount}
+            activeFilterCount={moreFilterCount}
           />
           <span className="text-sm text-muted-foreground">
             {pagination.totalCount.toLocaleString()}{' '}

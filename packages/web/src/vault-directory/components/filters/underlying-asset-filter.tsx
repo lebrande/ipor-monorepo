@@ -4,9 +4,10 @@ interface Props {
   value: string[];
   onChange: (assets: string[]) => void;
   options: string[];
+  className?: string;
 }
 
-export const UnderlyingAssetFilter = ({ value, onChange, options }: Props) => {
+export const UnderlyingAssetFilter = ({ value, onChange, options, className }: Props) => {
   const assetOptions = options.map((asset) => ({
     value: asset,
     label: asset,
@@ -33,6 +34,7 @@ export const UnderlyingAssetFilter = ({ value, onChange, options }: Props) => {
       placeholder="All assets"
       searchPlaceholder="Search assets..."
       triggerText={getTriggerText}
+      className={className}
     />
   );
 };

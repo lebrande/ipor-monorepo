@@ -8,6 +8,23 @@ const erc4626Abi = [
   { inputs: [], name: 'asset', outputs: [{ type: 'address' }], stateMutability: 'view', type: 'function' },
 ] as const;
 
+const plasmaVaultPriceOracleAbi = [
+  { inputs: [], name: 'getPriceOracleMiddleware', outputs: [{ type: 'address' }], stateMutability: 'view', type: 'function' },
+] as const;
+
+const priceOracleAbi = [
+  {
+    inputs: [{ name: 'asset_', type: 'address' }],
+    name: 'getAssetPrice',
+    outputs: [
+      { name: 'assetPrice', type: 'uint256' },
+      { name: 'decimals', type: 'uint256' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+] as const;
+
 export interface VaultRpcData {
   totalAssets: bigint;
   totalSupply: bigint;
@@ -15,6 +32,8 @@ export interface VaultRpcData {
   assetSymbol: string;
   assetDecimals: number;
   sharePrice: number;
+  assetUsdPrice: number;
+  tvlUsd: number;
 }
 
 const DEFAULT_RPC_DATA: VaultRpcData = {
@@ -24,7 +43,14 @@ const DEFAULT_RPC_DATA: VaultRpcData = {
   assetSymbol: 'UNKNOWN',
   assetDecimals: 18,
   sharePrice: 0,
+  assetUsdPrice: 0,
+  tvlUsd: 0,
 };
+
+const isContractRevert = (error: unknown): boolean =>
+  error instanceof Error &&
+  (error.name === 'ContractFunctionExecutionError' ||
+    error.name === 'ContractFunctionRevertedError');
 
 const fetchWithRetry = async <T>(
   fn: () => Promise<T>,
@@ -34,7 +60,7 @@ const fetchWithRetry = async <T>(
   try {
     return await fn();
   } catch (error) {
-    if (retries === 0) throw error;
+    if (retries === 0 || isContractRevert(error)) throw error;
     await new Promise((resolve) => setTimeout(resolve, delay));
     return fetchWithRetry(fn, retries - 1, delay * 2);
   }
@@ -89,6 +115,35 @@ export const fetchVaultRpcData = async (
         Number(formatUnits(totalSupply, assetDecimals));
     }
 
+    // Phase 3: Fetch price oracle and asset USD price
+    let assetUsdPrice = 0;
+    let tvlUsd = 0;
+    try {
+      const priceOracleAddress = await fetchWithRetry(() =>
+        client.readContract({
+          address: vaultAddress,
+          abi: plasmaVaultPriceOracleAbi,
+          functionName: 'getPriceOracleMiddleware',
+        }),
+      );
+
+      const [rawPrice, priceDecimals] = await fetchWithRetry(() =>
+        client.readContract({
+          address: priceOracleAddress,
+          abi: priceOracleAbi,
+          functionName: 'getAssetPrice',
+          args: [assetAddress],
+        }),
+      );
+
+      assetUsdPrice = Number(formatUnits(rawPrice, Number(priceDecimals)));
+      tvlUsd =
+        Number(formatUnits(totalAssets, assetDecimals)) * assetUsdPrice;
+    } catch (error) {
+      const msg = error instanceof Error ? (error as Error & { shortMessage?: string }).shortMessage ?? error.message : String(error);
+      console.warn(`Failed to fetch price for ${chainId}:${vaultAddress}: ${msg}`);
+    }
+
     const data: VaultRpcData = {
       totalAssets,
       totalSupply,
@@ -96,6 +151,8 @@ export const fetchVaultRpcData = async (
       assetSymbol,
       assetDecimals,
       sharePrice,
+      assetUsdPrice,
+      tvlUsd,
     };
 
     setInCache(cacheKey, data);

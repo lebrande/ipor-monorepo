@@ -9,9 +9,10 @@ interface Props {
   value: number[];
   onChange: (chains: number[]) => void;
   options: ChainOption[];
+  className?: string;
 }
 
-export const ChainFilter = ({ value, onChange, options }: Props) => {
+export const ChainFilter = ({ value, onChange, options, className }: Props) => {
   const chainOptions = options.map((chain) => ({
     value: chain.chainId.toString(),
     label: chain.name,
@@ -38,6 +39,7 @@ export const ChainFilter = ({ value, onChange, options }: Props) => {
       placeholder="All chains"
       searchPlaceholder="Search chains..."
       triggerText={getTriggerText}
+      className={className}
     />
   );
 };

@@ -15,11 +15,13 @@ const vaultDataSchema = z.object({
   address: addressSchema,
   name: z.string(),
   protocol: z.string(),
-  tvl: z.number(),
+  tvlUsd: z.number(),
+  tvlAsset: z.number(),
   underlyingAsset: z.string(),
   underlyingAssetAddress: addressSchema,
   depositorCount: z.number(),
   netFlow7d: z.number(),
+  netFlow7dAsset: z.number(),
   creationDate: z.string().transform((str) => new Date(str)),
   sharePrice: z.number(),
 });
@@ -194,15 +196,19 @@ export async function fetchVaults(
     const rpcData = rpcDataMap.get(rpcKey);
     const dbData = dbDataMap.get(dbKey);
 
-    const tvl =
+    const tvlAsset =
       rpcData && rpcData.assetDecimals
         ? Number(formatUnits(rpcData.totalAssets, rpcData.assetDecimals))
         : 0;
 
+    const tvlUsd = rpcData?.tvlUsd ?? 0;
+
+    let netFlow7dAsset = 0;
     let netFlow7d = 0;
     if (dbData && rpcData && rpcData.assetDecimals && dbData.netFlow7d !== null) {
       const formatted = Number(formatUnits(dbData.netFlow7d, rpcData.assetDecimals));
-      netFlow7d = Number.isNaN(formatted) ? 0 : formatted;
+      netFlow7dAsset = Number.isNaN(formatted) ? 0 : formatted;
+      netFlow7d = netFlow7dAsset * (rpcData.assetUsdPrice || 0);
     }
 
     const creationDate = dbData?.firstDepositTimestamp
@@ -214,11 +220,13 @@ export async function fetchVaults(
       address: vault.address as Address,
       name: vault.name,
       protocol: vault.protocol,
-      tvl,
+      tvlUsd,
+      tvlAsset,
       underlyingAsset: rpcData?.assetSymbol ?? 'UNKNOWN',
       underlyingAssetAddress: rpcData?.assetAddress ?? ('0x0000000000000000000000000000000000000000' as Address),
       depositorCount: dbData?.depositorCount ?? 0,
       netFlow7d,
+      netFlow7dAsset,
       creationDate,
       sharePrice: rpcData?.sharePrice ?? 0,
     };
@@ -227,11 +235,11 @@ export async function fetchVaults(
   // Apply filters
   if (searchParams.tvl_min) {
     const min = Number(searchParams.tvl_min);
-    enrichedVaults = enrichedVaults.filter((v) => v.tvl >= min);
+    enrichedVaults = enrichedVaults.filter((v) => v.tvlUsd >= min);
   }
   if (searchParams.tvl_max) {
     const max = Number(searchParams.tvl_max);
-    enrichedVaults = enrichedVaults.filter((v) => v.tvl <= max);
+    enrichedVaults = enrichedVaults.filter((v) => v.tvlUsd <= max);
   }
   if (searchParams.depositors_min) {
     const min = Number(searchParams.depositors_min);
@@ -263,7 +271,7 @@ export async function fetchVaults(
   enrichedVaults.sort((a, b) => {
     switch (sort) {
       case 'tvl':
-        return b.tvl - a.tvl;
+        return b.tvlUsd - a.tvlUsd;
       case 'depositors':
         return b.depositorCount - a.depositorCount;
       case 'age':
@@ -314,11 +322,8 @@ export async function fetchVaultsMetadata(): Promise<VaultsMetadata> {
     const rpcData = rpcDataMap.get(rpcKey);
     const dbData = dbDataMap.get(dbKey);
 
-    const tvl =
-      rpcData && rpcData.assetDecimals
-        ? Number(formatUnits(rpcData.totalAssets, rpcData.assetDecimals))
-        : 0;
-    if (tvl > maxTvl) maxTvl = tvl;
+    const tvlUsd = rpcData?.tvlUsd ?? 0;
+    if (tvlUsd > maxTvl) maxTvl = tvlUsd;
 
     const depositorCount = dbData?.depositorCount ?? 0;
     if (depositorCount > maxDepositors) maxDepositors = depositorCount;

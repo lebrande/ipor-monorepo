@@ -2,8 +2,8 @@
 
 import { type ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, ArrowDown } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { ChainIcon } from '@/components/chain-icon';
+import { TokenIcon } from '@/components/token-icon';
 import { formatCurrency } from '@/lib/utils';
 import type { VaultData } from '@/vault-directory/fetch-vaults';
 import Link from 'next/link';
@@ -46,27 +46,33 @@ function SortableHeader({
   );
 }
 
+function formatCompactAsset(amount: number): string {
+  if (amount >= 1_000_000_000) return `${(amount / 1_000_000_000).toFixed(1)}B`;
+  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M`;
+  if (amount >= 1_000) return `${(amount / 1_000).toFixed(1)}K`;
+  if (amount >= 1) return amount.toFixed(2);
+  return amount.toPrecision(4);
+}
+
 export function createColumns(currentSort: string): ColumnDef<VaultData>[] {
   return [
     {
-      accessorKey: 'underlyingAsset',
-      header: () => 'Asset',
+      accessorKey: 'name',
+      header: () => 'Vault',
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <ChainIcon chainId={row.original.chainId} className="w-5 h-5" />
-          <Badge variant="secondary">{row.original.underlyingAsset}</Badge>
+          <TokenIcon
+            chainId={row.original.chainId}
+            address={row.original.underlyingAssetAddress}
+            className="w-5 h-5"
+          />
+          <span className="font-medium">{row.original.name}</span>
         </div>
       ),
     },
     {
-      accessorKey: 'name',
-      header: () => 'Vault Name',
-      cell: ({ row }) => (
-        <span className="font-medium">{row.original.name}</span>
-      ),
-    },
-    {
-      accessorKey: 'tvl',
+      accessorKey: 'tvlUsd',
       header: () => (
         <SortableHeader
           column="tvl"
@@ -77,7 +83,19 @@ export function createColumns(currentSort: string): ColumnDef<VaultData>[] {
       ),
       cell: ({ row }) => (
         <div className="text-right font-mono">
-          {formatCurrency(row.original.tvl)}
+          {formatCurrency(row.original.tvlUsd)}
+        </div>
+      ),
+    },
+    {
+      id: 'tvlAsset',
+      header: () => <div className="text-right">TVL (Asset)</div>,
+      cell: ({ row }) => (
+        <div className="text-right font-mono">
+          {formatCompactAsset(row.original.tvlAsset)}
+          <span className="text-muted-foreground ml-1">
+            {row.original.underlyingAsset}
+          </span>
         </div>
       ),
     },

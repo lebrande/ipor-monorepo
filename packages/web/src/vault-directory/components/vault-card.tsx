@@ -79,7 +79,7 @@ export const VaultCard = ({ vault, onVaultClick }: Props) => {
             <p className="text-xs text-muted-foreground mb-1">
               Total Value Locked
             </p>
-            <p className="text-lg font-semibold">{formatCurrency(vault.tvl)}</p>
+            <p className="text-lg font-semibold">{formatCurrency(vault.tvlUsd)}</p>
           </div>
 
           {/* Depositors */}

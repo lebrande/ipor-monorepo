@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
 import { ChevronDownIcon, XIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface Option {
   value: string;
@@ -91,7 +92,7 @@ export const MultiSelect = ({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className={`w-full justify-between text-left ${className || ''}`}
+          className={cn('w-full justify-between text-left', className)}
         >
           <span className="truncate">{getTriggerText()}</span>
           <ChevronDownIcon className="w-4 h-4" />

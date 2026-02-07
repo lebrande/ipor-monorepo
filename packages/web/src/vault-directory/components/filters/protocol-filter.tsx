@@ -4,9 +4,10 @@ interface Props {
   value: string[];
   onChange: (protocols: string[]) => void;
   options: string[];
+  className?: string;
 }
 
-export const ProtocolFilter = ({ value, onChange, options }: Props) => {
+export const ProtocolFilter = ({ value, onChange, options, className }: Props) => {
   const protocolOptions = options.map((protocol) => ({
     value: protocol,
     label: protocol,
@@ -29,6 +30,7 @@ export const ProtocolFilter = ({ value, onChange, options }: Props) => {
       placeholder="All protocols"
       searchPlaceholder="Search protocols..."
       triggerText={getTriggerText}
+      className={className}
     />
   );
 };
