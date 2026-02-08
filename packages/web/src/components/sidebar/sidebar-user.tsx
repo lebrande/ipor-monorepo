@@ -1,7 +1,7 @@
 'use client';
 
 import { LogOut } from 'lucide-react';
-import type { Address } from 'viem';
+import { type Address, getAddress, isAddress } from 'viem';
 import { mainnet } from 'viem/chains';
 import { useAuth } from '@/auth/use-auth';
 import { AppProviders } from '@/app/app-providers';
@@ -43,11 +43,11 @@ function SidebarUserContent({
 export function SidebarUser() {
   const { address, signOut } = useAuth();
 
-  if (!address) return null;
+  if (!address || !isAddress(address)) return null;
 
   return (
     <AppProviders>
-      <SidebarUserContent address={address as Address} onSignOut={signOut} />
+      <SidebarUserContent address={getAddress(address)} onSignOut={signOut} />
     </AppProviders>
   );
 }
