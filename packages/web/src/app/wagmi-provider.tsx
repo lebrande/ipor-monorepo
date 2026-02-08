@@ -1,6 +1,7 @@
 'use client';
 
 import { WagmiProvider, http, createConfig } from 'wagmi';
+import { injected } from 'wagmi/connectors';
 import {
   ALLOWED_CHAINS,
   ALLOWED_CHAIN_IDS,
@@ -25,6 +26,7 @@ const transports = {
 
 export const config = createConfig({
   chains: ALLOWED_CHAINS,
+  connectors: [injected()],
   transports,
 });
 

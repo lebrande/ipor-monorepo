@@ -83,14 +83,13 @@ enabled = false
 file_size_limit = "50MiB"
 
 [auth]
-# Disabled - Ponder is a backend indexer with direct DB access, no auth needed
-# Saves ~100MB RAM
-enabled = false
+# Enabled for SIWE (Sign-In with Ethereum) authentication
+enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-site_url = "http://127.0.0.1:3000"
+site_url = "http://localhost:3000"
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://127.0.0.1:3000"]
+additional_redirect_urls = ["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000", "http://127.0.0.1:3001"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # If disabled, the refresh token will never expire.
@@ -124,6 +123,9 @@ max_frequency = "1s"
 otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
 otp_expiry = 3600
+
+[auth.web3.ethereum]
+enabled = true
 
 [edge_runtime]
 # Disabled - All backend logic runs via Ponder/Node.js, not Edge Functions
