@@ -23,9 +23,9 @@ export const TABS = [
     description: 'Recent transactions and activity',
   },
   {
-    id: 'performance',
-    label: 'Performance',
-    description: 'Performance metrics and analytics',
+    id: 'ask-ai',
+    label: 'Ask AI',
+    description: 'Chat with AI about this vault',
   },
 ] as const satisfies TabConfig[];
 

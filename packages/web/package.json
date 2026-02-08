@@ -20,7 +20,11 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@ai-sdk/openai": "1.3.24",
+    "@ai-sdk/react": "1.2.12",
+    "@ipor/fusion-mastra": "workspace:*",
     "@ipor/fusion-supabase-ponder": "workspace:*",
+    "@mastra/core": "1.2.0",
     "@radix-ui/react-avatar": "1.1.10",
     "@radix-ui/react-checkbox": "1.3.2",
     "@radix-ui/react-collapsible": "1.1.12",
@@ -42,6 +46,7 @@
     "@tanstack/react-table": "8.21.3",
     "@types/react": "19.0.12",
     "@types/react-dom": "19.0.4",
+    "ai": "4.3.19",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "1.1.1",

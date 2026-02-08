@@ -30,6 +30,9 @@ export const sqlExecutionTool = createTool({
   }),
   description: 'Executes SQL queries against the Fusion Ponder PostgreSQL database. Pre-configured for the Fusion blockchain indexing database containing ERC4626 vault events.',
   execute: async ({ query }) => {
+    if (!FUSION_PONDER_CONNECTION_STRING) {
+      return { success: false, error: 'PONDER_DATABASE_URL is not configured. Set the environment variable to use database tools.', executedQuery: query };
+    }
     const client = createDatabaseConnection(FUSION_PONDER_CONNECTION_STRING);
 
     try {

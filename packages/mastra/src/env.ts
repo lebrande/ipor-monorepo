@@ -15,7 +15,8 @@ const envSchema = z.object({
    */
   PONDER_DATABASE_URL: z
     .string()
-    .url('PONDER_DATABASE_URL must be a valid PostgreSQL connection URL'),
+    .url('PONDER_DATABASE_URL must be a valid PostgreSQL connection URL')
+    .optional(),
 
   /**
    * Model to use for agents
@@ -44,7 +45,7 @@ export const env = envSchema.parse(process.env);
  * Fusion Ponder database connection string
  * Pre-validated PostgreSQL connection URL for the Fusion blockchain indexing database
  */
-export const FUSION_PONDER_CONNECTION_STRING = env.PONDER_DATABASE_URL;
+export const FUSION_PONDER_CONNECTION_STRING = env.PONDER_DATABASE_URL ?? '';
 
 /**
  * RPC URL configuration by chain ID

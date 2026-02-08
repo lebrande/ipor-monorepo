@@ -26,6 +26,9 @@ export const databaseIntrospectionTool = createTool({
   inputSchema: z.object({}),
   description: 'Introspects the Fusion Ponder PostgreSQL database to understand its schema, tables, columns, and relationships. Pre-configured for the Fusion blockchain indexing database containing ERC4626 vault events.',
   execute: async () => {
+    if (!FUSION_PONDER_CONNECTION_STRING) {
+      throw new Error('PONDER_DATABASE_URL is not configured. Set the environment variable to use database tools.');
+    }
     const client = createDatabaseConnection(FUSION_PONDER_CONNECTION_STRING);
 
     try {
