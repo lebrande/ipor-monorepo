@@ -31,6 +31,9 @@ tmp
 
 # Mastra
 .mastra
+mastra.db
+mastra.db-shm
+mastra.db-wal
 
 # Ponder
 .ponder
