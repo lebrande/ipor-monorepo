@@ -21,7 +21,7 @@ import {
 const memory = new Memory({
   storage: new LibSQLStore({
     id: 'plasma-vault-agent-memory',
-    url: 'file:../mastra.db',
+    url: 'file:./mastra.db',
   }),
 });
 
