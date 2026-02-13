@@ -1,4 +1,8 @@
 export { PlasmaVault } from './PlasmaVault';
+export { AaveV3 } from './markets/aave-v3/AaveV3';
+export { Morpho } from './markets/morpho/Morpho';
+export { EulerV2 } from './markets/euler-v2/EulerV2';
+export { type FuseAction } from './fusion.types';
 export { type Prehook } from './prehooks/prehooks.types';
 export { isSubstrateEqualSafe } from './substrates/utils/is-substrate-equal-safe';
 export { substrateToAddress } from './substrates/utils/substrate-to-address';

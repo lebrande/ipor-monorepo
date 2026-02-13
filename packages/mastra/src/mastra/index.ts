@@ -4,11 +4,12 @@ import { LibSQLStore } from '@mastra/libsql';
 import { Observability, DefaultExporter, CloudExporter, SensitiveDataFilter } from '@mastra/observability';
 import { sqlAgent } from '../agents/sql-agent';
 import { plasmaVaultAgent } from '../agents/plasma-vault-agent';
+import { alphaAgent } from '../agents/alpha-agent';
 import { databaseQueryWorkflow } from '../workflows/database-query-workflow';
 
 export const mastra = new Mastra({
   workflows: { databaseQueryWorkflow },
-  agents: { sqlAgent, plasmaVaultAgent },
+  agents: { sqlAgent, plasmaVaultAgent, alphaAgent },
   storage: new LibSQLStore({
     id: "mastra-storage",
     url: "file:./mastra.db",

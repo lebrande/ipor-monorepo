@@ -1,12 +1,14 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
-import { useRef, useEffect } from 'react';
+import { DefaultChatTransport } from 'ai';
+import { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { SendHorizontal, Bot, User } from 'lucide-react';
+import { SendHorizontal, Bot, User, Loader2 } from 'lucide-react';
+import { TransactionsToSign } from './transactions-to-sign';
 import type { ChainId } from '@/app/chains.config';
 import type { Address } from 'viem';
 
@@ -17,16 +19,26 @@ interface Props {
 
 export function VaultAskAi({ chainId, vaultAddress }: Props) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [inputValue, setInputValue] = useState('');
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading, error } =
-    useChat({
+  const { messages, sendMessage, status, error } = useChat({
+    transport: new DefaultChatTransport({
       api: `/api/vaults/${chainId}/${vaultAddress}/chat`,
-      streamProtocol: 'text',
-    });
+    }),
+  });
+
+  const isLoading = status === 'submitted' || status === 'streaming';
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputValue.trim() || isLoading) return;
+    sendMessage({ text: inputValue });
+    setInputValue('');
+  };
 
   return (
     <Card className="flex flex-col h-[600px]">
@@ -51,15 +63,58 @@ export function VaultAskAi({ chainId, vaultAddress }: Props) {
                 <Bot className="w-4 h-4 text-primary" />
               </div>
             )}
-            <div
-              className={cn(
-                'rounded-lg px-3 py-2 max-w-[80%] whitespace-pre-wrap',
-                message.role === 'user'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted',
-              )}
-            >
-              {message.content}
+            <div className="max-w-[80%] space-y-2">
+              {message.parts.map((part, index) => {
+                if (part.type === 'text') {
+                  if (!part.text) return null;
+                  return (
+                    <div
+                      key={index}
+                      className={cn(
+                        'rounded-lg px-3 py-2 whitespace-pre-wrap',
+                        message.role === 'user'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted',
+                      )}
+                    >
+                      {part.text}
+                    </div>
+                  );
+                }
+
+                if (
+                  part.type === 'tool-displayTransactionsTool'
+                ) {
+                  if (part.state === 'output-available') {
+                    const output = part.output as {
+                      message: string;
+                    };
+                    return (
+                      <TransactionsToSign
+                        key={index}
+                        message={output.message}
+                      />
+                    );
+                  }
+                  if (
+                    part.state === 'input-available' ||
+                    part.state === 'input-streaming'
+                  ) {
+                    return (
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 text-muted-foreground"
+                      >
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Loading transactions...</span>
+                      </div>
+                    );
+                  }
+                  return null;
+                }
+
+                return null;
+              })}
             </div>
             {message.role === 'user' && (
               <div className="flex-shrink-0 w-7 h-7 rounded-full bg-muted flex items-center justify-center">
@@ -77,15 +132,19 @@ export function VaultAskAi({ chainId, vaultAddress }: Props) {
       </div>
 
       {/* Input area */}
-      <form onSubmit={handleSubmit} className="border-t p-4 flex gap-2">
+      <form onSubmit={handleFormSubmit} className="border-t p-4 flex gap-2">
         <Input
-          value={input}
-          onChange={handleInputChange}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
           placeholder="Ask about this vault..."
           disabled={isLoading}
           className="flex-1"
         />
-        <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
+        <Button
+          type="submit"
+          size="icon"
+          disabled={isLoading || !inputValue.trim()}
+        >
           <SendHorizontal className="w-4 h-4" />
         </Button>
       </form>

@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
 import { isAddress } from 'viem';
-import { plasmaVaultAgent } from '@ipor/fusion-mastra/agents';
+import { toAISdkStream } from '@mastra/ai-sdk';
+import { createUIMessageStreamResponse } from 'ai';
+import { alphaAgent } from '@ipor/fusion-mastra/agents';
 import { getVaultFromRegistry, getChainName } from '@/lib/vaults-registry';
 import { isValidChainId } from '@/app/chains.config';
 
@@ -23,32 +25,17 @@ export async function POST(
   const chainName = getChainName(chainId);
   const { messages } = await request.json();
 
-  const vaultContext = `CURRENT VAULT CONTEXT: The user is viewing vault "${vault?.name ?? 'Unknown'}" at address ${address} on ${chainName} (chainId: ${chainId}). When the user asks about "this vault", "the vault", or asks questions without specifying a vault, use chainId=${chainId} and vaultAddress="${address}" with your tools.`;
-
-  const messagesWithContext = [
-    { role: 'system' as const, content: vaultContext },
-    ...messages,
-  ];
+  const vaultContext = `CURRENT VAULT CONTEXT: The user is viewing vault "${vault?.name ?? 'Unknown'}" at address ${address} on ${chainName} (chainId: ${chainId}). When the user asks about "this vault", use this context.`;
 
   try {
-    const result = await plasmaVaultAgent.stream(messagesWithContext, {
+    const result = await alphaAgent.stream(messages, {
       maxSteps: 5,
-      maxTokens: 4096,
+      system: vaultContext,
     });
 
-    // Encode the text stream to bytes for the Response
-    const encoder = new TextEncoder();
-    const encodedStream = result.textStream.pipeThrough(
-      new TransformStream({
-        transform(chunk, controller) {
-          controller.enqueue(encoder.encode(chunk));
-        },
-      }),
-    );
-
-    return new Response(encodedStream, {
-      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-    });
+    const stream = toAISdkStream(result, { from: 'agent' });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return createUIMessageStreamResponse({ stream: stream as any });
   } catch (error) {
     console.error('Error in agent stream', error);
     return new Response('An error occurred while processing your request.', {
