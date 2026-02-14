@@ -17,12 +17,23 @@ export type TransactionsToSignOutput = {
   placeholder: true;
 };
 
-// Future output types (do NOT implement yet):
-// - 'single-transaction': details of one transaction
-// - 'balances': token/position balances
-// - 'execute-button': action button to execute transactions
-// - 'transaction-receipt': result after execution
-// - 'simulation-result': simulation output before execution
+/** Displays the list of pending fuse actions from working memory */
+export type PendingActionsOutput = {
+  type: 'pending-actions';
+  actions: Array<{
+    id: string;
+    protocol: 'aave-v3' | 'morpho' | 'euler-v2';
+    actionType: 'supply' | 'withdraw' | 'borrow' | 'repay';
+    description: string;
+    fuseActions: Array<{
+      fuse: string;
+      data: string;
+    }>;
+  }>;
+  message: string;
+};
 
 /** Union of all alpha tool output types */
-export type AlphaToolOutput = TransactionsToSignOutput;
+export type AlphaToolOutput =
+  | TransactionsToSignOutput
+  | PendingActionsOutput;

@@ -1,5 +1,6 @@
 import { Loader2 } from 'lucide-react';
 import { TransactionsToSign } from './transactions-to-sign';
+import { PendingActionsList } from './pending-actions-list';
 import type { AlphaToolOutput } from '@ipor/fusion-mastra/alpha-types';
 
 interface ToolPartProps {
@@ -34,12 +35,8 @@ export function AlphaToolRenderer({ state, output }: ToolPartProps) {
   switch (typed.type) {
     case 'transactions-to-sign':
       return <TransactionsToSign message={typed.message} />;
-    // Future cases:
-    // case 'single-transaction': return <SingleTransaction {...typed} />;
-    // case 'balances': return <Balances {...typed} />;
-    // case 'execute-button': return <ExecuteButton {...typed} />;
-    // case 'transaction-receipt': return <TransactionReceipt {...typed} />;
-    // case 'simulation-result': return <SimulationResult {...typed} />;
+    case 'pending-actions':
+      return <PendingActionsList actions={typed.actions} message={typed.message} />;
     default:
       return (
         <pre className="text-xs bg-muted rounded p-2 overflow-auto">
