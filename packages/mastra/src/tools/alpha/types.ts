@@ -52,8 +52,26 @@ export type VaultAssetsOutput = {
   error?: string;
 };
 
+/** Displays simulation result with optional execute button */
+export type SimulationResultOutput = {
+  type: 'simulation-result';
+  success: boolean;
+  message: string;
+  vaultAddress: string;
+  chainId: number;
+  callerAddress: string;
+  actionsCount: number;
+  fuseActionsCount: number;
+  error?: string;
+  flatFuseActions: Array<{
+    fuse: string;
+    data: string;
+  }>;
+};
+
 /** Union of all alpha tool output types */
 export type AlphaToolOutput =
   | TransactionsToSignOutput
   | PendingActionsOutput
-  | VaultAssetsOutput;
+  | VaultAssetsOutput
+  | SimulationResultOutput;

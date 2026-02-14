@@ -9,6 +9,7 @@ import {
   createMorphoActionTool,
   createEulerV2ActionTool,
   getVaultAssetsTool,
+  simulatePendingActionsTool,
 } from '../tools/alpha';
 
 /** Schema for a single pending action stored in working memory */
@@ -94,7 +95,24 @@ When removing actions, provide the complete updated array WITHOUT the removed it
 - ALWAYS use the SDK tools to create actions. NEVER fabricate FuseAction data.
 - ALWAYS call displayPendingActionsTool to show actions. NEVER describe them in text only.
 - The vaultAddress and chainId come from the conversation context. Use them when calling tools.
-- Keep responses concise.`,
+- Keep responses concise.
+
+## SIMULATION & EXECUTION
+
+When the user asks to simulate, test, validate, or execute their pending actions:
+
+1. Ask for their wallet address (the caller) if not already provided. This address must have ALPHA_ROLE on the vault.
+2. Call simulatePendingActionsTool with:
+   - vaultAddress and chainId from the conversation context
+   - callerAddress from the user
+   - actions from your working memory's pendingActions
+3. The simulation result shows whether the transaction would succeed on-chain.
+4. If simulation succeeds, the web app UI will show an "Execute Transaction" button for the user to sign with their wallet.
+5. NEVER execute transactions yourself. The user must always manually approve in their wallet.
+
+When the user asks to execute directly (without simulating first):
+- Always simulate first. Tell the user you're simulating before execution.
+- Only after successful simulation will the Execute button appear in the UI.`,
   model: env.MODEL,
   tools: {
     displayPendingActionsTool,
@@ -102,6 +120,7 @@ When removing actions, provide the complete updated array WITHOUT the removed it
     createMorphoActionTool,
     createEulerV2ActionTool,
     getVaultAssetsTool,
+    simulatePendingActionsTool,
   },
   memory,
 });

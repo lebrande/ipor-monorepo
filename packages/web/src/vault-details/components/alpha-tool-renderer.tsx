@@ -2,6 +2,7 @@ import { Loader2 } from 'lucide-react';
 import { TransactionsToSign } from './transactions-to-sign';
 import { PendingActionsList } from './pending-actions-list';
 import { VaultAssetsList } from './vault-assets-list';
+import { SimulationResult } from './simulation-result';
 import type { AlphaToolOutput } from '@ipor/fusion-mastra/alpha-types';
 
 interface ToolPartProps {
@@ -44,6 +45,19 @@ export function AlphaToolRenderer({ state, output }: ToolPartProps) {
           assets={typed.assets}
           totalValueUsd={typed.totalValueUsd}
           message={typed.message}
+        />
+      );
+    case 'simulation-result':
+      return (
+        <SimulationResult
+          success={typed.success}
+          message={typed.message}
+          vaultAddress={typed.vaultAddress}
+          chainId={typed.chainId}
+          error={typed.error}
+          flatFuseActions={typed.flatFuseActions}
+          actionsCount={typed.actionsCount}
+          fuseActionsCount={typed.fuseActionsCount}
         />
       );
     default:
