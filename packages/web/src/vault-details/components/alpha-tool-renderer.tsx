@@ -1,6 +1,7 @@
 import { Loader2 } from 'lucide-react';
 import { TransactionsToSign } from './transactions-to-sign';
 import { PendingActionsList } from './pending-actions-list';
+import { VaultAssetsList } from './vault-assets-list';
 import type { AlphaToolOutput } from '@ipor/fusion-mastra/alpha-types';
 
 interface ToolPartProps {
@@ -37,6 +38,14 @@ export function AlphaToolRenderer({ state, output }: ToolPartProps) {
       return <TransactionsToSign message={typed.message} />;
     case 'pending-actions':
       return <PendingActionsList actions={typed.actions} message={typed.message} />;
+    case 'vault-assets':
+      return (
+        <VaultAssetsList
+          assets={typed.assets}
+          totalValueUsd={typed.totalValueUsd}
+          message={typed.message}
+        />
+      );
     default:
       return (
         <pre className="text-xs bg-muted rounded p-2 overflow-auto">

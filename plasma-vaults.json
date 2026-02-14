@@ -541,6 +541,15 @@
       "tags": [],
       "startBlock": 22838039,
       "url": "https://app.ipor.io/fusion/ethereum/0x4536d493292e53c5c11defa9e4c6826777502efa"
+    },
+    {
+      "name": "Test Alpha Vault",
+      "address": "0xa13f7342a1db4c32f8dc0539e3b6d1cf101e7d04",
+      "chainId": 8453,
+      "protocol": "IPOR Fusion",
+      "tags": [],
+      "startBlock": 41688947,
+      "url": "https://app.ipor.io/fusion/base/0xa13f7342a1db4c32f8dc0539e3b6d1cf101e7d04"
     }
   ]
 }

@@ -33,7 +33,27 @@ export type PendingActionsOutput = {
   message: string;
 };
 
+/** Displays the vault's ERC20 token holdings */
+export type VaultAssetsOutput = {
+  type: 'vault-assets';
+  success: boolean;
+  assets: Array<{
+    address: string;
+    name: string;
+    symbol: string;
+    decimals: number;
+    balance: string;
+    balanceFormatted: string;
+    priceUsd: string;
+    valueUsd: string;
+  }>;
+  totalValueUsd: string;
+  message: string;
+  error?: string;
+};
+
 /** Union of all alpha tool output types */
 export type AlphaToolOutput =
   | TransactionsToSignOutput
-  | PendingActionsOutput;
+  | PendingActionsOutput
+  | VaultAssetsOutput;
