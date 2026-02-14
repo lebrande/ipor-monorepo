@@ -27,10 +27,17 @@ export async function POST(
 
   const vaultContext = `CURRENT VAULT CONTEXT: The user is viewing vault "${vault?.name ?? 'Unknown'}" at address ${address} on ${chainName} (chainId: ${chainId}). When the user asks about "this vault", use this context.`;
 
+  // Use vault address as stable thread/resource IDs for working memory persistence
+  const threadId = `vault-${chainId}-${address.toLowerCase()}`;
+
   try {
     const result = await alphaAgent.stream(messages, {
       maxSteps: 5,
       system: vaultContext,
+      memory: {
+        thread: threadId,
+        resource: threadId,
+      },
     });
 
     const stream = toAISdkStream(result, { from: 'agent' });
