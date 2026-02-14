@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { SendHorizontal, Bot, User, Loader2 } from 'lucide-react';
-import { TransactionsToSign } from './transactions-to-sign';
+import { SendHorizontal, Bot, User } from 'lucide-react';
+import { AlphaToolRenderer } from './alpha-tool-renderer';
 import type { ChainId } from '@/app/chains.config';
 import type { Address } from 'viem';
 
@@ -82,35 +82,18 @@ export function VaultAskAi({ chainId, vaultAddress }: Props) {
                   );
                 }
 
-                if (
-                  part.type === 'tool-displayTransactionsTool'
-                ) {
-                  if (part.state === 'output-available') {
-                    const output = part.output as {
-                      message: string;
-                    };
-                    return (
-                      <TransactionsToSign
-                        key={index}
-                        message={output.message}
-                      />
-                    );
-                  }
-                  if (
-                    part.state === 'input-available' ||
-                    part.state === 'input-streaming'
-                  ) {
-                    return (
-                      <div
-                        key={index}
-                        className="flex items-center gap-2 text-muted-foreground"
-                      >
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Loading transactions...</span>
-                      </div>
-                    );
-                  }
-                  return null;
+                if (part.type.startsWith('tool-')) {
+                  return (
+                    <AlphaToolRenderer
+                      key={index}
+                      state={(part as { state: string }).state}
+                      output={
+                        'output' in part
+                          ? (part as { output: unknown }).output
+                          : undefined
+                      }
+                    />
+                  );
                 }
 
                 return null;
