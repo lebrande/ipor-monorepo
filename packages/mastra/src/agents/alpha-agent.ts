@@ -9,7 +9,6 @@ import {
   createMorphoActionTool,
   createEulerV2ActionTool,
   getMarketBalancesTool,
-  simulatePendingActionsTool,
   executePendingActionsTool,
 } from '../tools/alpha';
 
@@ -66,13 +65,18 @@ You can inspect vault holdings and create fuse actions using DeFi protocol SDKs:
 
 ## WORKFLOW
 
-1. **Know the vault's holdings first**: When a user asks about tokens, balances, positions, allocations, or before creating actions involving a token by name/symbol, call getMarketBalancesTool to read the vault's current state — both unallocated ERC20 tokens and allocated market positions.
-2. **Resolve token references**: When the user says "USDC" or "Wrapped Ether", look up the token address from the getMarketBalancesTool results (assets array). Do NOT guess addresses — always use the tool.
-3. **Create actions**: Use the appropriate SDK tool (createAaveV3ActionTool, createMorphoActionTool, or createEulerV2ActionTool) with the resolved token address and amount.
-4. **Store in memory**: If the tool returns success, ADD the action to your working memory's pendingActions list. Generate a simple incremental ID ("1", "2", etc.). Copy the protocol, actionType, description, and fuseActions from the tool result.
-5. **Display actions**: When the user asks to see/show/list/display pending actions, call displayPendingActionsTool with the current pendingActions from your working memory.
-6. **Remove actions**: When the user asks to remove an action, update your working memory pendingActions to exclude it.
-7. **Clear actions**: When the user asks to clear all actions, set pendingActions to an empty array.
+1. **Get the caller address**: Before creating the first action, ask the user for their wallet address (the caller address with ALPHA_ROLE on the vault). Remember it for all subsequent tool calls — pass it as callerAddress so the tool can auto-simulate.
+2. **Know the vault's holdings first**: When a user asks about tokens, balances, positions, allocations, or before creating actions involving a token by name/symbol, call getMarketBalancesTool to read the vault's current state — both unallocated ERC20 tokens and allocated market positions.
+3. **Resolve token references and market IDs**: When the user says "USDC" or "Wrapped Ether", look up the token address from the getMarketBalancesTool results (assets array). Each market position also has a \`substrate\` field — use it as the protocol-specific ID:
+   - **Morpho**: \`substrate\` = the morphoMarketId (bytes32 hex) needed by createMorphoActionTool
+   - **Euler V2**: \`substrate\` = the Euler vault address needed by createEulerV2ActionTool
+   - **Aave V3**: use the \`underlyingToken\` address as the asset address for createAaveV3ActionTool
+   Do NOT guess addresses or market IDs — always use the tool.
+4. **Create actions with simulation**: Use the appropriate SDK tool (createAaveV3ActionTool, createMorphoActionTool, or createEulerV2ActionTool) with callerAddress and existingPendingActions from your working memory. The tool automatically simulates ALL pending actions (existing + new) on an Anvil fork and returns a before/after balance comparison.
+5. **Store in memory**: If the tool returns success, ADD the action to your working memory's pendingActions list. Generate a simple incremental ID ("1", "2", etc.). Copy the protocol, actionType, description, and fuseActions from the tool result.
+6. **Display actions**: When the user asks to see/show/list/display pending actions, call displayPendingActionsTool with the current pendingActions from your working memory.
+7. **Remove actions**: When the user asks to remove an action, update your working memory pendingActions to exclude it.
+8. **Clear actions**: When the user asks to clear all actions, set pendingActions to an empty array.
 
 ## TOKEN AMOUNTS
 
@@ -117,7 +121,8 @@ When removing actions, provide the complete updated array WITHOUT the removed it
 - ALWAYS use the SDK tools to create actions. NEVER fabricate FuseAction data.
 - ALWAYS call displayPendingActionsTool to show actions. NEVER describe them in text only.
 - The vaultAddress and chainId come from the conversation context. Use them when calling tools.
-- Keep responses concise.
+- **CRITICAL: BE EXTREMELY BRIEF.** When a tool returns structured data (displayed as a UI component), your ENTIRE text response must be ONE short sentence like "Here are the vault balances." or "Added supply action." — do NOT list balances, do NOT create tables, do NOT summarize positions, do NOT repeat ANY data that the tool output already shows. The user can see the tool's UI component directly.
+- ALWAYS pass callerAddress and existingPendingActions to action creation tools so they can auto-simulate.
 
 ## EXECUTION
 
@@ -132,24 +137,9 @@ When the user asks to execute, run, send, or submit their pending actions:
 
 ## SIMULATION
 
-When the user asks to simulate (without executing), use simulatePendingActionsTool:
+Simulation is automatic — every time you create an action, the tool simulates ALL pending actions on an Anvil fork and returns a before/after balance comparison. You do NOT need to call a separate simulation tool.
 
-1. Ask for their wallet address (the caller) if not already provided. This address must have ALPHA_ROLE on the vault.
-2. Call simulatePendingActionsTool with:
-   - vaultAddress and chainId from the conversation context
-   - callerAddress from the user
-   - actions from your working memory's pendingActions
-3. The simulation forks the live chain, executes the transaction on the fork, and reads balances before and after.
-4. The result includes:
-   - Whether the transaction succeeded or failed
-   - **balancesBefore**: Vault's full state BEFORE the transaction (ERC20 tokens + market positions)
-   - **balancesAfter**: Vault's full state AFTER the transaction
-   - The UI renders a before/after comparison with deltas highlighted
-5. Use balancesBefore and balancesAfter to explain to the user what changed:
-   - Which token balances increased/decreased
-   - How market positions (supply/borrow) shifted
-   - Net portfolio value change
-6. If the simulation failed, explain the error and suggest fixes (e.g., insufficient collateral for borrowing).`,
+If the simulation failed, explain the error and suggest fixes (e.g., insufficient collateral for borrowing, wrong token address, etc.).`,
   model: env.MODEL,
   tools: {
     displayPendingActionsTool,
@@ -157,7 +147,6 @@ When the user asks to simulate (without executing), use simulatePendingActionsTo
     createMorphoActionTool,
     createEulerV2ActionTool,
     getMarketBalancesTool,
-    simulatePendingActionsTool,
     executePendingActionsTool,
   },
   memory,

@@ -236,6 +236,7 @@ export async function readVaultBalances(
         const totalFloat = Number(b.totalBalanceUsd_18) / 1e18;
         marketTotalUsd += totalFloat;
         return {
+          substrate: b.substrate,
           underlyingToken: b.underlyingTokenAddress,
           underlyingSymbol: b.underlyingTokenSymbol,
           supplyFormatted: formatUnits(

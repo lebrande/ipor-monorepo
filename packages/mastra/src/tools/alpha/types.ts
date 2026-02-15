@@ -35,6 +35,7 @@ export type PendingActionsOutput = {
 
 /** A position in a DeFi market */
 export interface MarketPosition {
+  substrate: string;
   underlyingToken: string;
   underlyingSymbol: string;
   supplyFormatted: string;
@@ -121,10 +122,34 @@ export type ExecuteActionsOutput = {
   actionsSummary: string;
 };
 
+/** Action creation result with integrated simulation */
+export type ActionWithSimulationOutput = {
+  type: 'action-with-simulation';
+  success: boolean;
+  protocol: 'aave-v3' | 'morpho' | 'euler-v2';
+  actionType: 'supply' | 'withdraw' | 'borrow' | 'repay';
+  description: string;
+  fuseActions: Array<{
+    fuse: string;
+    data: string;
+  }>;
+  error?: string;
+  simulation?: {
+    success: boolean;
+    message: string;
+    actionsCount: number;
+    fuseActionsCount: number;
+    balancesBefore?: BalanceSnapshot;
+    balancesAfter?: BalanceSnapshot;
+    error?: string;
+  };
+};
+
 /** Union of all alpha tool output types */
 export type AlphaToolOutput =
   | TransactionsToSignOutput
   | PendingActionsOutput
   | MarketBalancesOutput
   | SimulationResultOutput
-  | ExecuteActionsOutput;
+  | ExecuteActionsOutput
+  | ActionWithSimulationOutput;

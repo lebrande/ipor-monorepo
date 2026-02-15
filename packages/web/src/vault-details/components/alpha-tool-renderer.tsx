@@ -4,11 +4,13 @@ import { PendingActionsList } from './pending-actions-list';
 import { MarketBalancesList } from './market-balances-list';
 import { SimulationResult } from './simulation-result';
 import { ExecuteActions } from './execute-actions';
+import { ActionWithSimulation } from './action-with-simulation';
 import type { AlphaToolOutput } from '@ipor/fusion-mastra/alpha-types';
 
 interface ToolPartProps {
   state: string;
   output?: unknown;
+  chainId: number;
 }
 
 /**
@@ -19,7 +21,7 @@ interface ToolPartProps {
  * 2. Create a React component in this directory
  * 3. Add a case to the switch below
  */
-export function AlphaToolRenderer({ state, output }: ToolPartProps) {
+export function AlphaToolRenderer({ state, output, chainId }: ToolPartProps) {
   if (state === 'input-available' || state === 'input-streaming') {
     return (
       <div className="flex items-center gap-2 text-muted-foreground">
@@ -47,6 +49,19 @@ export function AlphaToolRenderer({ state, output }: ToolPartProps) {
           markets={typed.markets}
           totalValueUsd={typed.totalValueUsd}
           message={typed.message}
+          chainId={chainId}
+        />
+      );
+    case 'action-with-simulation':
+      return (
+        <ActionWithSimulation
+          success={typed.success}
+          protocol={typed.protocol}
+          actionType={typed.actionType}
+          description={typed.description}
+          error={typed.error}
+          simulation={typed.simulation}
+          chainId={chainId}
         />
       );
     case 'simulation-result':
@@ -76,10 +91,7 @@ export function AlphaToolRenderer({ state, output }: ToolPartProps) {
         />
       );
     default:
-      return (
-        <pre className="text-xs bg-muted rounded p-2 overflow-auto">
-          {JSON.stringify(output, null, 2)}
-        </pre>
-      );
+      // Hide internal tool results (e.g. working memory updates)
+      return null;
   }
 }

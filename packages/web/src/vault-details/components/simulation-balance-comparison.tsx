@@ -2,7 +2,10 @@
 
 import { Card } from '@/components/ui/card';
 import { ArrowRight, TrendingUp, TrendingDown } from 'lucide-react';
+import { TokenIcon } from '@/components/token-icon/token-icon';
+import { ProtocolIcon, getProtocolLabel } from '@/components/protocol-icon/protocol-icon';
 import type { BalanceSnapshot } from '@ipor/fusion-mastra/alpha-types';
+import type { Address } from 'viem';
 
 type Asset = BalanceSnapshot['assets'][number];
 type Market = BalanceSnapshot['markets'][number];
@@ -54,13 +57,11 @@ function BalanceDelta({ before, after }: { before: string; after: string }) {
   );
 }
 
-function AssetRow({ before, after }: { before: Asset; after: Asset }) {
+function AssetRow({ before, after, chainId }: { before: Asset; after: Asset; chainId: number }) {
   return (
     <div className="flex items-center justify-between py-2 border-b last:border-b-0">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-          {before.symbol.slice(0, 3)}
-        </div>
+        <TokenIcon chainId={chainId} address={before.address as Address} className="w-8 h-8" />
         <div>
           <p className="text-sm font-medium">{before.symbol}</p>
           <p className="text-xs text-muted-foreground">{before.name}</p>
@@ -83,7 +84,7 @@ function AssetRow({ before, after }: { before: Asset; after: Asset }) {
   );
 }
 
-function PositionRow({ before, after }: { before: Position; after: Position }) {
+function PositionRow({ before, after, chainId }: { before: Position; after: Position; chainId: number }) {
   const beforeSupply = parseFloat(before.supplyValueUsd);
   const afterSupply = parseFloat(after.supplyValueUsd);
   const beforeBorrow = parseFloat(before.borrowValueUsd);
@@ -94,9 +95,7 @@ function PositionRow({ before, after }: { before: Position; after: Position }) {
   return (
     <div className="flex items-center justify-between py-2 border-b last:border-b-0">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-          {before.underlyingSymbol.slice(0, 3)}
-        </div>
+        <TokenIcon chainId={chainId} address={before.underlyingToken as Address} className="w-8 h-8" />
         <div>
           <p className="text-sm font-medium">{before.underlyingSymbol}</p>
           <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
@@ -133,13 +132,16 @@ function PositionRow({ before, after }: { before: Position; after: Position }) {
   );
 }
 
-function MarketSection({ beforeMarket, afterMarket }: { beforeMarket: Market; afterMarket: Market }) {
+function MarketSection({ beforeMarket, afterMarket, chainId }: { beforeMarket: Market; afterMarket: Market; chainId: number }) {
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-          {beforeMarket.protocol}
-        </p>
+        <div className="flex items-center gap-1.5">
+          <ProtocolIcon protocol={beforeMarket.protocol} className="w-4 h-4" />
+          <p className="text-xs font-semibold text-muted-foreground tracking-wide">
+            {getProtocolLabel(beforeMarket.protocol)}
+          </p>
+        </div>
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-muted-foreground">{formatUsd(beforeMarket.totalValueUsd)}</span>
           <ArrowRight className="w-3 h-3 text-muted-foreground" />
@@ -155,6 +157,7 @@ function MarketSection({ beforeMarket, afterMarket }: { beforeMarket: Market; af
               key={`${beforeMarket.marketId}-${i}`}
               before={beforePos}
               after={afterPos}
+              chainId={chainId}
             />
           );
         })}
@@ -166,9 +169,10 @@ function MarketSection({ beforeMarket, afterMarket }: { beforeMarket: Market; af
 interface Props {
   before: BalanceSnapshot;
   after: BalanceSnapshot;
+  chainId: number;
 }
 
-export function SimulationBalanceComparison({ before, after }: Props) {
+export function SimulationBalanceComparison({ before, after, chainId }: Props) {
   const totalBefore = parseFloat(before.totalValueUsd);
   const totalAfter = parseFloat(after.totalValueUsd);
   const totalDelta = totalAfter - totalBefore;
@@ -213,6 +217,7 @@ export function SimulationBalanceComparison({ before, after }: Props) {
                   key={beforeAsset.address}
                   before={beforeAsset}
                   after={afterAsset}
+                  chainId={chainId}
                 />
               );
             })}
@@ -228,6 +233,7 @@ export function SimulationBalanceComparison({ before, after }: Props) {
             key={beforeMarket.marketId}
             beforeMarket={beforeMarket}
             afterMarket={afterMarket}
+            chainId={chainId}
           />
         );
       })}

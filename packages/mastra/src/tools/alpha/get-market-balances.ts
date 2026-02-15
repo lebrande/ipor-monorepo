@@ -5,6 +5,7 @@ import { getPublicClient } from '../plasma-vault/utils/viem-clients';
 import { readVaultBalances } from './read-vault-balances';
 
 const marketPositionSchema = z.object({
+  substrate: z.string().describe('Protocol-specific ID: Morpho market bytes32 ID, Euler vault address, or Aave token address'),
   underlyingToken: z.string(),
   underlyingSymbol: z.string(),
   supplyFormatted: z.string(),

@@ -4,35 +4,20 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
-  ArrowUpRight,
-  ArrowDownLeft,
   Copy,
   Check,
   ChevronDown,
   ChevronRight,
   ListTodo,
 } from 'lucide-react';
+import { ProtocolIcon, getProtocolLabel } from '@/components/protocol-icon/protocol-icon';
 import type { PendingActionsOutput } from '@ipor/fusion-mastra/alpha-types';
 
 type PendingAction = PendingActionsOutput['actions'][number];
 
-const PROTOCOL_LABELS: Record<string, string> = {
-  'aave-v3': 'Aave V3',
-  morpho: 'Morpho',
-  'euler-v2': 'Euler V2',
-};
-
-const ACTION_ICONS: Record<string, typeof ArrowUpRight> = {
-  supply: ArrowUpRight,
-  withdraw: ArrowDownLeft,
-  borrow: ArrowUpRight,
-  repay: ArrowDownLeft,
-};
-
 function ActionItem({ action }: { action: PendingAction }) {
   const [showPayload, setShowPayload] = useState(false);
   const [copied, setCopied] = useState(false);
-  const Icon = ACTION_ICONS[action.actionType] ?? ArrowUpRight;
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(
@@ -46,13 +31,11 @@ function ActionItem({ action }: { action: PendingAction }) {
     <div className="border rounded-lg p-3 space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center">
-            <Icon className="w-4 h-4 text-primary" />
-          </div>
+          <ProtocolIcon protocol={action.protocol} className="w-6 h-6" />
           <div>
             <p className="text-sm font-medium">{action.description}</p>
             <p className="text-xs text-muted-foreground">
-              {PROTOCOL_LABELS[action.protocol] ?? action.protocol} &middot;{' '}
+              {getProtocolLabel(action.protocol)} &middot;{' '}
               {action.actionType}
             </p>
           </div>

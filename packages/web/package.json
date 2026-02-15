@@ -15,8 +15,8 @@
     "t": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "storybook": "storybook dev -p 6006",
-    "sb": "storybook dev -p 6006",
+    "storybook": "storybook dev -p 6007",
+    "sb": "storybook dev -p 6007",
     "build-storybook": "storybook build"
   },
   "dependencies": {

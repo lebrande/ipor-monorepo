@@ -132,6 +132,7 @@ export function SimulationResult({
         <SimulationBalanceComparison
           before={balancesBefore}
           after={balancesAfter}
+          chainId={chainId}
         />
       )}
 

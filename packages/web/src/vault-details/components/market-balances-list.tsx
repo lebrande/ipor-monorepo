@@ -2,7 +2,10 @@
 
 import { Card } from '@/components/ui/card';
 import { Coins, TrendingUp, TrendingDown } from 'lucide-react';
+import { TokenIcon } from '@/components/token-icon/token-icon';
+import { ProtocolIcon, getProtocolLabel } from '@/components/protocol-icon/protocol-icon';
 import type { MarketBalancesOutput } from '@ipor/fusion-mastra/alpha-types';
+import type { Address } from 'viem';
 
 type VaultAsset = MarketBalancesOutput['assets'][number];
 type MarketAllocation = MarketBalancesOutput['markets'][number];
@@ -26,13 +29,11 @@ function formatUsd(value: string): string {
   return `$${num.toFixed(2)}`;
 }
 
-function AssetRow({ asset }: { asset: VaultAsset }) {
+function AssetRow({ asset, chainId }: { asset: VaultAsset; chainId: number }) {
   return (
     <div className="flex items-center justify-between py-2 border-b last:border-b-0">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-          {asset.symbol.slice(0, 3)}
-        </div>
+        <TokenIcon chainId={chainId} address={asset.address as Address} className="w-8 h-8" />
         <div>
           <p className="text-sm font-medium">{asset.symbol}</p>
           <p className="text-xs text-muted-foreground">{asset.name}</p>
@@ -50,16 +51,14 @@ function AssetRow({ asset }: { asset: VaultAsset }) {
   );
 }
 
-function PositionRow({ position }: { position: MarketPosition }) {
+function PositionRow({ position, chainId }: { position: MarketPosition; chainId: number }) {
   const supplyNum = parseFloat(position.supplyValueUsd);
   const borrowNum = parseFloat(position.borrowValueUsd);
 
   return (
     <div className="flex items-center justify-between py-2 border-b last:border-b-0">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-          {position.underlyingSymbol.slice(0, 3)}
-        </div>
+        <TokenIcon chainId={chainId} address={position.underlyingToken as Address} className="w-8 h-8" />
         <div>
           <p className="text-sm font-medium">{position.underlyingSymbol}</p>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -95,18 +94,21 @@ function PositionRow({ position }: { position: MarketPosition }) {
   );
 }
 
-function MarketCard({ market }: { market: MarketAllocation }) {
+function MarketCard({ market, chainId }: { market: MarketAllocation; chainId: number }) {
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-          {market.protocol}
-        </p>
+        <div className="flex items-center gap-1.5">
+          <ProtocolIcon protocol={market.protocol} className="w-4 h-4" />
+          <p className="text-xs font-semibold text-muted-foreground tracking-wide">
+            {getProtocolLabel(market.protocol)}
+          </p>
+        </div>
         <p className="text-xs font-medium">{formatUsd(market.totalValueUsd)}</p>
       </div>
       <div>
         {market.positions.map((pos, i) => (
-          <PositionRow key={`${market.marketId}-${i}`} position={pos} />
+          <PositionRow key={`${market.marketId}-${i}`} position={pos} chainId={chainId} />
         ))}
       </div>
     </div>
@@ -118,9 +120,10 @@ interface Props {
   markets: MarketAllocation[];
   totalValueUsd: string;
   message: string;
+  chainId: number;
 }
 
-export function MarketBalancesList({ assets, markets, totalValueUsd, message }: Props) {
+export function MarketBalancesList({ assets, markets, totalValueUsd, message, chainId }: Props) {
   const hasAssets = assets.length > 0;
   const hasMarkets = markets.length > 0;
 
@@ -157,14 +160,14 @@ export function MarketBalancesList({ assets, markets, totalValueUsd, message }: 
           </p>
           <div>
             {assets.map((asset) => (
-              <AssetRow key={asset.address} asset={asset} />
+              <AssetRow key={asset.address} asset={asset} chainId={chainId} />
             ))}
           </div>
         </div>
       )}
 
       {hasMarkets && markets.map((market) => (
-        <MarketCard key={market.marketId} market={market} />
+        <MarketCard key={market.marketId} market={market} chainId={chainId} />
       ))}
     </Card>
   );

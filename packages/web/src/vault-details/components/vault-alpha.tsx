@@ -115,6 +115,7 @@ export function VaultAlpha({ chainId, vaultAddress, className }: Props) {
                           ? (part as { output: unknown }).output
                           : undefined
                       }
+                      chainId={chainId}
                     />
                   );
                 }
