@@ -3,6 +3,7 @@ import { TransactionsToSign } from './transactions-to-sign';
 import { PendingActionsList } from './pending-actions-list';
 import { MarketBalancesList } from './market-balances-list';
 import { SimulationResult } from './simulation-result';
+import { ExecuteActions } from './execute-actions';
 import type { AlphaToolOutput } from '@ipor/fusion-mastra/alpha-types';
 
 interface ToolPartProps {
@@ -59,6 +60,17 @@ export function AlphaToolRenderer({ state, output }: ToolPartProps) {
           flatFuseActions={typed.flatFuseActions}
           actionsCount={typed.actionsCount}
           fuseActionsCount={typed.fuseActionsCount}
+        />
+      );
+    case 'execute-actions':
+      return (
+        <ExecuteActions
+          vaultAddress={typed.vaultAddress}
+          chainId={typed.chainId}
+          flatFuseActions={typed.flatFuseActions}
+          actionsCount={typed.actionsCount}
+          fuseActionsCount={typed.fuseActionsCount}
+          actionsSummary={typed.actionsSummary}
         />
       );
     default:

@@ -1,4 +1,5 @@
 import type { StorybookConfig } from '@storybook/react-vite';
+import { loadEnv } from 'vite';
 import path from 'path';
 
 const config: StorybookConfig = {
@@ -15,15 +16,19 @@ const config: StorybookConfig = {
     name: '@storybook/react-vite',
     options: {},
   },
-  env: (config) => ({
-    ...config,
-    NEXT_PUBLIC_RPC_URL_MAINNET: process.env.NEXT_PUBLIC_RPC_URL_MAINNET,
-    NEXT_PUBLIC_RPC_URL_ARBITRUM: process.env.NEXT_PUBLIC_RPC_URL_ARBITRUM,
-    NEXT_PUBLIC_RPC_URL_BASE: process.env.NEXT_PUBLIC_RPC_URL_BASE,
-  }),
   viteFinal: async (config) => {
+    // Load all env vars (including non-VITE_ prefixed) from .env files
+    const env = loadEnv('', path.resolve(__dirname, '..'), '');
+
     return {
       ...config,
+      define: {
+        ...config.define,
+        'import.meta.env.NEXT_PUBLIC_RPC_URL_MAINNET': JSON.stringify(env.NEXT_PUBLIC_RPC_URL_MAINNET ?? ''),
+        'import.meta.env.NEXT_PUBLIC_RPC_URL_ARBITRUM': JSON.stringify(env.NEXT_PUBLIC_RPC_URL_ARBITRUM ?? ''),
+        'import.meta.env.NEXT_PUBLIC_RPC_URL_BASE': JSON.stringify(env.NEXT_PUBLIC_RPC_URL_BASE ?? ''),
+        'import.meta.env.ALPHA_CONFIG_TEST_PRIVATE_KEY': JSON.stringify(env.ALPHA_CONFIG_TEST_PRIVATE_KEY ?? ''),
+      },
       resolve: {
         ...config.resolve,
         alias: {

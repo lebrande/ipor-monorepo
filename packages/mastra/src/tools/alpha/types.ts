@@ -89,9 +89,24 @@ export type SimulationResultOutput = {
   }>;
 };
 
+/** Passes pending actions to the UI for the full connect → role check → simulate → execute flow */
+export type ExecuteActionsOutput = {
+  type: 'execute-actions';
+  vaultAddress: string;
+  chainId: number;
+  flatFuseActions: Array<{
+    fuse: string;
+    data: string;
+  }>;
+  actionsCount: number;
+  fuseActionsCount: number;
+  actionsSummary: string;
+};
+
 /** Union of all alpha tool output types */
 export type AlphaToolOutput =
   | TransactionsToSignOutput
   | PendingActionsOutput
   | MarketBalancesOutput
-  | SimulationResultOutput;
+  | SimulationResultOutput
+  | ExecuteActionsOutput;

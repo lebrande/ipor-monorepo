@@ -15,7 +15,6 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt,
 } from 'wagmi';
-import { injected } from 'wagmi/connectors';
 import type { Address, Hex } from 'viem';
 import type { SimulationResultOutput } from '@ipor/fusion-mastra/alpha-types';
 
@@ -61,7 +60,7 @@ export function SimulationResult({
   fuseActionsCount,
 }: Props) {
   const { isConnected } = useAccount();
-  const { connect, isPending: isConnecting } = useConnect();
+  const { connect, connectors, isPending: isConnecting, error: connectError } = useConnect();
   const {
     writeContract,
     data: txHash,
@@ -73,8 +72,11 @@ export function SimulationResult({
     useWaitForTransactionReceipt({ hash: txHash });
 
   const handleConnect = useCallback(() => {
-    connect({ connector: injected() });
-  }, [connect]);
+    const connector = connectors[0];
+    if (connector) {
+      connect({ connector });
+    }
+  }, [connect, connectors]);
 
   const handleExecute = useCallback(() => {
     writeContract({
@@ -124,20 +126,27 @@ export function SimulationResult({
       {success && !isConfirmed && (
         <div className="pt-2 border-t space-y-2">
           {!isConnected ? (
-            <Button
-              onClick={handleConnect}
-              disabled={isConnecting}
-              variant="outline"
-              size="sm"
-              className="w-full"
-            >
-              {isConnecting ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              ) : (
-                <Wallet className="w-4 h-4 mr-2" />
+            <>
+              <Button
+                onClick={handleConnect}
+                disabled={isConnecting}
+                variant="outline"
+                size="sm"
+                className="w-full"
+              >
+                {isConnecting ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <Wallet className="w-4 h-4 mr-2" />
+                )}
+                Connect Wallet to Execute
+              </Button>
+              {connectError && (
+                <p className="text-xs text-destructive">
+                  {connectError.message.slice(0, 200)}
+                </p>
               )}
-              Connect Wallet to Execute
-            </Button>
+            </>
           ) : (
             <Button
               onClick={handleExecute}
