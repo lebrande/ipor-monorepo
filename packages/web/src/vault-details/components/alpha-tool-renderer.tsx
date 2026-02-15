@@ -1,7 +1,7 @@
 import { Loader2 } from 'lucide-react';
 import { TransactionsToSign } from './transactions-to-sign';
 import { PendingActionsList } from './pending-actions-list';
-import { VaultAssetsList } from './vault-assets-list';
+import { MarketBalancesList } from './market-balances-list';
 import { SimulationResult } from './simulation-result';
 import type { AlphaToolOutput } from '@ipor/fusion-mastra/alpha-types';
 
@@ -39,10 +39,11 @@ export function AlphaToolRenderer({ state, output }: ToolPartProps) {
       return <TransactionsToSign message={typed.message} />;
     case 'pending-actions':
       return <PendingActionsList actions={typed.actions} message={typed.message} />;
-    case 'vault-assets':
+    case 'market-balances':
       return (
-        <VaultAssetsList
+        <MarketBalancesList
           assets={typed.assets}
+          markets={typed.markets}
           totalValueUsd={typed.totalValueUsd}
           message={typed.message}
         />

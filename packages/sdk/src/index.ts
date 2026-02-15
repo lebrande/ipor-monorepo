@@ -3,6 +3,12 @@ export { AaveV3 } from './markets/aave-v3/AaveV3';
 export { Morpho } from './markets/morpho/Morpho';
 export { EulerV2 } from './markets/euler-v2/EulerV2';
 export { type FuseAction } from './fusion.types';
+export { type MarketSubstrateBalance } from './markets/market-balance.types';
+export {
+  extractEulerSubstrate,
+  type EulerSubstrate,
+} from './markets/euler-v2/utils/extract-euler-substrate';
+export { generateSubAccountAddress } from './markets/euler-v2/utils/generate-sub-account-address';
 export { type Prehook } from './prehooks/prehooks.types';
 export { isSubstrateEqualSafe } from './substrates/utils/is-substrate-equal-safe';
 export { substrateToAddress } from './substrates/utils/substrate-to-address';

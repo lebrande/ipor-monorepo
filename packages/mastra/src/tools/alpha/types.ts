@@ -33,9 +33,28 @@ export type PendingActionsOutput = {
   message: string;
 };
 
-/** Displays the vault's ERC20 token holdings */
-export type VaultAssetsOutput = {
-  type: 'vault-assets';
+/** A position in a DeFi market */
+export interface MarketPosition {
+  underlyingToken: string;
+  underlyingSymbol: string;
+  supplyFormatted: string;
+  supplyValueUsd: string;
+  borrowFormatted: string;
+  borrowValueUsd: string;
+  totalValueUsd: string;
+}
+
+/** A DeFi market with its positions */
+export interface MarketAllocation {
+  marketId: string;
+  protocol: string;
+  positions: MarketPosition[];
+  totalValueUsd: string;
+}
+
+/** Displays the vault's ERC20 token holdings AND market allocations */
+export type MarketBalancesOutput = {
+  type: 'market-balances';
   success: boolean;
   assets: Array<{
     address: string;
@@ -47,6 +66,7 @@ export type VaultAssetsOutput = {
     priceUsd: string;
     valueUsd: string;
   }>;
+  markets: MarketAllocation[];
   totalValueUsd: string;
   message: string;
   error?: string;
@@ -73,5 +93,5 @@ export type SimulationResultOutput = {
 export type AlphaToolOutput =
   | TransactionsToSignOutput
   | PendingActionsOutput
-  | VaultAssetsOutput
+  | MarketBalancesOutput
   | SimulationResultOutput;
