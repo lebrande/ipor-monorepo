@@ -16,7 +16,8 @@ import {
   useWaitForTransactionReceipt,
 } from 'wagmi';
 import type { Address, Hex } from 'viem';
-import type { SimulationResultOutput } from '@ipor/fusion-mastra/alpha-types';
+import type { SimulationResultOutput, BalanceSnapshot } from '@ipor/fusion-mastra/alpha-types';
+import { SimulationBalanceComparison } from './simulation-balance-comparison';
 
 /** Minimal ABI for PlasmaVault.execute(FuseAction[]) */
 const plasmaVaultExecuteAbi = [
@@ -47,6 +48,8 @@ interface Props {
   flatFuseActions: SimulationResultOutput['flatFuseActions'];
   actionsCount: SimulationResultOutput['actionsCount'];
   fuseActionsCount: SimulationResultOutput['fuseActionsCount'];
+  balancesBefore?: BalanceSnapshot;
+  balancesAfter?: BalanceSnapshot;
 }
 
 export function SimulationResult({
@@ -58,6 +61,8 @@ export function SimulationResult({
   flatFuseActions,
   actionsCount,
   fuseActionsCount,
+  balancesBefore,
+  balancesAfter,
 }: Props) {
   const { isConnected } = useAccount();
   const { connect, connectors, isPending: isConnecting, error: connectError } = useConnect();
@@ -120,6 +125,14 @@ export function SimulationResult({
           {actionsCount} action{actionsCount === 1 ? '' : 's'},{' '}
           {fuseActionsCount} fuse call{fuseActionsCount === 1 ? '' : 's'}
         </p>
+      )}
+
+      {/* Balance comparison — when simulation succeeded with balance data */}
+      {success && balancesBefore && balancesAfter && (
+        <SimulationBalanceComparison
+          before={balancesBefore}
+          after={balancesAfter}
+        />
       )}
 
       {/* Execute section — only when simulation succeeded */}

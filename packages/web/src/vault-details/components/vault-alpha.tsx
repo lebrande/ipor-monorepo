@@ -2,7 +2,7 @@
 
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useLayoutEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -15,11 +15,30 @@ import type { Address } from 'viem';
 interface Props {
   chainId: ChainId;
   vaultAddress: Address;
+  className?: string;
 }
 
-export function VaultAskAi({ chainId, vaultAddress }: Props) {
+export function VaultAlpha({ chainId, vaultAddress, className }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [inputValue, setInputValue] = useState('');
+  const [height, setHeight] = useState<number>(600);
+
+  const updateHeight = useCallback(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top;
+    setHeight(window.innerHeight - top - 24);
+  }, []);
+
+  useLayoutEffect(() => {
+    updateHeight();
+  }, [updateHeight]);
+
+  useEffect(() => {
+    window.addEventListener('resize', updateHeight);
+    return () => window.removeEventListener('resize', updateHeight);
+  }, [updateHeight]);
 
   const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({
@@ -41,7 +60,11 @@ export function VaultAskAi({ chainId, vaultAddress }: Props) {
   };
 
   return (
-    <Card className="flex flex-col h-[600px]">
+    <Card
+      ref={containerRef}
+      className={cn('flex flex-col', className)}
+      style={{ height }}
+    >
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (

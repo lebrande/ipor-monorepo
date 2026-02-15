@@ -60,6 +60,8 @@ export function AlphaToolRenderer({ state, output }: ToolPartProps) {
           flatFuseActions={typed.flatFuseActions}
           actionsCount={typed.actionsCount}
           fuseActionsCount={typed.fuseActionsCount}
+          balancesBefore={typed.balancesBefore}
+          balancesAfter={typed.balancesAfter}
         />
       );
     case 'execute-actions':

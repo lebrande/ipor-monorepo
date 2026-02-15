@@ -6,4 +6,4 @@ export { createEulerV2ActionTool } from './create-euler-v2-action';
 export { getMarketBalancesTool } from './get-market-balances';
 export { simulatePendingActionsTool } from './simulate-pending-actions';
 export { executePendingActionsTool } from './execute-pending-actions';
-export type { AlphaToolOutput, TransactionsToSignOutput, PendingActionsOutput, MarketBalancesOutput, SimulationResultOutput, ExecuteActionsOutput } from './types';
+export type { AlphaToolOutput, TransactionsToSignOutput, PendingActionsOutput, MarketBalancesOutput, SimulationResultOutput, ExecuteActionsOutput, BalanceSnapshot } from './types';

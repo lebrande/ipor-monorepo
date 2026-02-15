@@ -1,12 +1,12 @@
-import { VaultAskAi } from '@/vault-details/components/vault-ask-ai';
+import { VaultAlpha } from '@/vault-details/components/vault-alpha';
 import type { ChainId } from '@/app/chains.config';
 import type { Address } from 'viem';
 
 export const metadata = {
-  title: 'Ask AI - Fusion by IPOR',
+  title: 'Alpha - Fusion by IPOR',
 };
 
-export default async function VaultAskAiPage({
+export default async function VaultAlphaPage({
   params,
 }: {
   params: Promise<{ chainId: string; address: string }>;
@@ -14,7 +14,7 @@ export default async function VaultAskAiPage({
   const { chainId, address } = await params;
 
   return (
-    <VaultAskAi
+    <VaultAlpha
       chainId={Number(chainId) as ChainId}
       vaultAddress={address as Address}
     />

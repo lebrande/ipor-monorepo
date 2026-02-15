@@ -72,7 +72,23 @@ export type MarketBalancesOutput = {
   error?: string;
 };
 
-/** Displays simulation result with optional execute button */
+/** Balance snapshot for a vault — ERC20 tokens + market positions */
+export interface BalanceSnapshot {
+  assets: Array<{
+    address: string;
+    name: string;
+    symbol: string;
+    decimals: number;
+    balance: string;
+    balanceFormatted: string;
+    priceUsd: string;
+    valueUsd: string;
+  }>;
+  markets: MarketAllocation[];
+  totalValueUsd: string;
+}
+
+/** Displays simulation result with before/after balance comparison */
 export type SimulationResultOutput = {
   type: 'simulation-result';
   success: boolean;
@@ -87,6 +103,8 @@ export type SimulationResultOutput = {
     fuse: string;
     data: string;
   }>;
+  balancesBefore?: BalanceSnapshot;
+  balancesAfter?: BalanceSnapshot;
 };
 
 /** Passes pending actions to the UI for the full connect → role check → simulate → execute flow */

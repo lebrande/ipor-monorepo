@@ -22,6 +22,12 @@ const config: StorybookConfig = {
 
     return {
       ...config,
+      server: {
+        ...config.server,
+        proxy: {
+          '/api': 'http://localhost:3000',
+        },
+      },
       define: {
         ...config.define,
         'import.meta.env.NEXT_PUBLIC_RPC_URL_MAINNET': JSON.stringify(env.NEXT_PUBLIC_RPC_URL_MAINNET ?? ''),

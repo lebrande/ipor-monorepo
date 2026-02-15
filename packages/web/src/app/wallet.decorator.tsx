@@ -54,7 +54,7 @@ const AutoConnect = ({ children }: { children: React.ReactNode }) => {
   return children;
 };
 
-export const MockWalletDecorator: Decorator = (Story) => {
+export const WalletDecorator: Decorator = (Story) => {
   if (!mockWagmiConfig) {
     return (
       <div className="p-8 text-center text-muted-foreground">

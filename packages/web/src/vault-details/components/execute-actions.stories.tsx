@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { MockWalletDecorator } from '@/app/mock-wallet.decorator';
+import { WalletDecorator } from '@/app/wallet.decorator';
 import { ExecuteActions } from './execute-actions';
 
 const meta: Meta<typeof ExecuteActions> = {
   title: 'Vault Details / ExecuteActions',
   component: ExecuteActions,
-  decorators: [MockWalletDecorator],
+  decorators: [WalletDecorator],
 };
 
 export default meta;

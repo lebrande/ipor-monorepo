@@ -23,8 +23,8 @@ export const TABS = [
     description: 'Recent transactions and activity',
   },
   {
-    id: 'ask-ai',
-    label: 'Ask AI',
+    id: 'alpha',
+    label: 'Alpha',
     description: 'Chat with AI about this vault',
   },
 ] as const satisfies TabConfig[];

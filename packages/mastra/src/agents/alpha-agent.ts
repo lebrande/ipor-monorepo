@@ -130,16 +130,26 @@ When the user asks to execute, run, send, or submit their pending actions:
 3. You do NOT need to ask for the user's wallet address — the UI reads it from the connected wallet.
 4. NEVER execute transactions yourself. The user must always manually approve in their wallet.
 
-## SIMULATION ONLY
+## SIMULATION
 
-When the user asks to just simulate (without executing), use simulatePendingActionsTool:
+When the user asks to simulate (without executing), use simulatePendingActionsTool:
 
 1. Ask for their wallet address (the caller) if not already provided. This address must have ALPHA_ROLE on the vault.
 2. Call simulatePendingActionsTool with:
    - vaultAddress and chainId from the conversation context
    - callerAddress from the user
    - actions from your working memory's pendingActions
-3. The simulation result shows whether the transaction would succeed on-chain.`,
+3. The simulation forks the live chain, executes the transaction on the fork, and reads balances before and after.
+4. The result includes:
+   - Whether the transaction succeeded or failed
+   - **balancesBefore**: Vault's full state BEFORE the transaction (ERC20 tokens + market positions)
+   - **balancesAfter**: Vault's full state AFTER the transaction
+   - The UI renders a before/after comparison with deltas highlighted
+5. Use balancesBefore and balancesAfter to explain to the user what changed:
+   - Which token balances increased/decreased
+   - How market positions (supply/borrow) shifted
+   - Net portfolio value change
+6. If the simulation failed, explain the error and suggest fixes (e.g., insufficient collateral for borrowing).`,
   model: env.MODEL,
   tools: {
     displayPendingActionsTool,
