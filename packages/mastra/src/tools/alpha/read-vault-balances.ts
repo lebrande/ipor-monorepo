@@ -284,10 +284,11 @@ export async function readVaultBalances(
         );
       }
 
-      // Resolve labels for Euler V2 markets (vault names from JSON)
+      // Resolve labels for Euler V2 markets (static JSON + on-chain fallback)
       let eulerLabels: Map<string, string> | undefined;
       if (marketName === 'EULER_V2' && balances.length > 0) {
-        eulerLabels = resolveEulerLabels(
+        eulerLabels = await resolveEulerLabels(
+          publicClient,
           plasmaVault.chainId,
           balances.map((b) => b.substrate),
         );
@@ -419,28 +420,61 @@ async function resolveMorphoLabels(
 }
 
 /**
- * Resolve Euler V2 vault labels from static JSON data.
- * Returns a map from substrate to vault name (e.g. "Euler Prime WETH").
+ * Extract the Euler vault address from a substrate.
+ * Euler V2 substrates store the vault address in the first 20 bytes
+ * (bytes32(bytes20(vaultAddress))).
  */
-function resolveEulerLabels(
+function eulerSubstrateToAddress(substrate: string): Address {
+  return ('0x' + substrate.slice(2, 42)) as Address;
+}
+
+/**
+ * Resolve Euler V2 vault labels from static JSON data with on-chain fallback.
+ * First checks the bundled JSON for known vault names, then fetches the ERC4626
+ * vault name() on-chain for any unknown vaults.
+ */
+async function resolveEulerLabels(
+  publicClient: PublicClient,
   chainId: number,
   substrates: string[],
-): Map<string, string> {
+): Promise<Map<string, string>> {
   const labels = new Map<string, string>();
   const vaultData = getEulerVaultLabels(chainId);
-  if (Object.keys(vaultData).length === 0) return labels;
+  const missingSubstrates: string[] = [];
 
   for (const substrate of substrates) {
-    // Euler V2 substrates store the vault address in the first 20 bytes
-    // (bytes32(bytes20(vaultAddress))), so substrateToAddress (which trims
-    // leading zeros) doesn't work. Extract first 20 bytes directly.
-    const vaultAddress = ('0x' + substrate.slice(2, 42)) as Address;
+    const vaultAddress = eulerSubstrateToAddress(substrate);
     // JSON keys may be checksummed — do case-insensitive lookup
     const entry = Object.entries(vaultData).find(
       ([addr]) => addr.toLowerCase() === vaultAddress.toLowerCase(),
     );
     if (entry) {
       labels.set(substrate, entry[1].name);
+    } else {
+      missingSubstrates.push(substrate);
+    }
+  }
+
+  // Fetch vault names on-chain for any substrates not in the static JSON
+  if (missingSubstrates.length > 0) {
+    try {
+      const nameResults = await publicClient.multicall({
+        contracts: missingSubstrates.map((substrate) => ({
+          address: eulerSubstrateToAddress(substrate),
+          abi: erc20Abi,
+          functionName: 'name' as const,
+        })),
+        allowFailure: true,
+      });
+
+      missingSubstrates.forEach((substrate, i) => {
+        const r = nameResults[i];
+        if (r.status === 'success' && r.result) {
+          labels.set(substrate, r.result as string);
+        }
+      });
+    } catch {
+      // On-chain fallback is best-effort
     }
   }
 
