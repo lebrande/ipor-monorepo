@@ -16,6 +16,7 @@ import {
 import type { Address, Hex } from 'viem';
 import { mainnet, arbitrum, base } from 'viem/chains';
 import type { ExecuteActionsOutput } from '@ipor/fusion-mastra/alpha-types';
+import { TxHashLink } from '@/activity/components/tx-hash-link';
 
 const ALPHA_ROLE_ID = 200n;
 
@@ -410,9 +411,9 @@ export function ExecuteActions({
                 Transaction confirmed!
               </span>
             </div>
-            <p className="text-xs text-muted-foreground mt-1 font-mono">
-              tx: {txHash.slice(0, 10)}...{txHash.slice(-8)}
-            </p>
+            <div className="mt-1">
+              <TxHashLink txHash={txHash} chainId={chainId} />
+            </div>
           </div>
         )}
       </div>

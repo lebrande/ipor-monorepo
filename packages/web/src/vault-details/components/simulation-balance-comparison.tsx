@@ -57,6 +57,17 @@ function BalanceDelta({ before, after }: { before: string; after: string }) {
   );
 }
 
+function hasAssetChanged(before: Asset, after: Asset): boolean {
+  return before.balanceFormatted !== after.balanceFormatted
+    || before.valueUsd !== after.valueUsd;
+}
+
+function hasPositionChanged(before: Position, after: Position): boolean {
+  return before.supplyFormatted !== after.supplyFormatted
+    || before.borrowFormatted !== after.borrowFormatted
+    || before.totalValueUsd !== after.totalValueUsd;
+}
+
 function AssetRow({ before, after, chainId }: { before: Asset; after: Asset; chainId: number }) {
   return (
     <div className="flex items-center justify-between py-2 border-b last:border-b-0">
@@ -97,7 +108,12 @@ function PositionRow({ before, after, chainId }: { before: Position; after: Posi
       <div className="flex items-center gap-3">
         <TokenIcon chainId={chainId} address={before.underlyingToken as Address} className="w-8 h-8" />
         <div>
-          <p className="text-sm font-medium">{before.underlyingSymbol}</p>
+          <p className="text-sm font-medium">
+            {before.label ?? before.underlyingSymbol}
+          </p>
+          {before.label && (
+            <p className="text-xs text-muted-foreground">{before.underlyingSymbol}</p>
+          )}
           <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
             {hasSupply && (
               <span className="flex items-center gap-1">
@@ -133,6 +149,18 @@ function PositionRow({ before, after, chainId }: { before: Position; after: Posi
 }
 
 function MarketSection({ beforeMarket, afterMarket, chainId }: { beforeMarket: Market; afterMarket: Market; chainId: number }) {
+  // Filter to only changed positions
+  const changedPositions = beforeMarket.positions
+    .map((beforePos, i) => {
+      const afterPos = afterMarket.positions[i] ?? beforePos;
+      return hasPositionChanged(beforePos, afterPos) ? i : -1;
+    })
+    .filter((i) => i !== -1);
+
+  const marketTotalChanged = beforeMarket.totalValueUsd !== afterMarket.totalValueUsd;
+
+  if (changedPositions.length === 0 && !marketTotalChanged) return null;
+
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
@@ -150,7 +178,8 @@ function MarketSection({ beforeMarket, afterMarket, chainId }: { beforeMarket: M
         </div>
       </div>
       <div>
-        {beforeMarket.positions.map((beforePos, i) => {
+        {changedPositions.map((i) => {
+          const beforePos = beforeMarket.positions[i];
           const afterPos = afterMarket.positions[i] ?? beforePos;
           return (
             <PositionRow
@@ -186,6 +215,12 @@ export function SimulationBalanceComparison({ before, after, chainId }: Props) {
   const afterAssetMap = new Map(after.assets.map(a => [a.address, a]));
   const afterMarketMap = new Map(after.markets.map(m => [m.marketId, m]));
 
+  // Filter to only changed assets
+  const changedAssets = before.assets.filter((beforeAsset) => {
+    const afterAsset = afterAssetMap.get(beforeAsset.address) ?? beforeAsset;
+    return hasAssetChanged(beforeAsset, afterAsset);
+  });
+
   return (
     <Card className="p-4 space-y-4">
       {/* Total value header */}
@@ -203,14 +238,14 @@ export function SimulationBalanceComparison({ before, after, chainId }: Props) {
         </div>
       </div>
 
-      {/* Unallocated Tokens */}
-      {hasAssets && (
+      {/* Unallocated Tokens — only changed ones */}
+      {changedAssets.length > 0 && (
         <div className="space-y-1">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
             Unallocated Tokens
           </p>
           <div>
-            {before.assets.map((beforeAsset) => {
+            {changedAssets.map((beforeAsset) => {
               const afterAsset = afterAssetMap.get(beforeAsset.address) ?? beforeAsset;
               return (
                 <AssetRow
@@ -225,7 +260,7 @@ export function SimulationBalanceComparison({ before, after, chainId }: Props) {
         </div>
       )}
 
-      {/* Market Positions */}
+      {/* Market Positions — only changed markets/positions */}
       {hasMarkets && before.markets.map((beforeMarket) => {
         const afterMarket = afterMarketMap.get(beforeMarket.marketId) ?? beforeMarket;
         return (

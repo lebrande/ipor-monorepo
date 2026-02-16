@@ -8,6 +8,7 @@ const marketPositionSchema = z.object({
   substrate: z.string().describe('Protocol-specific ID: Morpho market bytes32 ID, Euler vault address, or Aave token address'),
   underlyingToken: z.string(),
   underlyingSymbol: z.string(),
+  label: z.string().optional().describe('Human-readable label: "WETH/USDC" for Morpho, vault name for Euler'),
   supplyFormatted: z.string(),
   supplyValueUsd: z.string(),
   borrowFormatted: z.string(),

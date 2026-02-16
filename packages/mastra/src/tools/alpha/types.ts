@@ -38,6 +38,7 @@ export interface MarketPosition {
   substrate: string;
   underlyingToken: string;
   underlyingSymbol: string;
+  label?: string;
   supplyFormatted: string;
   supplyValueUsd: string;
   borrowFormatted: string;

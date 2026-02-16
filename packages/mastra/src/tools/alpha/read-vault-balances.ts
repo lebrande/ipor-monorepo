@@ -10,6 +10,12 @@ import {
 } from '@ipor/fusion-sdk';
 import type { MarketAllocation } from './types';
 
+// Import JSON directly so esbuild bundles them (readFileSync + import.meta.url
+// doesn't work in Mastra's bundled output directory)
+import ethVaultData from './euler-vault-labels/ETHEREUM_MAINNET_1_VAULT_DATA.json';
+import arbVaultData from './euler-vault-labels/ARBITRUM_MAINNET_42161_VAULT_DATA.json';
+import baseVaultData from './euler-vault-labels/BASE_MAINNET_8453_VAULT_DATA.json';
+
 /** Minimal ABI for price oracle's getAssetPrice */
 const getAssetPriceAbi = [
   {
@@ -23,6 +29,43 @@ const getAssetPriceAbi = [
     stateMutability: 'view',
   },
 ] as const;
+
+/** Minimal ABI for Morpho.idToMarketParams(bytes32) */
+const idToMarketParamsAbi = [
+  {
+    inputs: [{ name: '', type: 'bytes32' }],
+    name: 'idToMarketParams',
+    outputs: [
+      { name: 'loanToken', type: 'address' },
+      { name: 'collateralToken', type: 'address' },
+      { name: 'oracle', type: 'address' },
+      { name: 'irm', type: 'address' },
+      { name: 'lltv', type: 'uint256' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+] as const;
+
+/** Morpho contract addresses per chain */
+const MORPHO_ADDRESS: Record<number, Address> = {
+  1: '0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb',
+  42161: '0x6c247b1F6182318877311737BaC0844bAa518F5e',
+  8453: '0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb',
+};
+
+/** Euler vault label JSONs keyed by chainId → { address: { name } } */
+type EulerVaultData = Record<string, { name: string; description?: string; entity?: string | string[] }>;
+
+const eulerVaultDataByChain: Record<number, EulerVaultData> = {
+  1: ethVaultData as EulerVaultData,
+  42161: arbVaultData as EulerVaultData,
+  8453: baseVaultData as EulerVaultData,
+};
+
+function getEulerVaultLabels(chainId: number): EulerVaultData {
+  return eulerVaultDataByChain[chainId] ?? {};
+}
 
 /** Reverse-lookup market ID bigint to its constant name */
 function getMarketName(marketId: bigint): string {
@@ -231,6 +274,25 @@ export async function readVaultBalances(
         continue;
       }
 
+      // Resolve labels for Morpho markets (collateral/loan token pairs)
+      let morphoLabels: Map<string, string> | undefined;
+      if (marketName === 'MORPHO' && balances.length > 0) {
+        morphoLabels = await resolveMorphoLabels(
+          publicClient,
+          plasmaVault.chainId,
+          balances.map((b) => b.substrate as `0x${string}`),
+        );
+      }
+
+      // Resolve labels for Euler V2 markets (vault names from JSON)
+      let eulerLabels: Map<string, string> | undefined;
+      if (marketName === 'EULER_V2' && balances.length > 0) {
+        eulerLabels = resolveEulerLabels(
+          plasmaVault.chainId,
+          balances.map((b) => b.substrate),
+        );
+      }
+
       let marketTotalUsd = 0;
       const positions = balances.map((b) => {
         const totalFloat = Number(b.totalBalanceUsd_18) / 1e18;
@@ -239,6 +301,7 @@ export async function readVaultBalances(
           substrate: b.substrate,
           underlyingToken: b.underlyingTokenAddress,
           underlyingSymbol: b.underlyingTokenSymbol,
+          label: morphoLabels?.get(b.substrate) ?? eulerLabels?.get(b.substrate),
           supplyFormatted: formatUnits(
             b.supplyBalance,
             b.underlyingTokenDecimals,
@@ -275,4 +338,111 @@ export async function readVaultBalances(
     markets,
     totalValueUsd: totalValueUsdFloat.toFixed(2),
   };
+}
+
+/**
+ * Resolve Morpho market labels by fetching collateral/loan token symbols.
+ * Returns a map from substrate (morphoMarketId) to "collateralSymbol / loanSymbol".
+ */
+async function resolveMorphoLabels(
+  publicClient: PublicClient,
+  chainId: number,
+  substrates: `0x${string}`[],
+): Promise<Map<string, string>> {
+  const labels = new Map<string, string>();
+  const morphoAddress = MORPHO_ADDRESS[chainId];
+  if (!morphoAddress || substrates.length === 0) return labels;
+
+  try {
+    // Step 1: Get market params (collateral + loan token addresses)
+    const paramsResults = await publicClient.multicall({
+      contracts: substrates.map((substrate) => ({
+        address: morphoAddress,
+        abi: idToMarketParamsAbi,
+        functionName: 'idToMarketParams' as const,
+        args: [substrate],
+      })),
+      allowFailure: true,
+    });
+
+    // Collect unique token addresses to resolve symbols
+    const tokenSet = new Set<Address>();
+    const marketTokens: Array<{ loan: Address; collateral: Address } | null> = [];
+
+    for (const r of paramsResults) {
+      if (r.status === 'success') {
+        const result = r.result as readonly [Address, Address, Address, Address, bigint];
+        const loan = result[0];
+        const collateral = result[1];
+        tokenSet.add(loan);
+        tokenSet.add(collateral);
+        marketTokens.push({ loan, collateral });
+      } else {
+        marketTokens.push(null);
+      }
+    }
+
+    // Step 2: Resolve symbols for all unique tokens
+    const uniqueTokens = Array.from(tokenSet);
+    if (uniqueTokens.length === 0) return labels;
+
+    const symbolResults = await publicClient.multicall({
+      contracts: uniqueTokens.map((addr) => ({
+        address: addr,
+        abi: erc20Abi,
+        functionName: 'symbol' as const,
+      })),
+      allowFailure: true,
+    });
+
+    const symbolMap = new Map<string, string>();
+    uniqueTokens.forEach((addr, i) => {
+      const r = symbolResults[i];
+      if (r.status === 'success') {
+        symbolMap.set(addr.toLowerCase(), r.result as string);
+      }
+    });
+
+    // Step 3: Build labels
+    substrates.forEach((substrate, i) => {
+      const tokens = marketTokens[i];
+      if (!tokens) return;
+      const loanSymbol = symbolMap.get(tokens.loan.toLowerCase()) ?? '???';
+      const collateralSymbol = symbolMap.get(tokens.collateral.toLowerCase()) ?? '???';
+      labels.set(substrate, `${collateralSymbol} / ${loanSymbol}`);
+    });
+  } catch {
+    // Label resolution is best-effort
+  }
+
+  return labels;
+}
+
+/**
+ * Resolve Euler V2 vault labels from static JSON data.
+ * Returns a map from substrate to vault name (e.g. "Euler Prime WETH").
+ */
+function resolveEulerLabels(
+  chainId: number,
+  substrates: string[],
+): Map<string, string> {
+  const labels = new Map<string, string>();
+  const vaultData = getEulerVaultLabels(chainId);
+  if (Object.keys(vaultData).length === 0) return labels;
+
+  for (const substrate of substrates) {
+    // Euler V2 substrates store the vault address in the first 20 bytes
+    // (bytes32(bytes20(vaultAddress))), so substrateToAddress (which trims
+    // leading zeros) doesn't work. Extract first 20 bytes directly.
+    const vaultAddress = ('0x' + substrate.slice(2, 42)) as Address;
+    // JSON keys may be checksummed — do case-insensitive lookup
+    const entry = Object.entries(vaultData).find(
+      ([addr]) => addr.toLowerCase() === vaultAddress.toLowerCase(),
+    );
+    if (entry) {
+      labels.set(substrate, entry[1].name);
+    }
+  }
+
+  return labels;
 }

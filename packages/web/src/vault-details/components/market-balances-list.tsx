@@ -60,7 +60,12 @@ function PositionRow({ position, chainId }: { position: MarketPosition; chainId:
       <div className="flex items-center gap-3">
         <TokenIcon chainId={chainId} address={position.underlyingToken as Address} className="w-8 h-8" />
         <div>
-          <p className="text-sm font-medium">{position.underlyingSymbol}</p>
+          <p className="text-sm font-medium">
+            {position.label ?? position.underlyingSymbol}
+          </p>
+          {position.label && (
+            <p className="text-xs text-muted-foreground">{position.underlyingSymbol}</p>
+          )}
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             {supplyNum > 0 && (
               <span className="flex items-center gap-0.5 text-green-600">

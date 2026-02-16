@@ -17,6 +17,7 @@ import {
 } from 'wagmi';
 import type { Address, Hex } from 'viem';
 import type { SimulationResultOutput, BalanceSnapshot } from '@ipor/fusion-mastra/alpha-types';
+import { TxHashLink } from '@/activity/components/tx-hash-link';
 import { SimulationBalanceComparison } from './simulation-balance-comparison';
 
 /** Minimal ABI for PlasmaVault.execute(FuseAction[]) */
@@ -209,9 +210,9 @@ export function SimulationResult({
               </span>
             </div>
           )}
-          <p className="text-xs text-muted-foreground mt-1 font-mono">
-            tx: {txHash.slice(0, 10)}...{txHash.slice(-8)}
-          </p>
+          <div className="mt-1">
+            <TxHashLink txHash={txHash} chainId={chainId} />
+          </div>
         </div>
       )}
     </Card>
