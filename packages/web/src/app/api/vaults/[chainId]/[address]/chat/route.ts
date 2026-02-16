@@ -23,9 +23,12 @@ export async function POST(
 
   const vault = getVaultFromRegistry(chainId, address);
   const chainName = getChainName(chainId);
-  const { messages } = await request.json();
+  const { messages, callerAddress } = await request.json();
 
-  const vaultContext = `CURRENT VAULT CONTEXT: The user is viewing vault "${vault?.name ?? 'Unknown'}" at address ${address} on ${chainName} (chainId: ${chainId}). When the user asks about "this vault", use this context.`;
+  const callerContext = callerAddress && isAddress(callerAddress, { strict: false })
+    ? ` The user's connected wallet (callerAddress for simulation) is ${callerAddress}.`
+    : '';
+  const vaultContext = `CURRENT VAULT CONTEXT: The user is viewing vault "${vault?.name ?? 'Unknown'}" at address ${address} on ${chainName} (chainId: ${chainId}). When the user asks about "this vault", use this context.${callerContext}`;
 
   // Use vault address as stable thread/resource IDs for working memory persistence
   const threadId = `vault-${chainId}-${address.toLowerCase()}`;

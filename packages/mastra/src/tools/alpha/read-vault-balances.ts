@@ -298,8 +298,14 @@ export async function readVaultBalances(
       const positions = balances.map((b) => {
         const totalFloat = Number(b.totalBalanceUsd_18) / 1e18;
         marketTotalUsd += totalFloat;
+        // Euler V2 substrates are bytes32(bytes20(vaultAddress)) — extract the
+        // 20-byte vault address so the agent can pass it directly to the tool.
+        const substrate =
+          marketName === 'EULER_V2'
+            ? eulerSubstrateToAddress(b.substrate)
+            : b.substrate;
         return {
-          substrate: b.substrate,
+          substrate,
           underlyingToken: b.underlyingTokenAddress,
           underlyingSymbol: b.underlyingTokenSymbol,
           label: morphoLabels?.get(b.substrate) ?? eulerLabels?.get(b.substrate),

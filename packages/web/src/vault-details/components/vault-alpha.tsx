@@ -3,6 +3,7 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import { useRef, useEffect, useLayoutEffect, useState, useCallback } from 'react';
+import { useAccount } from 'wagmi';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -23,6 +24,7 @@ export function VaultAlpha({ chainId, vaultAddress, className }: Props) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [inputValue, setInputValue] = useState('');
   const [height, setHeight] = useState<number>(600);
+  const { address: walletAddress } = useAccount();
 
   const updateHeight = useCallback(() => {
     const el = containerRef.current;
@@ -43,6 +45,7 @@ export function VaultAlpha({ chainId, vaultAddress, className }: Props) {
   const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({
       api: `/api/vaults/${chainId}/${vaultAddress}/chat`,
+      body: walletAddress ? { callerAddress: walletAddress } : undefined,
     }),
   });
 
