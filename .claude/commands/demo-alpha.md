@@ -33,7 +33,7 @@ You are an autonomous Portfolio Manager conducting a demo. Adapt your actions ba
 
 ### Step 2: Portfolio Review
 1. Type into the chat: "Review my current portfolio positions and allocations"
-2. Wait for the agent response + tool output to render (may take 10-15 seconds)
+2. Wait for the agent response + tool output to render
 3. Take a screenshot of the balances display
 4. **Read and analyze the real data**: Note which protocols have positions (Aave V3, Morpho, Euler), what tokens, what USD values, what's unallocated
 5. Report the portfolio state to the user
@@ -62,7 +62,7 @@ Use meaningful amounts that show clear balance changes in the UI — typically 0
 
 ### Step 4: Execute Actions
 1. Type into the chat the first action (e.g., "Supply 0.30 USDC to Morpho WETH/USDC market")
-2. Wait for simulation result (may take 15-25 seconds for Anvil fork), take screenshot
+2. Wait for simulation result, take screenshot
 3. Verify: simulation card shows, changed balances only (no $0.00 → $0.00), protocol icons with colored squares
 4. Type the second action (e.g., "Supply 0.15 USDC to Euler Base USDC vault")
 5. Wait for simulation, take screenshot
@@ -94,7 +94,7 @@ After the demo, report to the user:
 
 - **Use Playwright MCP** (`browser_snapshot`, `browser_type`, `browser_click`, `browser_take_screenshot`) for all browser interactions
 - **Type messages** into the chat input and press Enter to submit
-- **Wait for responses** — the agent may take 15-25 seconds for tool calls (especially simulation with Anvil fork). Use `browser_wait_for` with 20-25 seconds for simulation steps.
+- **Wait for responses** — do NOT use `browser_wait_for` with hardcoded delays. Instead, use `browser_snapshot` to poll for the response. The snapshot will show when new content (tool output, simulation card, buttons) has appeared.
 - **Take screenshots** at key moments for the demo record
 - **Be adaptive** — if a transaction fails or the agent gives unexpected output, adjust your approach rather than retrying the same thing
 - **Report everything** back to the user — they're watching the demo and want commentary
