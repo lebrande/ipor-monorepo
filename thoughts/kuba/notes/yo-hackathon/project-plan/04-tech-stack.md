@@ -8,7 +8,7 @@
 | `viem` | latest | Ethereum client library (encoding, multicall, contract reads/writes) |
 | `wagmi` | latest | React hooks for wallet connection, chain switching, contract interaction |
 | `@yo-protocol/core` | latest | YO Protocol SDK — vault reads, snapshots, yield data |
-| `@ipor/fusion-sdk` | workspace | IPOR Fusion SDK — PlasmaVault, market IDs, protocol adapters |
+| `@ipor/fusion-sdk` | workspace | IPOR Fusion SDK — PlasmaVault, market IDs, protocol adapters, FuseAction types, access manager roles |
 
 ### AI Agent
 | Package | Version | Purpose |
@@ -28,28 +28,35 @@
 | `zod` | latest | Runtime type validation |
 | `recharts` | latest | Charts for allocation visualization (if needed) |
 
-### Dev Tools
+### Dev Tools & Testing
 | Tool | Purpose |
 |------|---------|
 | `pnpm` | Package manager (workspace monorepo) |
 | `tsx` | TypeScript script runner (for deployment scripts) |
-| `anvil` (Foundry) | Local fork simulation for action testing |
+| `hardhat` | Fork testing — pin to a block, deterministic tests (see `packages/hardhat-tests/`) |
+| `anvil` (Foundry) | Local fork simulation for agent action testing (Mastra tools) |
 | `@yo-protocol/cli` | CLI tool for ad-hoc vault queries during development |
+| Playwright MCP | Browser automation for web UI testing |
+| Mastra Studio | Agent testing and debugging UI |
 
 ## External APIs
 
-### Odos (Swap Aggregator)
+### Odos (Swap Aggregator — Primary)
 - **Quote API**: `POST https://api.odos.xyz/sor/quote/v2`
 - **Assemble API**: `POST https://api.odos.xyz/sor/assemble`
 - Free, no API key required
 - Returns swap calldata for UniversalTokenSwapperFuse
 - Base router: `0x19cEeAd7105607Cd444F5ad10dd51356436095a1`
 
-### KyberSwap (Backup Swap Aggregator)
+### KyberSwap (Swap Aggregator — Backup)
 - **Quote API**: `GET https://aggregator-api.kyberswap.com/base/api/v1/routes`
 - **Build API**: `POST https://aggregator-api.kyberswap.com/base/api/v1/route/build`
 - Free, no API key required
 - Base router: `0x6131B5fae19EA4f9D964eAc0408E4408b66337b5`
+
+### Velora / Paraswap (Swap Aggregator — Backup)
+- Router address TBD — research during implementation
+- Adds a third aggregator option for better swap coverage
 
 ### YO Protocol REST API
 - **Base URL**: `https://api.yo.xyz`
@@ -68,8 +75,9 @@ ARBITRUM_RPC_URL=https://...      # Arbitrum RPC (optional for multi-chain)
 # Mastra Agent
 MODEL=openrouter/anthropic/claude-haiku-4-5-20251001  # or claude-sonnet
 
-# Existing
-PONDER_DATABASE_URL=...           # If connecting to Supabase for anything
+# Existing (for Hardhat tests)
+RPC_URL_BASE=...                  # Used by hardhat.config.ts for fork testing
+RPC_URL_MAINNET=...               # Used by hardhat.config.ts for fork testing
 ```
 
 ## Project Structure
@@ -82,8 +90,17 @@ packages/
 │   ├── src/
 │   │   └── constants/
 │   │       ├── addresses.ts         # All contract addresses per chain
-│   │       └── abis.ts             # Collected ABIs
+│   │       └── abis.ts             # Collected ABIs (supplement fusion-sdk exports)
 │   └── package.json
+│
+├── hardhat-tests/                  # EXISTING — Add fork tests
+│   └── test/
+│       └── yo-treasury/            # NEW test directory
+│           ├── create-vault.ts     # Fork test: vault creation + setup
+│           ├── deposit.ts          # Fork test: USDC deposit with WHITELIST_ROLE
+│           ├── allocate.ts         # Fork test: ERC4626SupplyFuse.enter
+│           ├── swap.ts             # Fork test: UniversalTokenSwapperFuse.enter
+│           └── withdraw.ts         # Fork test: ERC4626SupplyFuse.exit
 │
 ├── mastra/                         # EXISTING — Add agent + tools
 │   └── src/
@@ -111,32 +128,82 @@ packages/
 │       │       └── chat/route.ts    # NEW API route
 │       └── yo-treasury/
 │           └── components/
-│               ├── create-vault-flow.tsx
-│               ├── vault-setup-stepper.tsx
-│               ├── treasury-chat.tsx
-│               ├── yo-tool-renderer.tsx
-│               ├── yo-vaults-list.tsx
-│               ├── treasury-allocation.tsx
-│               └── swap-preview.tsx
+│               ├── treasury-dashboard.tsx   # Primary view — portfolio dashboard
+│               ├── portfolio-summary.tsx     # Total value, allocations
+│               ├── allocation-breakdown.tsx  # Per-YO-vault positions
+│               ├── deposit-form.tsx          # Standard USDC deposit form
+│               ├── withdraw-form.tsx         # Standard USDC withdraw form
+│               ├── create-vault-flow.tsx     # Onboarding stepper
+│               ├── first-deposit-prompt.tsx  # Post-creation deposit guide
+│               ├── treasury-chat.tsx         # Chat UI (alpha actions)
+│               ├── yo-tool-renderer.tsx      # Tool output switch
+│               ├── yo-vaults-list.tsx        # YO vault cards (chat)
+│               ├── treasury-allocation.tsx   # Allocation view (chat)
+│               └── swap-preview.tsx          # Swap route viz (chat)
+│
+├── sdk/                            # EXISTING — @ipor/fusion-sdk
+│   └── src/                        # Reuse: PlasmaVault, MARKET_ID, FuseAction,
+│                                   # substrateToAddress, ACCESS_MANAGER_ROLE,
+│                                   # plasmaVaultAbi, accessManagerAbi
 ```
 
 ## Key ABIs Needed
 
 | ABI | Source | Functions Used |
 |-----|--------|---------------|
-| `fusionFactoryAbi` | ipor-webapp `fusion/factory/abi/` | `clone`, `getDaoFeePackages` |
-| `plasmaVaultFactoryAbi` | ipor-webapp `fusion/factory/abi/` | `PlasmaVaultCreated` event |
-| `accessManagerAbi` | ipor-webapp `fusion/accessManager/abi/` | `grantRole`, `hasRole` |
-| `plasmaVaultAbi` | `@ipor/fusion-sdk` | `addFuses`, `addBalanceFuse`, `grantMarketSubstrates`, `updateDependencyBalanceGraphs`, `convertToPublicVault`, `execute`, `deposit`, `withdraw`, `redeem` |
-| `erc4626SupplyFuseAbi` | ipor-webapp `fusion/fuses/config/Erc4626SupplyFuseV001/abi.ts` | `enter`, `exit` |
-| `universalTokenSwapperFuseAbi` | ipor-webapp `fusion/fuses/config/UniversalTokenSwapperFuseV001/abi.ts` | `enter` |
+| `fusionFactoryAbi` | ipor-webapp `fusion/factory/abi/` or extract | `clone` |
+| `plasmaVaultFactoryAbi` | ipor-webapp `fusion/factory/abi/` or extract | `PlasmaVaultCreated` event |
+| `accessManagerAbi` | `@ipor/fusion-sdk` (already exported) | `grantRole`, `hasRole` |
+| `plasmaVaultAbi` | `@ipor/fusion-sdk` (already exported) | `addFuses`, `addBalanceFuse`, `grantMarketSubstrates`, `updateDependencyBalanceGraphs`, `execute`, `deposit`, `withdraw`, `redeem` |
+| `erc4626SupplyFuseAbi` | Extract from Solidity or use `generate-fuse-abis` skill | `enter`, `exit` |
+| `universalTokenSwapperFuseAbi` | Extract from Solidity or use `generate-fuse-abis` skill | `enter` |
 | `erc20Abi` | viem | `approve`, `balanceOf`, `allowance` |
+
+## Testing Strategy
+
+### Fork Tests (Hardhat)
+- Use `packages/hardhat-tests/` patterns
+- Pin to specific Base block for determinism
+- Test full vault lifecycle: create → configure → deposit → allocate → swap → withdraw
+- Private keys from Hardhat test accounts only — NEVER in production code
+- Can also use private key connector in Playwright (isolated from production)
+
+### Agent Tests (Mastra)
+- Test in Mastra Studio (development)
+- Create automated test scripts for tool validation
+- Create test slash commands (prompts) for non-deterministic agent behavior testing
+- Test in terminal for quick iteration
+
+### Web UI Tests (Playwright MCP)
+- Test onboarding flow end-to-end
+- Test deposit/withdraw forms
+- Test dashboard rendering with real data
+- Test chat integration
+
+### Regression Protection
+- Maintain test suites for all phases
+- Run fork tests before marking any task complete
+- Good coverage across on-chain logic, agent tools, and UI
 
 ## Development Workflow
 
 1. **Start Mastra dev server**: `cd packages/mastra && pnpm dev` — for agent testing in Mastra Studio
 2. **Start Next.js dev**: `cd packages/web && pnpm dev` — for frontend development
 3. **Test agent tools**: Chat in Mastra Studio at `http://localhost:4111`
-4. **Test vault creation**: Run `pnpm tsx packages/yo-treasury/scripts/create-vault.ts`
+4. **Run fork tests**: `cd packages/hardhat-tests && pnpm test -- --grep yo-treasury`
 5. **Test full flow**: Open `http://localhost:3000/yo-treasury`, connect wallet
 6. **Ad-hoc YO queries**: `npx yo info vaults --chain 8453` or `npx yo api vault-snapshot --vault yoUSD --chain 8453`
+
+## Skills to Use During Implementation
+
+| Skill | When to Use |
+|-------|-------------|
+| `fuse-explorer` | Finding fuse code, understanding fuse interfaces |
+| `mastra` | Mastra framework patterns, agent/tool creation |
+| `vercel-react-best-practices` | React/Next.js performance optimization |
+| `web-design-guidelines` | UI review and accessibility |
+| `web3-data-fetching` | Complex blockchain data fetching workflows |
+| `yo-protocol-cli` | Ad-hoc vault queries during development |
+| `yo-protocol-sdk` | YO SDK integration patterns |
+| `test-driven-development` | TDD approach where possible |
+| `generate-fuse-abis` | Extracting ABIs from Solidity contracts |

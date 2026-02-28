@@ -6,28 +6,43 @@
 +-------------------+     +------------------+     +------------------+
 |   User Browser    |     |   Next.js API    |     |   Mastra Agent   |
 |                   |     |                  |     |                  |
-| Chat UI           |---->| POST /api/yo/    |---->| yo-treasury-     |
-| (vault-alpha      |     |   treasury/chat  |     |   agent          |
-|  pattern)         |<----|                  |<----| (6-8 tools)      |
-|                   |     +------------------+     +------------------+
-| Tool Renderers    |                                     |
-| - YoVaultCard     |                                     |
-| - AllocationView  |                              +------+------+
-| - SwapPreview     |                              |             |
-| - SimulationDiff  |                        @yo-protocol  @ipor/fusion
-| - ExecuteActions  |                          /core SDK      -sdk
+| Portfolio         |     | POST /api/yo/    |     | yo-treasury-     |
+| Dashboard         |     |   treasury/chat  |     |   agent          |
+| (primary view)    |     |                  |     | (alpha actions)  |
+|                   |---->|                  |---->| (6-8 tools)      |
+| - Allocations     |     +------------------+     +------------------+
+| - APRs/TVL        |                                     |
+| - Total Value     |                                     |
+| - Unallocated     |                              +------+------+
 |                   |                              |             |
-| Onboarding Flow   |                              v             v
-| - CreateVault     |                        +------------------+
-| - ConfigureFuses  |                        |  On-Chain        |
-| - GrantRoles      |                        |                  |
-+-------------------+                        | FusionFactory    |
-        |                                    | PlasmaVault      |
-        | wagmi/viem                         | Erc4626SupplyFuse|
-        |                                    | UniversalSwapFuse|
-        v                                    | YO Vaults        |
-+-------------------+                        | (yoUSD/yoETH/..)|
-|  User's Wallet    |                        +------------------+
+| Deposit/Withdraw  |                        @yo-protocol  @ipor/fusion
+| Forms (web UI)    |                          /core SDK      -sdk
+|                   |                              |             |
+| Chat UI           |                              v             v
+| (alpha actions)   |                        +------------------+
+| - AllocateToYo    |                        |  On-Chain        |
+| - SwapAssets      |                        |                  |
+| - WithdrawFromYo  |                        | FusionFactory    |
+|                   |                        | PlasmaVault      |
+| Tool Renderers    |                        | Erc4626SupplyFuse|
+| - YoVaultCard     |                        | UniversalSwapFuse|
+| - AllocationView  |                        | YO Vaults        |
+| - SwapPreview     |                        | (yoUSD/yoETH/..)|
+| - SimulationDiff  |                        +------------------+
+| - ExecuteActions  |
+|                   |
+| Onboarding Flow   |
+| - CreateVault     |
+| - ConfigureFuses  |
+| - GrantRoles      |
+| - FirstDeposit    |
++-------------------+
+        |
+        | wagmi/viem
+        |
+        v
++-------------------+
+|  User's Wallet    |
 |  (MetaMask, etc.) |
 +-------------------+
 ```
@@ -39,17 +54,18 @@
 ```
 User's PlasmaVault (ERC4626)
 ├── AccessManager (IporFusionAccessManager)
-│   ├── OWNER_ROLE (200) → User
+│   ├── OWNER_ROLE (1) → User
 │   ├── ATOMIST_ROLE (100) → User
 │   ├── ALPHA_ROLE (200) → User
-│   └── FUSE_MANAGER_ROLE (300) → User
+│   ├── FUSE_MANAGER_ROLE (300) → User
+│   └── WHITELIST_ROLE (800) → User (deposit access, NOT public vault)
 │
 ├── Installed Fuses
 │   ├── Erc4626SupplyFuse (market ERC4626_0001) → yoUSD
 │   ├── Erc4626SupplyFuse (market ERC4626_0002) → yoETH
 │   ├── Erc4626SupplyFuse (market ERC4626_0003) → yoBTC
 │   ├── Erc4626SupplyFuse (market ERC4626_0004) → yoEUR
-│   └── UniversalTokenSwapperFuse (market for swaps) → Odos/KyberSwap
+│   └── UniversalTokenSwapperFuse (market for swaps) → Odos/KyberSwap/Velora
 │
 ├── Balance Fuses (one per market, for portfolio tracking)
 │   ├── Erc4626BalanceFuse (market ERC4626_0001)
@@ -62,7 +78,7 @@ User's PlasmaVault (ERC4626)
 │   ├── ERC4626_0002: [yoETH address]
 │   ├── ERC4626_0003: [yoBTC address]
 │   ├── ERC4626_0004: [yoEUR address]
-│   └── Swap market: [USDC, WETH, cbBTC, EURC, Odos router, KyberSwap router]
+│   └── Swap market: [USDC, WETH, cbBTC, EURC, Odos router, KyberSwap router, Velora router]
 │
 ├── WithdrawManager
 ├── PriceManager
@@ -77,12 +93,16 @@ User's PlasmaVault (ERC4626)
 | **FusionFactory** | `0x1455717668fA96534f675856347A973fA907e922` |
 | **Erc4626SupplyFuse (slot 1)** | `0xbe8ab5217F4f251E4A667650fc34a63035C231a8` |
 | **Erc4626SupplyFuse (slot 2)** | `0xed5Ec535e6e6a3051105A8Ea2E8Bd178951A9EAc` |
-| **Erc4626SupplyFuse (slot 3)** | See config for ERC4626_0003 |
-| **Erc4626SupplyFuse (slot 4)** | See config for ERC4626_0004 |
+| **Erc4626SupplyFuse (slot 3)** | `0xdA0711a0b1B1dD289c4D7C08704Dd1e4cceA80C1` |
+| **Erc4626SupplyFuse (slot 4)** | `0xb187050408857FC2a57be0a5618e39b331425E77` |
 | **Erc4626BalanceFuse (slot 1)** | `0x7F4D9EFdE7EfEBBAFbb506ca3f711764cBc96391` |
+| **Erc4626BalanceFuse (slot 2)** | `0x3Dfe25F60191AAee4213080398D2Fdf65EC3CF2F` |
+| **Erc4626BalanceFuse (slot 3)** | `0xfEe84b6AF26a481C1819655dAde5f5588416e19f` |
+| **Erc4626BalanceFuse (slot 4)** | `0x903c1ABb5A303Cf717196e8d12CE87F46dE56719` |
 | **UniversalTokenSwapperFuse** | `0xdBc5f9962CE85749F1b3c51BA0473909229E3807` |
 | **Odos Router (Base)** | `0x19cEeAd7105607Cd444F5ad10dd51356436095a1` |
 | **KyberSwap Router (Base)** | `0x6131B5fae19EA4f9D964eAc0408E4408b66337b5` |
+| **Velora/Paraswap Router (Base)** | TBD — research during implementation |
 | **YoGateway** | `0xF1EeE0957267b1A474323Ff9CfF7719E964969FA` |
 
 ### YO Vault Addresses (Base)
@@ -99,7 +119,7 @@ User's PlasmaVault (ERC4626)
 After user clicks "Create Treasury", the following transactions execute sequentially:
 
 ```
-TX 1: FusionFactory.clone(name, symbol, underlyingToken, 1, owner, 0)
+TX 1: FusionFactory.clone(name, symbol, underlyingToken=USDC, 1, owner, 0)
        → Creates PlasmaVault + AccessManager + all managers
        → Returns FusionInstance with vault + accessManager addresses
        → User gets OWNER_ROLE automatically
@@ -107,8 +127,9 @@ TX 1: FusionFactory.clone(name, symbol, underlyingToken, 1, owner, 0)
 TX 2: AccessManager.grantRole(ATOMIST_ROLE=100, user, 0)
 TX 3: AccessManager.grantRole(FUSE_MANAGER_ROLE=300, user, 0)
 TX 4: AccessManager.grantRole(ALPHA_ROLE=200, user, 0)
+TX 5: AccessManager.grantRole(WHITELIST_ROLE=800, user, 0)
 
-TX 5: PlasmaVault.addFuses([
+TX 6: PlasmaVault.addFuses([
          erc4626SupplyFuse_slot1,
          erc4626SupplyFuse_slot2,
          erc4626SupplyFuse_slot3,
@@ -116,30 +137,30 @@ TX 5: PlasmaVault.addFuses([
          universalTokenSwapperFuse
        ])
 
-TX 6: PlasmaVault.addBalanceFuse(100001n, erc4626BalanceFuse_slot1)
-TX 7: PlasmaVault.addBalanceFuse(100002n, erc4626BalanceFuse_slot2)
-TX 8: PlasmaVault.addBalanceFuse(100003n, erc4626BalanceFuse_slot3)
-TX 9: PlasmaVault.addBalanceFuse(100004n, erc4626BalanceFuse_slot4)
+TX 7: PlasmaVault.addBalanceFuse(100001n, erc4626BalanceFuse_slot1)
+TX 8: PlasmaVault.addBalanceFuse(100002n, erc4626BalanceFuse_slot2)
+TX 9: PlasmaVault.addBalanceFuse(100003n, erc4626BalanceFuse_slot3)
+TX 10: PlasmaVault.addBalanceFuse(100004n, erc4626BalanceFuse_slot4)
 
-TX 10: PlasmaVault.grantMarketSubstrates(100001n, [pad(yoUSD)])
-TX 11: PlasmaVault.grantMarketSubstrates(100002n, [pad(yoETH)])
-TX 12: PlasmaVault.grantMarketSubstrates(100003n, [pad(yoBTC)])
-TX 13: PlasmaVault.grantMarketSubstrates(100004n, [pad(yoEUR)])
-TX 14: PlasmaVault.grantMarketSubstrates(swapMarketId, [
+TX 11: PlasmaVault.grantMarketSubstrates(100001n, [pad(yoUSD)])
+TX 12: PlasmaVault.grantMarketSubstrates(100002n, [pad(yoETH)])
+TX 13: PlasmaVault.grantMarketSubstrates(100003n, [pad(yoBTC)])
+TX 14: PlasmaVault.grantMarketSubstrates(100004n, [pad(yoEUR)])
+TX 15: PlasmaVault.grantMarketSubstrates(swapMarketId, [
          pad(USDC), pad(WETH), pad(cbBTC), pad(EURC),
-         pad(OdosRouter), pad(KyberSwapRouter)
+         pad(OdosRouter), pad(KyberSwapRouter), pad(VeloraRouter)
        ])
 
-TX 15: PlasmaVault.updateDependencyBalanceGraphs(
+TX 16: PlasmaVault.updateDependencyBalanceGraphs(
          [100001n, 100002n, 100003n, 100004n], [[], [], [], []]
        )
-
-TX 16: PlasmaVault.convertToPublicVault()
 ```
 
+**Note**: No `convertToPublicVault()` — vault remains non-public. Only the user (with WHITELIST_ROLE) can deposit. This is by design and is irreversible if public.
+
 **Optimization**: Many of these can be batched:
-- TXs 2-4 could be combined if AccessManager supports multicall
-- TXs 6-9 and 10-14 could potentially use batch variants
+- TXs 2-5 could be combined if AccessManager supports multicall
+- TXs 7-10 and 11-15 could potentially use batch variants
 - For hackathon: sequential is fine, wrap in a stepper UI showing progress
 
 ## AI Agent Architecture
@@ -147,6 +168,8 @@ TX 16: PlasmaVault.convertToPublicVault()
 ### Agent: `yo-treasury-agent`
 
 Based on existing `alphaAgent` pattern from `packages/mastra/src/agents/alpha-agent.ts`.
+
+**Scope**: The agent handles **alpha actions only** — allocating to YO vaults, swapping assets, withdrawing from YO vaults, and viewing vault data. Deposit into treasury and withdraw from treasury are handled by standard web UI forms.
 
 **Working Memory Schema:**
 ```typescript
@@ -166,7 +189,7 @@ Based on existing `alphaAgent` pattern from `packages/mastra/src/agents/alpha-ag
 | `getTreasuryAllocationTool` | Read user's Fusion vault allocation | `@ipor/fusion-sdk` readVaultBalances | `treasury-allocation` |
 | `createAllocationActionTool` | Create Erc4626SupplyFuse.enter FuseAction | `@ipor/fusion-sdk` + simulation | `action-with-simulation` |
 | `createWithdrawActionTool` | Create Erc4626SupplyFuse.exit FuseAction | `@ipor/fusion-sdk` + simulation | `action-with-simulation` |
-| `createSwapActionTool` | Create UniversalTokenSwapperFuse.enter FuseAction | Odos/KyberSwap API + fusion-sdk | `action-with-simulation` |
+| `createSwapActionTool` | Create UniversalTokenSwapperFuse.enter FuseAction | Odos/KyberSwap/Velora API + fusion-sdk | `action-with-simulation` |
 | `displayPendingActionsTool` | Show accumulated pending actions | working memory | `pending-actions` |
 | `executePendingActionsTool` | Flatten and send to UI for signing | working memory | `execute-actions` |
 
@@ -195,6 +218,8 @@ Based on existing `alphaAgent` pattern from `packages/mastra/src/agents/alpha-ag
 8. On execute: PlasmaVault.execute([swapAction, allocateAction]) — single tx
 ```
 
+**Fallback**: If Odos fails, try KyberSwap or Velora (Paraswap) APIs.
+
 ### Compound Actions (Swap + Allocate)
 
 The agent can compose multi-step actions into a single `PlasmaVault.execute()` call:
@@ -217,17 +242,23 @@ YoTreasuryApp (new Next.js page)
 │   ├── ChainSelector (Base/Ethereum/Arbitrum)
 │   ├── CreateVaultStepper
 │   │   ├── Step 1: FusionFactory.clone()
-│   │   ├── Step 2: Grant roles
+│   │   ├── Step 2: Grant roles (incl. WHITELIST_ROLE)
 │   │   ├── Step 3: Add fuses
 │   │   ├── Step 4: Configure substrates
-│   │   └── Step 5: Convert to public
-│   └── VaultCreatedSuccess
+│   │   └── Step 5: Ready!
+│   └── FirstDepositPrompt (USDC deposit form)
 │
-├── TreasuryChat (main view, if vault exists)
+├── TreasuryDashboard (primary view, if vault exists with balance)
+│   ├── PortfolioSummary
+│   │   ├── TotalValue (USD)
+│   │   ├── UnallocatedBalance (USDC in vault)
+│   │   └── AllocationBreakdown (per YO vault: shares, value, APR, %)
+│   ├── YoVaultsOverview (available vaults with APR, TVL)
+│   ├── DepositForm (USDC deposit into treasury — web UI)
+│   └── WithdrawForm (USDC withdraw from treasury — web UI)
+│
+├── TreasuryChat (secondary view, alpha actions)
 │   ├── ChatInterface (reuse vault-alpha.tsx useChat pattern)
-│   ├── AllocationSidebar (optional, minimal)
-│   │   ├── TotalValue
-│   │   └── AllocationBreakdown (per YO vault)
 │   └── ToolRenderers (switch on output type)
 │       ├── YoVaultsList → renders vault cards with APY/TVL
 │       ├── YoVaultDetail → deep dive card
@@ -258,13 +289,24 @@ YoTreasuryApp (new Next.js page)
 | Anvil fork simulation | `simulate-on-fork.ts` | Reuse as-is |
 | viem client management | `viem-clients.ts` | Reuse as-is |
 | wagmi config | `packages/web` | Add chain configs if needed |
+| `PlasmaVault` class | `@ipor/fusion-sdk` | Reuse for balance reads, role checks |
+| `substrateToAddress` | `@ipor/fusion-sdk` | Reuse as-is |
+| `MARKET_ID` constants | `@ipor/fusion-sdk` | Reuse ERC4626_0001–0004, UNIVERSAL_TOKEN_SWAPPER |
+| `ACCESS_MANAGER_ROLE` | `@ipor/fusion-sdk` | Reuse for WHITELIST_ROLE (800n) etc. |
+| `FuseAction` type | `@ipor/fusion-sdk` | Reuse as-is |
 
 ### New Components Needed
 
 | Component | Purpose |
 |-----------|---------|
 | `CreateVaultStepper` | Multi-step vault creation with tx tracking |
+| `FirstDepositPrompt` | USDC deposit form after vault creation |
+| `PortfolioSummary` | Dashboard showing total value, allocations |
+| `AllocationBreakdown` | Per-YO-vault positions with APR |
+| `YoVaultsOverview` | Available YO vaults with APR/TVL |
+| `DepositForm` | Standard USDC deposit into treasury |
+| `WithdrawForm` | Standard USDC withdraw from treasury |
 | `YoVaultCard` | Displays YO vault APY, TVL, underlying |
-| `TreasuryAllocation` | Shows allocation breakdown across YO vaults |
+| `TreasuryAllocation` | Shows allocation breakdown across YO vaults (chat renderer) |
 | `SwapPreview` | Shows swap route, expected output, slippage |
 | `ChainSelector` | Pick chain for vault creation |

@@ -1,9 +1,33 @@
 # YO Treasury — Implementation Phases
 
+## Adaptive Approach
+
+This plan **will evolve during implementation**. We start with basics, execute, and adjust. Detailed tickets are created only for the very next step. If assumptions prove wrong, we change the plan. Implementation follows a bottom-up approach: bare code with automated tests first, then higher abstractions, UI last.
+
+**Skills to use during implementation:**
+- `fuse-explorer` — find right fuses code
+- `mastra` — Mastra framework patterns
+- `vercel-react-best-practices` — React/Next.js optimization
+- `web-design-guidelines` — UI review
+- `web3-data-fetching` — complex data fetching workflows
+- `yo-protocol-cli` — ad-hoc vault queries
+- `yo-protocol-sdk` — YO SDK integration
+- `test-driven-development` — TDD where possible
+
+**SDK-first rule**: Before implementing any custom function, check `@ipor/fusion-sdk` and `@yo-protocol/core` for existing utilities (e.g., `substrateToAddress`, `PlasmaVault.getMarketSubstrates`, `MARKET_ID` constants, `ACCESS_MANAGER_ROLE`).
+
+---
+
 ## Phase 1: Smart Contract Setup & Vault Creation Script
 
 ### Overview
-Set up the on-chain infrastructure. Create a deployment script that creates a Fusion vault on Base, configures all fuses, substrates, and roles. This script validates the entire on-chain setup before we build the UI.
+Set up the on-chain infrastructure. Create a deployment script that creates a Fusion vault on Base, configures all fuses, substrates, and roles. This script validates the entire on-chain setup before we build the UI. **Test on Hardhat fork, not live chain.**
+
+### Implementation Order
+1. Address constants and ABIs (data layer)
+2. Vault creation script
+3. Fork tests to verify everything works
+4. Only then move to Phase 2
 
 ### Changes Required
 
@@ -23,8 +47,8 @@ const tx1 = await walletClient.writeContract({
 })
 // Parse PlasmaVaultCreated event → vaultAddress, accessManagerAddress
 
-// 2. Grant roles to owner
-for (const role of [ATOMIST_ROLE, FUSE_MANAGER_ROLE, ALPHA_ROLE]) {
+// 2. Grant roles to owner (including WHITELIST_ROLE for deposit access)
+for (const role of [ATOMIST_ROLE, FUSE_MANAGER_ROLE, ALPHA_ROLE, WHITELIST_ROLE]) {
   await walletClient.writeContract({
     address: accessManagerAddress,
     abi: accessManagerAbi,
@@ -32,6 +56,8 @@ for (const role of [ATOMIST_ROLE, FUSE_MANAGER_ROLE, ALPHA_ROLE]) {
     args: [role, ownerAddress, 0],
   })
 }
+// NOTE: No convertToPublicVault() — vault stays non-public.
+// WHITELIST_ROLE (800) grants deposit access to the user's wallet only.
 
 // 3. Add fuses
 await walletClient.writeContract({
@@ -58,6 +84,7 @@ for (const { marketId, balanceFuse } of erc4626Markets) {
 }
 
 // 5. Whitelist YO vault addresses as substrates
+// Use substrateToAddress from @ipor/fusion-sdk for the inverse (pad)
 await walletClient.writeContract({
   address: vaultAddress,
   abi: plasmaVaultAbi,
@@ -78,6 +105,7 @@ await walletClient.writeContract({
     pad(EURC_BASE, { size: 32 }),
     pad(ODOS_ROUTER_BASE, { size: 32 }),
     pad(KYBERSWAP_ROUTER_BASE, { size: 32 }),
+    // Velora router TBD
   ]],
 })
 
@@ -87,14 +115,6 @@ await walletClient.writeContract({
   abi: plasmaVaultAbi,
   functionName: 'updateDependencyBalanceGraphs',
   args: [[100001n, 100002n, 100003n, 100004n], [[], [], [], []]],
-})
-
-// 8. Convert to public vault
-await walletClient.writeContract({
-  address: vaultAddress,
-  abi: plasmaVaultAbi,
-  functionName: 'convertToPublicVault',
-  args: [],
 })
 ```
 
@@ -109,41 +129,76 @@ Central registry of all contract addresses per chain:
 - UniversalTokenSwapperFuse addresses per chain
 - YO vault addresses per chain
 - Token addresses per chain (USDC, WETH, cbBTC, EURC)
-- Swap router addresses per chain (Odos, KyberSwap)
+- Swap router addresses per chain (Odos, KyberSwap, Velora TBD)
 
 #### 3. ABIs
 
 **File**: `packages/yo-treasury/src/constants/abis.ts` (new)
 
-Collect needed ABIs:
+Collect needed ABIs (check `@ipor/fusion-sdk` exports first — many already exist):
 - `fusionFactoryAbi` (clone function)
 - `plasmaVaultFactoryAbi` (PlasmaVaultCreated event)
-- `accessManagerAbi` (grantRole)
-- `plasmaVaultAbi` (addFuses, addBalanceFuse, grantMarketSubstrates, updateDependencyBalanceGraphs, convertToPublicVault, execute, deposit, withdraw)
-- `erc4626SupplyFuseAbi` (enter, exit)
-- `universalTokenSwapperFuseAbi` (enter)
-- `erc4626BalanceFuseAbi` (balanceOf)
+- `accessManagerAbi` (grantRole) — available from `@ipor/fusion-sdk`
+- `plasmaVaultAbi` (addFuses, addBalanceFuse, grantMarketSubstrates, updateDependencyBalanceGraphs, execute, deposit, withdraw) — available from `@ipor/fusion-sdk`
+- `erc4626SupplyFuseAbi` (enter, exit) — may need to extract from Solidity
+- `universalTokenSwapperFuseAbi` (enter) — may need to extract from Solidity
+
+Use `generate-fuse-abis` skill if needed.
+
+### Testing Strategy
+
+**Fork tests (Hardhat)**: Reference existing pattern in `packages/hardhat-tests/`:
+- Pin to a specific Base block number for deterministic results
+- Test vault creation, role granting, fuse installation, substrate configuration
+- Test deposit (with WHITELIST_ROLE), allocation to yoUSD, swap, withdrawal
+- Private keys from Hardhat test accounts only — NEVER in production code
+
+```typescript
+// Fork test pattern (from packages/hardhat-tests/)
+connection = await network.connect({
+  network: 'hardhatBase',
+  chainType: 'op',
+  override: {
+    chainId: base.id,
+    forking: { url: env.RPC_URL_BASE, blockNumber: BLOCK_NUMBER },
+  },
+});
+```
 
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] Script runs successfully on Base: `pnpm tsx scripts/create-vault.ts`
-- [ ] Vault is created and address logged
-- [ ] All roles granted (verify with `hasRole` read)
-- [ ] All fuses installed (verify with `getInstallationStatus` or similar)
-- [ ] Test deposit of 1 USDC into the vault works
+- [ ] Fork tests pass: all vault creation steps succeed on Hardhat Base fork
+- [ ] Vault created with correct underlying (USDC)
+- [ ] All roles granted including WHITELIST_ROLE (verify with `hasRole`)
+- [ ] All fuses installed (verify with `getFuses`)
+- [ ] Test deposit of 1 USDC into the vault works (requires WHITELIST_ROLE)
 - [ ] Test `PlasmaVault.execute([Erc4626SupplyFuse.enter(yoUSD, 1 USDC)])` works
+- [ ] Test `PlasmaVault.execute([UniversalTokenSwapperFuse.enter(USDC→WETH)])` works
+- [ ] Test `Erc4626SupplyFuse.exit(yoUSD)` works (withdraw from YO)
+- [ ] TypeScript compiles: `pnpm tsc --noEmit`
 
 #### Manual Verification:
-- [ ] Vault visible on Base block explorer
+- [ ] Script can be run on live Base (optional, after fork tests pass)
 - [ ] YO vault shares appear in vault balance after test allocation
+
+**Implementation Note**: After completing this phase and all automated verification passes, pause for review before Phase 2.
 
 ---
 
 ## Phase 2: AI Agent (Mastra)
 
 ### Overview
-Build the `yo-treasury-agent` with tools that read YO vault data, read Fusion vault allocation, create allocation/withdrawal/swap actions, simulate on Anvil, and pass to UI for execution.
+Build the `yo-treasury-agent` with tools that read YO vault data, read Fusion vault allocation, create allocation/withdrawal/swap actions, simulate on Anvil, and pass to UI for execution. Agent handles alpha actions only — NOT deposit/withdraw from treasury.
+
+### Implementation Order
+1. Tool types and output schemas
+2. Read-only tools (getYoVaults, getYoVaultDetails, getTreasuryAllocation)
+3. Action tools (createAllocation, createWithdraw, createSwap)
+4. Reuse displayPendingActions + executePendingActions
+5. Agent definition with system prompt
+6. Register agent in mastra/index.ts
+7. Test each tool individually, then integration
 
 ### Changes Required
 
@@ -162,7 +217,7 @@ const yoTreasuryWorkingMemorySchema = z.object({
 export const yoTreasuryAgent = new Agent({
   id: 'yo-treasury-agent',
   model: env.MODEL,
-  instructions: `You are a personal treasury copilot...`, // detailed system prompt
+  instructions: `You are a personal treasury alpha copilot...`, // detailed system prompt
   tools: {
     getYoVaultsTool,
     getYoVaultDetailsTool,
@@ -177,13 +232,15 @@ export const yoTreasuryAgent = new Agent({
 ```
 
 System prompt includes:
-- Role: Personal treasury advisor managing a Fusion vault
+- Role: Alpha advisor for a Fusion vault — you manage allocations across YO vaults
+- You do NOT handle deposits into or withdrawals from the treasury (that's the web UI)
 - Available vaults by chain with current addresses
 - How to read vault state (getYoVaults → allocation → suggest)
 - Swap instructions: always swap before allocating cross-asset
 - Action workflow: read → plan → create actions (with simulation) → display → execute
 - Working memory rules (same as alpha agent)
 - Always use tools, never describe tool output in text
+- Never project future yield — only display current APRs
 
 #### 2. YO Vault Data Tools
 
@@ -225,6 +282,7 @@ Deep dive tool using `getVaultState()` + `getVaultSnapshot()` + `getVaultYieldHi
 **File**: `packages/mastra/src/tools/yo-treasury/get-treasury-allocation.ts` (new)
 
 Reads the Fusion vault's market balances using `@ipor/fusion-sdk`:
+- Use `PlasmaVault.create(publicClient, vaultAddress)` then `getMarketSubstrates()` for each ERC4626 market
 - ERC20 substrates (unallocated tokens)
 - Per-market positions (ERC4626 markets → YO vault share positions)
 - Converts to USD values using price oracle
@@ -260,67 +318,13 @@ Includes Anvil fork simulation (reuse `simulateOnFork` from alpha tools).
 
 **File**: `packages/mastra/src/tools/yo-treasury/create-withdraw-action.ts` (new)
 
-Creates Erc4626SupplyFuse.exit FuseAction:
-```typescript
-const fuseAction = {
-  fuse: ERC4626_SUPPLY_FUSE_ADDRESS[marketSlot][chainId],
-  data: encodeFunctionData({
-    abi: erc4626SupplyFuseAbi,
-    functionName: 'exit',
-    args: [{ vault: yoVaultAddress, vaultAssetAmount: amount }],
-  }),
-}
-```
+Creates Erc4626SupplyFuse.exit FuseAction.
 
 #### 6. Swap Action Tool
 
 **File**: `packages/mastra/src/tools/yo-treasury/create-swap-action.ts` (new)
 
-This is the most complex tool. Steps:
-1. Call Odos API for swap quote (tokenIn → tokenOut)
-2. Call Odos API for swap assembly (get calldata)
-3. Encode UniversalTokenSwapperFuse.enter with the Odos calldata
-4. Optionally chain with allocation action
-
-```typescript
-// 1. Get Odos quote
-const quote = await fetch('https://api.odos.xyz/sor/quote/v2', {
-  method: 'POST',
-  body: JSON.stringify({
-    chainId,
-    inputTokens: [{ tokenAddress: tokenIn, amount: amountIn.toString() }],
-    outputTokens: [{ tokenAddress: tokenOut, proportion: 1 }],
-    userAddr: SWAP_EXECUTOR_ADDRESS, // the SwapExecutor contract
-  }),
-})
-
-// 2. Assemble swap calldata
-const assembled = await fetch('https://api.odos.xyz/sor/assemble', {
-  method: 'POST',
-  body: JSON.stringify({
-    pathId: quote.pathId,
-    userAddr: SWAP_EXECUTOR_ADDRESS,
-  }),
-})
-
-// 3. Encode fuse action
-const fuseAction = {
-  fuse: UNIVERSAL_TOKEN_SWAPPER_FUSE_ADDRESS[chainId],
-  data: encodeFunctionData({
-    abi: universalTokenSwapperFuseAbi,
-    functionName: 'enter',
-    args: [{
-      tokenIn,
-      tokenOut,
-      amountIn,
-      data: {
-        targets: [assembled.transaction.to],
-        data: [assembled.transaction.data],
-      },
-    }],
-  }),
-}
-```
+Most complex tool — calls swap aggregator API then encodes UniversalTokenSwapperFuse.enter.
 
 #### 7. Reuse Existing Tools
 
@@ -334,6 +338,14 @@ Copy and adapt from alpha tools:
 **File**: `packages/mastra/src/mastra/index.ts` (modify)
 
 Add `yoTreasuryAgent` to the Mastra instance agents map.
+
+### Testing Strategy
+
+- **Unit tests**: Test each tool individually with mocked data
+- **Fork tests**: Test action tools against Hardhat fork (reuse Phase 1 vault)
+- **Mastra Studio**: Manual testing of agent conversation flow
+- **Test scripts**: Create automated test scripts for agent tools
+- **Test prompts**: Create slash command prompts for non-deterministic agent testing
 
 ### Success Criteria
 
@@ -350,15 +362,24 @@ Add `yoTreasuryAgent` to the Mastra instance agents map.
 - [ ] Chat with agent in Mastra Studio — agent uses tools correctly
 - [ ] Agent responds naturally to "What are my yield options?"
 - [ ] Agent creates correct allocation actions when asked
+- [ ] Agent does NOT try to handle deposit/withdraw from treasury
 
-**Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation.
+**Implementation Note**: After completing this phase and all automated verification passes, pause for manual confirmation.
 
 ---
 
-## Phase 3: Frontend — Vault Creation Onboarding
+## Phase 3: Frontend — Onboarding & Dashboard
 
 ### Overview
-Build the in-app vault creation flow. User connects wallet, selects chain, and the app walks them through creating and configuring their personal vault.
+Build the onboarding flow (vault creation + first deposit) and the always-visible portfolio dashboard. Dashboard is the primary user experience. Implementation order: data hooks → dashboard components → onboarding flow → then UI integration.
+
+### Implementation Order
+1. Data hooks (useVaultBalances, useYoVaultData)
+2. Dashboard components (PortfolioSummary, AllocationBreakdown)
+3. Deposit/Withdraw forms (standard web UI)
+4. Vault creation stepper
+5. First deposit prompt
+6. Page routing and layout
 
 ### Changes Required
 
@@ -366,44 +387,71 @@ Build the in-app vault creation flow. User connects wallet, selects chain, and t
 
 **File**: `packages/web/src/app/yo-treasury/page.tsx` (new)
 
-Entry point that checks if user has an existing vault:
+Entry point that checks state and renders appropriate view:
 - If no vault → render `<CreateVaultFlow />`
-- If vault exists → render `<TreasuryChat />`
+- If vault exists but zero balance → render `<FirstDepositPrompt />`
+- If vault exists with balance → render `<TreasuryDashboard />` with `<TreasuryChat />` as secondary tab
 
-Vault detection: check localStorage first, then optionally query chain.
+#### 2. Portfolio Dashboard (Primary View)
 
-#### 2. Create Vault Flow
+**File**: `packages/web/src/yo-treasury/components/treasury-dashboard.tsx` (new)
+
+Always-visible dashboard showing:
+- Total treasury value in USD
+- Unallocated USDC balance
+- Per-YO-vault positions (shares, asset value, % of total, current APR)
+- YO vault APRs and TVL overview
+- Deposit and withdraw forms (inline or accessible via buttons)
+
+Data sourced from:
+- `@ipor/fusion-sdk` `PlasmaVault` for on-chain vault balances
+- `@yo-protocol/core` for YO vault snapshots (APR, TVL)
+
+#### 3. Deposit Form (Web UI)
+
+**File**: `packages/web/src/yo-treasury/components/deposit-form.tsx` (new)
+
+Standard form:
+- Amount input (USDC)
+- Approve + Deposit transaction flow using wagmi hooks
+- User needs WHITELIST_ROLE (granted during vault creation)
+- Not handled by AI chat
+
+#### 4. Withdraw Form (Web UI)
+
+**File**: `packages/web/src/yo-treasury/components/withdraw-form.tsx` (new)
+
+Standard form:
+- Amount input (USDC — unallocated balance only)
+- PlasmaVault.withdraw() using wagmi hooks
+- Not handled by AI chat
+
+#### 5. Create Vault Flow
 
 **File**: `packages/web/src/yo-treasury/components/create-vault-flow.tsx` (new)
 
-Multi-step stepper using `useContractWriteTransaction` pattern from ipor-webapp:
+Multi-step stepper:
 - Step 1: Select chain (Base recommended)
 - Step 2: Confirm vault creation → FusionFactory.clone()
-- Step 3: Configure vault → Grant roles + Add fuses + Configure substrates
-- Step 4: Ready! → Navigate to chat
+- Step 3: Configure vault → Grant roles (incl. WHITELIST_ROLE) + Add fuses + Configure substrates
+- Step 4: Ready! → Navigate to first deposit prompt
 
-Each transaction step shows: pending → loading → done → error states.
+**No `convertToPublicVault` step.**
 
-Simplification vs ipor-webapp wizard:
-- Skip strategy selection (always "YO Yield Optimizer")
-- Skip fee configuration (use defaults)
-- Skip alpha hire (user IS the alpha)
-- Hardcode underlying as USDC (can deposit other tokens later via swap)
+#### 6. First Deposit Prompt
 
-#### 3. Transaction Stepper Component
+**File**: `packages/web/src/yo-treasury/components/first-deposit-prompt.tsx` (new)
 
-**File**: `packages/web/src/yo-treasury/components/vault-setup-stepper.tsx` (new)
+Shown after vault creation or when returning user has zero balance:
+- Explains that funds are needed before management
+- USDC deposit form (same as deposit-form.tsx)
+- After successful deposit → navigate to dashboard
 
-Reusable stepper that tracks multiple sequential transactions:
-```typescript
-const steps = [
-  { label: 'Create vault', tx: createVaultTx },
-  { label: 'Grant roles', tx: grantRolesTx },
-  { label: 'Install fuses', tx: addFusesTx },
-  { label: 'Configure markets', tx: configureSubstratesTx },
-  { label: 'Finalize', tx: convertToPublicTx },
-]
-```
+### Testing Strategy
+
+- **Playwright MCP**: Test full onboarding flow, deposit, dashboard rendering
+- **Component tests**: Test individual components with mocked data
+- **wagmi test utils**: Test transaction flows
 
 ### Success Criteria
 
@@ -414,22 +462,42 @@ const steps = [
 
 #### Manual Verification:
 - [ ] Connect wallet on Base
-- [ ] Walk through vault creation — all transactions succeed
-- [ ] Vault address is stored and shown
-- [ ] Navigates to chat after creation
+- [ ] Walk through vault creation — all transactions succeed (including WHITELIST_ROLE grant)
+- [ ] First deposit prompt appears after creation
+- [ ] After deposit, dashboard shows correct balances
+- [ ] Dashboard always visible — no need to chat to see holdings
+- [ ] Deposit form works (approve + deposit)
+- [ ] Withdraw form works (unallocated USDC)
 
-**Implementation Note**: Pause here for manual testing of vault creation flow.
+**Implementation Note**: Pause here for manual testing of onboarding and dashboard.
 
 ---
 
 ## Phase 4: Frontend — Chat UI & Tool Renderers
 
 ### Overview
-Build the chat-first treasury management interface. Reuse the vault-alpha.tsx streaming chat pattern with new YO-specific tool renderers.
+Build the chat interface for alpha actions. This is the secondary view — users can allocate to YO vaults, swap assets, and manage positions through conversation. Reuse the vault-alpha.tsx streaming chat pattern with new YO-specific tool renderers.
+
+### Implementation Order
+1. API route
+2. Tool type definitions
+3. Chat component (reuse useChat pattern)
+4. Tool renderers (one at a time, testing each)
+5. Integration with dashboard layout
 
 ### Changes Required
 
-#### 1. Treasury Chat Component
+#### 1. API Route
+
+**File**: `packages/web/src/app/api/yo/treasury/chat/route.ts` (new)
+
+Same pattern as alpha chat route:
+- Validate chainId, vaultAddress
+- Read { messages, callerAddress, vaultAddress, chainId } from body
+- Build vault context string with vault address and chain
+- Stream yoTreasuryAgent.stream(messages, { maxSteps: 5 })
+
+#### 2. Treasury Chat Component
 
 **File**: `packages/web/src/yo-treasury/components/treasury-chat.tsx` (new)
 
@@ -446,16 +514,6 @@ const { messages, sendMessage, status } = useChat({
   }),
 })
 ```
-
-#### 2. API Route
-
-**File**: `packages/web/src/app/api/yo/treasury/chat/route.ts` (new)
-
-Same pattern as alpha chat route:
-- Validate chainId, vaultAddress
-- Read { messages, callerAddress, vaultAddress, chainId } from body
-- Build vault context string with vault address and chain
-- Stream yoTreasuryAgent.stream(messages, { maxSteps: 5 })
 
 #### 3. Tool Renderer
 
@@ -475,45 +533,27 @@ case 'execute-actions': return <ExecuteActions ... /> // reuse existing
 
 **File**: `packages/web/src/yo-treasury/components/yo-vaults-list.tsx` (new)
 
-Card grid showing YO vaults:
-- Vault name + logo/icon
-- APY (large, highlighted)
-- TVL
-- Underlying asset
-- "Available on: Base, Ethereum" badges
+Card grid showing YO vaults: name, APY, TVL, underlying.
 
 **File**: `packages/web/src/yo-treasury/components/treasury-allocation.tsx` (new)
 
-Allocation breakdown:
-- Unallocated balance (tokens sitting in vault)
-- Per-YO-vault positions (shares, asset value, % of total)
-- Total portfolio value in USD
-- Simple bar or pie visualization
+Allocation breakdown (chat inline version of dashboard data).
 
 **File**: `packages/web/src/yo-treasury/components/swap-preview.tsx` (new)
 
-Swap route visualization:
-- Token in → Token out
-- Exchange rate
-- Slippage estimate
-- Route (via Odos / KyberSwap)
+Swap route visualization.
 
 #### 5. Type Definitions
 
 **File**: `packages/mastra/src/tools/yo-treasury/types.ts` (new)
 
-Discriminated union for all tool outputs:
-```typescript
-export type YoTreasuryToolOutput =
-  | YoVaultsOutput           // type: 'yo-vaults'
-  | YoVaultDetailsOutput     // type: 'yo-vault-details'
-  | TreasuryAllocationOutput // type: 'treasury-allocation'
-  | ActionWithSimulationOutput // reuse from alpha
-  | PendingActionsOutput       // reuse from alpha
-  | ExecuteActionsOutput       // reuse from alpha
-```
+Discriminated union for all tool outputs.
 
-Export from package.json as `@ipor/fusion-mastra/yo-treasury-types`.
+### Testing Strategy
+
+- **Playwright MCP**: Test full chat flow, tool rendering, transaction execution
+- **Mastra Studio**: Test agent responses and tool usage
+- **Test prompts**: Slash commands for common agent scenarios
 
 ### Success Criteria
 
@@ -529,9 +569,11 @@ Export from package.json as `@ipor/fusion-mastra/yo-treasury-types`.
 - [ ] "Put 100 USDC into yoUSD" → Creates action, shows simulation, signs tx
 - [ ] "Swap 100 USDC to WETH" → Shows swap preview with Odos quote
 - [ ] "Swap and allocate to yoETH" → Batched swap+allocate in single tx
+- [ ] Agent does NOT try to handle deposit/withdraw from treasury
 - [ ] Transaction execution works end-to-end
+- [ ] Dashboard updates after chat-initiated transactions
 
-**Implementation Note**: This is the core phase. Pause for thorough manual testing.
+**Implementation Note**: This is a complex phase. Pause for thorough manual testing.
 
 ---
 
@@ -552,30 +594,32 @@ Polish the UX, record the demo video, prepare GitHub submission.
 #### 2. Demo Script (3 minutes)
 
 ```
-(0:00-0:20) Open app. "Meet YO Treasury — your personal AI-managed yield vault."
-            Connect wallet on Base. Show empty state.
+(0:00-0:15) Open app. "Meet YO Treasury — your personal AI-managed yield vault."
+            Show the dashboard-first design. "Your holdings are always visible."
 
-(0:20-0:45) "Create your Treasury." Walk through vault creation.
-            Show transactions confirming. "Your personal vault is live on Base."
+(0:15-0:40) "Create your Treasury." Walk through vault creation.
+            Show WHITELIST_ROLE being granted. "Your vault, your rules."
 
-(0:45-1:15) Chat: "What yields can I earn?"
+(0:40-1:00) First deposit: 100 USDC via the deposit form.
+            Dashboard immediately shows: "100 USDC unallocated."
+
+(1:00-1:30) Switch to chat. "What yields can I earn?"
             Agent shows YO vaults: yoUSD at 19%, yoETH at 17%.
-            "This is a real-time view from @yo-protocol/core."
+            "This is real-time data from @yo-protocol/core."
 
-(1:15-1:45) "Deposit 100 USDC into my treasury."
-            Sign approve + deposit tx. Show vault balance update.
+(1:30-2:00) "Allocate 50 USDC to yoUSD."
+            Agent creates action, simulates, shows diff.
+            Sign PlasmaVault.execute(). Dashboard updates instantly.
 
-(1:45-2:15) "Allocate it all to yoUSD."
-            Agent creates Erc4626SupplyFuse action, simulates, shows diff.
-            Sign PlasmaVault.execute(). "My USDC is now earning 19% in yoUSD."
-
-(2:15-2:45) "Actually, swap half to WETH and put it in yoETH."
+(2:00-2:30) "Swap 30 USDC to WETH and put it in yoETH."
             Agent calls Odos API, batches swap + allocate.
-            Single tx: 50 USDC → WETH → yoETH. Show simulation.
+            Single tx. Dashboard now shows: 20 USDC unallocated, 50 in yoUSD, 30 in yoETH.
 
-(2:45-3:00) "Show my portfolio."
-            Allocation view: 50% yoUSD, 50% yoETH.
-            "This is DeFi savings through conversation."
+(2:30-2:50) Back to dashboard. "Everything is always visible."
+            Show allocations, APRs, total value.
+            "DeFi savings with full transparency."
+
+(2:50-3:00) "This is YO Treasury. Dashboard-first. AI-powered. Your funds, your vault."
 ```
 
 #### 3. Submission Package
@@ -590,9 +634,12 @@ Polish the UX, record the demo video, prepare GitHub submission.
 - [ ] App builds clean: `pnpm build`
 - [ ] No TypeScript errors: `pnpm tsc --noEmit`
 - [ ] No lint errors: `pnpm lint`
+- [ ] All fork tests pass
 
 #### Manual Verification:
 - [ ] Full demo script executes without errors
 - [ ] Demo video recorded and under 3 minutes
 - [ ] README clearly explains the project
 - [ ] GitHub repo is public and clean
+- [ ] Dashboard is always visible and accurate
+- [ ] Chat handles alpha actions smoothly
