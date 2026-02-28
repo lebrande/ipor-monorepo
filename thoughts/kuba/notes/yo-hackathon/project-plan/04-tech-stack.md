@@ -82,17 +82,10 @@ RPC_URL_MAINNET=...               # Used by hardhat.config.ts for fork testing
 
 ## Project Structure
 
+**No new packages.** We extend `packages/web` (frontend + constants), `packages/mastra` (agent + tools), and `packages/hardhat-tests` (fork tests). This gives us all existing infrastructure for free: wagmi, shadcn, sidebar, auth, App Router, chat patterns, transaction execution components.
+
 ```
 packages/
-├── yo-treasury/                    # NEW — Hackathon package
-│   ├── scripts/
-│   │   └── create-vault.ts         # Deployment script for manual vault creation
-│   ├── src/
-│   │   └── constants/
-│   │       ├── addresses.ts         # All contract addresses per chain
-│   │       └── abis.ts             # Collected ABIs (supplement fusion-sdk exports)
-│   └── package.json
-│
 ├── hardhat-tests/                  # EXISTING — Add fork tests
 │   └── test/
 │       └── yo-treasury/            # NEW test directory
@@ -119,18 +112,23 @@ packages/
 │       └── mastra/
 │           └── index.ts             # Register new agent
 │
-├── web/                            # EXISTING — Add pages + components
+├── web/                            # EXISTING — Extend with yo-treasury feature
 │   └── src/
 │       ├── app/
 │       │   ├── yo-treasury/
 │       │   │   └── page.tsx         # NEW entry page
 │       │   └── api/yo/treasury/
 │       │       └── chat/route.ts    # NEW API route
-│       └── yo-treasury/
+│       └── yo-treasury/             # NEW feature directory
+│           ├── constants/
+│           │   ├── addresses.ts     # All contract addresses per chain
+│           │   └── abis.ts          # Collected ABIs (supplement fusion-sdk exports)
+│           ├── lib/
+│           │   └── create-vault.ts  # Vault creation tx builders (used by onboarding UI)
 │           └── components/
 │               ├── treasury-dashboard.tsx   # Primary view — portfolio dashboard
 │               ├── portfolio-summary.tsx     # Total value, allocations
-│               ├── allocation-breakdown.tsx  # Per-YO-vault positions
+│               ├── allocation-breakdown.tsx  # Per-YO-vault positions with APR
 │               ├── deposit-form.tsx          # Standard USDC deposit form
 │               ├── withdraw-form.tsx         # Standard USDC withdraw form
 │               ├── create-vault-flow.tsx     # Onboarding stepper
@@ -146,6 +144,24 @@ packages/
 │                                   # substrateToAddress, ACCESS_MANAGER_ROLE,
 │                                   # plasmaVaultAbi, accessManagerAbi
 ```
+
+### What We Get For Free (from existing `packages/web`)
+
+| Feature | Source |
+|---------|--------|
+| Wagmi multi-chain setup | `app/wagmi-provider.tsx`, `app/chains.config.ts` |
+| SIWE auth | `auth/`, `app/api/auth/` |
+| Sidebar navigation | `components/sidebar/` — just add a nav entry |
+| shadcn UI components | `components/ui/` (button, card, input, dialog, table, etc.) |
+| App Router patterns | `app/` layout + page conventions |
+| Chat UI pattern | `vault-details/components/vault-alpha.tsx` — copy and adapt |
+| ExecuteActions 5-step flow | `vault-details/components/execute-actions.tsx` — reuse as-is |
+| Simulation components | `vault-details/components/simulation-balance-comparison.tsx` — reuse |
+| PendingActionsList | `vault-details/components/pending-actions-list.tsx` — reuse |
+| Token/chain/protocol icons | `components/token-icon/`, `components/chain-icon/` |
+| Account management | `account/` — ENS, Safe wallet detection |
+| React Query setup | `app/query-client-provider.tsx` |
+| Private key connector (dev) | `app/private-key-connector.ts` — for testing |
 
 ## Key ABIs Needed
 
@@ -193,6 +209,11 @@ packages/
 4. **Run fork tests**: `cd packages/hardhat-tests && pnpm test -- --grep yo-treasury`
 5. **Test full flow**: Open `http://localhost:3000/yo-treasury`, connect wallet
 6. **Ad-hoc YO queries**: `npx yo info vaults --chain 8453` or `npx yo api vault-snapshot --vault yoUSD --chain 8453`
+
+## Screenshots
+
+All screenshots created during development go to: `thoughts/kuba/notes/yo-hackathon/screenshots/`
+Do NOT create screenshots at repository root level.
 
 ## Skills to Use During Implementation
 

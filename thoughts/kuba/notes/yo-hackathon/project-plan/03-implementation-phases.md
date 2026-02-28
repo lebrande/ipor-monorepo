@@ -18,24 +18,31 @@ This plan **will evolve during implementation**. We start with basics, execute, 
 
 ---
 
-## Phase 1: Smart Contract Setup & Vault Creation Script
+## Screenshots
+
+All screenshots created during development go to: `thoughts/kuba/notes/yo-hackathon/screenshots/`
+Do NOT create screenshots at repository root level.
+
+---
+
+## Phase 1: Smart Contract Setup & Vault Creation
 
 ### Overview
-Set up the on-chain infrastructure. Create a deployment script that creates a Fusion vault on Base, configures all fuses, substrates, and roles. This script validates the entire on-chain setup before we build the UI. **Test on Hardhat fork, not live chain.**
+Set up the on-chain infrastructure. Create vault creation utilities within `packages/web/src/yo-treasury/` that will be used by the frontend onboarding flow. Validate everything with Hardhat fork tests. **No new package** — constants, ABIs, and vault creation logic live in `packages/web/src/yo-treasury/`. **Test on Hardhat fork, not live chain.**
 
 ### Implementation Order
-1. Address constants and ABIs (data layer)
-2. Vault creation script
+1. Address constants and ABIs (data layer) in `packages/web/src/yo-treasury/constants/`
+2. Vault creation tx builders in `packages/web/src/yo-treasury/lib/`
 3. Fork tests to verify everything works
 4. Only then move to Phase 2
 
 ### Changes Required
 
-#### 1. Deployment Script
+#### 1. Vault Creation Utilities
 
-**File**: `packages/yo-treasury/scripts/create-vault.ts` (new)
+**File**: `packages/web/src/yo-treasury/lib/create-vault.ts` (new)
 
-Create a TypeScript script using viem that:
+Vault creation logic used by the frontend onboarding flow (CreateVaultFlow component). Exported as pure functions that return transaction configs — the UI calls them via wagmi hooks.
 
 ```typescript
 // 1. Clone vault from factory
@@ -120,7 +127,7 @@ await walletClient.writeContract({
 
 #### 2. Address Constants
 
-**File**: `packages/yo-treasury/src/constants/addresses.ts` (new)
+**File**: `packages/web/src/yo-treasury/constants/addresses.ts` (new)
 
 Central registry of all contract addresses per chain:
 - FusionFactory addresses (Base, Ethereum, Arbitrum)
@@ -133,7 +140,7 @@ Central registry of all contract addresses per chain:
 
 #### 3. ABIs
 
-**File**: `packages/yo-treasury/src/constants/abis.ts` (new)
+**File**: `packages/web/src/yo-treasury/constants/abis.ts` (new)
 
 Collect needed ABIs (check `@ipor/fusion-sdk` exports first — many already exist):
 - `fusionFactoryAbi` (clone function)

@@ -1,5 +1,7 @@
 # YO Treasury — Technical Architecture
 
+**Key decision:** No new packages. All frontend code (constants, ABIs, lib, components) lives in `packages/web/src/yo-treasury/`. Agent + tools in `packages/mastra/`. Fork tests in `packages/hardhat-tests/`. This maximizes reuse of existing wagmi, shadcn, sidebar, auth, chat, and transaction execution infrastructure.
+
 ## System Overview
 
 ```
@@ -237,7 +239,7 @@ User: "Swap 500 USDC to WETH and put it in yoETH"
 ### Component Tree
 
 ```
-YoTreasuryApp (new Next.js page)
+YoTreasuryApp (new page at packages/web/src/app/yo-treasury/)
 ├── OnboardingFlow (if no vault detected)
 │   ├── ChainSelector (Base/Ethereum/Arbitrum)
 │   ├── CreateVaultStepper
@@ -268,7 +270,7 @@ YoTreasuryApp (new Next.js page)
 │       ├── PendingActionsList → action queue
 │       └── ExecuteActions → 5-step tx executor
 │
-└── WalletProvider (wagmi, multi-chain)
+└── WalletProvider (existing wagmi from packages/web — already configured for multi-chain)
 ```
 
 ### API Routes
@@ -295,18 +297,24 @@ YoTreasuryApp (new Next.js page)
 | `ACCESS_MANAGER_ROLE` | `@ipor/fusion-sdk` | Reuse for WHITELIST_ROLE (800n) etc. |
 | `FuseAction` type | `@ipor/fusion-sdk` | Reuse as-is |
 
-### New Components Needed
+### New Files Needed (all in `packages/web/src/yo-treasury/`)
 
-| Component | Purpose |
-|-----------|---------|
-| `CreateVaultStepper` | Multi-step vault creation with tx tracking |
-| `FirstDepositPrompt` | USDC deposit form after vault creation |
-| `PortfolioSummary` | Dashboard showing total value, allocations |
-| `AllocationBreakdown` | Per-YO-vault positions with APR |
-| `YoVaultsOverview` | Available YO vaults with APR/TVL |
-| `DepositForm` | Standard USDC deposit into treasury |
-| `WithdrawForm` | Standard USDC withdraw from treasury |
-| `YoVaultCard` | Displays YO vault APY, TVL, underlying |
-| `TreasuryAllocation` | Shows allocation breakdown across YO vaults (chat renderer) |
-| `SwapPreview` | Shows swap route, expected output, slippage |
-| `ChainSelector` | Pick chain for vault creation |
+| File | Purpose |
+|------|---------|
+| `constants/addresses.ts` | All contract addresses per chain (factory, fuses, YO vaults, tokens, routers) |
+| `constants/abis.ts` | ABIs not already in `@ipor/fusion-sdk` (fusionFactory, erc4626SupplyFuse, universalTokenSwapperFuse) |
+| `lib/create-vault.ts` | Vault creation tx config builders (used by CreateVaultFlow + fork tests) |
+| `components/create-vault-flow.tsx` | Multi-step vault creation with tx tracking |
+| `components/first-deposit-prompt.tsx` | USDC deposit form after vault creation |
+| `components/treasury-dashboard.tsx` | Primary view — portfolio dashboard |
+| `components/portfolio-summary.tsx` | Dashboard showing total value, allocations |
+| `components/allocation-breakdown.tsx` | Per-YO-vault positions with APR |
+| `components/yo-vaults-overview.tsx` | Available YO vaults with APR/TVL |
+| `components/deposit-form.tsx` | Standard USDC deposit into treasury |
+| `components/withdraw-form.tsx` | Standard USDC withdraw from treasury |
+| `components/treasury-chat.tsx` | Chat UI (copy vault-alpha.tsx pattern) |
+| `components/yo-tool-renderer.tsx` | Tool output switch (copy alpha-tool-renderer.tsx pattern) |
+| `components/yo-vaults-list.tsx` | YO vault cards (chat renderer) |
+| `components/treasury-allocation.tsx` | Allocation breakdown across YO vaults (chat renderer) |
+| `components/swap-preview.tsx` | Swap route, expected output, slippage (chat renderer) |
+| `components/chain-selector.tsx` | Pick chain for vault creation |

@@ -5,11 +5,10 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 
 ---
 
-## Phase 1: Smart Contract Setup & Vault Creation Script
-- [ ] Create `packages/yo-treasury/` package with package.json
-- [ ] Define address constants per chain (factory, fuses, YO vaults, tokens, routers)
-- [ ] Collect ABIs — check `@ipor/fusion-sdk` exports first, supplement as needed
-- [ ] Write vault creation script (create-vault.ts)
+## Phase 1: Smart Contract Setup & Vault Creation
+- [ ] Create `packages/web/src/yo-treasury/constants/addresses.ts` — address constants per chain (factory, fuses, YO vaults, tokens, routers)
+- [ ] Create `packages/web/src/yo-treasury/constants/abis.ts` — check `@ipor/fusion-sdk` exports first, supplement as needed
+- [ ] Create `packages/web/src/yo-treasury/lib/create-vault.ts` — vault creation tx builders (used by onboarding UI + fork tests)
 - [ ] Write Hardhat fork tests for vault creation on Base
 - [ ] Run fork tests — verify vault creation succeeds
 - [ ] Verify roles granted including WHITELIST_ROLE=800 (read hasRole on-chain)

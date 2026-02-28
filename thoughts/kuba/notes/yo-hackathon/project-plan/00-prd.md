@@ -95,6 +95,15 @@ The **AI chat interface is secondary** but still significant. It handles alpha-o
 5. **Composability story** — demonstrates ERC4626 composability (Fusion vault wrapping YO vaults)
 6. **Simulation before execution** — Anvil fork shows balance changes before signing
 
+## Key Structural Decision
+
+**No new packages.** We extend `packages/web` rather than creating a new `packages/yo-treasury` package. This gives us wagmi, shadcn, sidebar, auth, chat patterns, transaction execution components, and the full App Router setup for free. All yo-treasury code lives in `packages/web/src/yo-treasury/` (constants, lib, components) plus `packages/mastra/` (agent + tools) and `packages/hardhat-tests/` (fork tests).
+
+## Screenshots
+
+All screenshots go to: `thoughts/kuba/notes/yo-hackathon/screenshots/`
+Do NOT create screenshots at repository root level.
+
 ## Adaptive Approach
 
 This plan is a high-level overview that **will evolve during implementation**. We start with basics and adjust as we learn. Detailed tickets are created only for the very next step — not for far-future work. If initial assumptions prove wrong, the plan changes. The `project-plan/` directory holds the overview; implementation tickets are created incrementally.
