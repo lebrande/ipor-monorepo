@@ -2,30 +2,33 @@ import { before, describe, it, after } from 'node:test';
 import { expect } from 'chai';
 import {
   PlasmaVault,
-  fusionFactoryAbi,
-  plasmaVaultFactoryAbi,
+  cloneVault,
+  grantRoles,
+  addFuses,
+  addBalanceFuses,
+  configureSubstrates,
+  updateDependencyGraphs,
+  // ABIs still needed for test-specific operations (deposit, allocate, swap, etc.)
   yoErc4626SupplyFuseAbi,
+  yoRedeemFuseAbi,
   swapRouter02Abi,
   yoUniversalTokenSwapperFuseAbi,
-  FUSION_FACTORY_ADDRESS,
+  // Addresses still needed for test-specific operations
   ERC4626_SUPPLY_FUSE_SLOT1_ADDRESS,
   ERC4626_SUPPLY_FUSE_SLOT2_ADDRESS,
-  ERC4626_SUPPLY_FUSE_SLOT3_ADDRESS,
-  ERC4626_SUPPLY_FUSE_SLOT4_ADDRESS,
-  ERC4626_BALANCE_FUSE_SLOT1_ADDRESS,
-  ERC4626_BALANCE_FUSE_SLOT2_ADDRESS,
-  ERC4626_BALANCE_FUSE_SLOT3_ADDRESS,
-  ERC4626_BALANCE_FUSE_SLOT4_ADDRESS,
   UNIVERSAL_TOKEN_SWAPPER_FUSE_ADDRESS,
   UNISWAP_SWAP_ROUTER_02_ADDRESS,
-  YO_TREASURY_ROLES,
-  YO_VAULT_SLOTS,
   SWAP_MARKET_ID,
+  YO_VAULT_SLOTS,
   YO_USD_ADDRESS,
   YO_ETH_ADDRESS,
   YO_USDC_ADDRESS,
   YO_WETH_ADDRESS,
+  type VaultCreationResult,
 } from '@ipor/fusion-sdk';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const YoRedeemFuseArtifact = require('../../artifacts/contracts/YoRedeemFuse.sol/YoRedeemFuse.json');
 import { NetworkConnection } from 'hardhat/types/network';
 import { network } from 'hardhat';
 import { env } from '../../lib/env';
@@ -36,7 +39,6 @@ import {
   erc20Abi,
   erc4626Abi,
   encodeFunctionData,
-  decodeEventLog,
   keccak256,
   encodeAbiParameters,
   toHex,
@@ -60,6 +62,7 @@ describe(
     let publicClient: Awaited<ReturnType<NetworkConnection<'op'>['viem']['getPublicClient']>>;
     let testClient: Awaited<ReturnType<NetworkConnection<'op'>['viem']['getTestClient']>>;
     let ownerClient: Awaited<ReturnType<NetworkConnection<'op'>['viem']['getWalletClient']>>;
+    let yoRedeemFuseAddress: Address;
 
     const usdcAddress = YO_USDC_ADDRESS[CHAIN_ID];
     const yoUsdAddress = YO_USD_ADDRESS[CHAIN_ID];
@@ -91,116 +94,40 @@ describe(
 
       ownerClient = await viem.getWalletClient(OWNER_ADDRESS);
 
-      // ─── Step 1: Clone vault via FusionFactory ───
+      // ─── Vault creation via SDK library ───
 
-      const factoryAddress = FUSION_FACTORY_ADDRESS[CHAIN_ID];
-      const cloneTxHash = await ownerClient.writeContract({
-        address: factoryAddress,
-        abi: fusionFactoryAbi,
-        functionName: 'clone',
-        args: ['YO Treasury Test', 'yoTEST', usdcAddress, 1n, OWNER_ADDRESS, 0n],
+      // Step 1: Clone vault
+      const result = await cloneVault(publicClient, ownerClient, {
+        chainId: CHAIN_ID,
+        ownerAddress: OWNER_ADDRESS,
+        vaultName: 'YO Treasury Test',
+        vaultSymbol: 'yoTEST',
       });
-
-      const cloneReceipt = await publicClient.waitForTransactionReceipt({
-        hash: cloneTxHash,
-      });
-
-      // Parse PlasmaVaultCreated event to get vault address
-      let parsedVaultAddress: Address | undefined;
-      for (const log of cloneReceipt.logs) {
-        try {
-          const decoded = decodeEventLog({
-            abi: plasmaVaultFactoryAbi,
-            data: log.data,
-            topics: log.topics,
-          });
-          if (decoded.eventName === 'PlasmaVaultCreated') {
-            parsedVaultAddress = decoded.args.plasmaVault;
-          }
-        } catch {
-          // not this event, skip
-        }
-      }
-
-      if (!parsedVaultAddress) throw new Error('PlasmaVaultCreated event not found');
-      vaultAddress = parsedVaultAddress;
+      vaultAddress = result.vaultAddress;
+      plasmaVault = result.plasmaVault;
       console.log('Vault created:', vaultAddress);
 
-      plasmaVault = await PlasmaVault.create(publicClient, vaultAddress);
-      console.log('PriceOracleMiddleware:', plasmaVault.priceOracle);
-
-      // ─── Step 2: Grant roles ───
-
-      const roles = [
-        YO_TREASURY_ROLES.ATOMIST,
-        YO_TREASURY_ROLES.FUSE_MANAGER,
-        YO_TREASURY_ROLES.ALPHA,
-        YO_TREASURY_ROLES.WHITELIST,
-      ];
-
-      for (const role of roles) {
-        await plasmaVault.grantRole(ownerClient, role, OWNER_ADDRESS, 0);
-      }
+      // Step 2: Grant roles
+      await grantRoles(ownerClient, plasmaVault, OWNER_ADDRESS);
       console.log('Roles granted');
 
-      // ─── Step 3: Add supply fuses ───
-
-      const supplyFuses: Address[] = [
-        ERC4626_SUPPLY_FUSE_SLOT1_ADDRESS[CHAIN_ID],
-        ERC4626_SUPPLY_FUSE_SLOT2_ADDRESS[CHAIN_ID],
-        ERC4626_SUPPLY_FUSE_SLOT3_ADDRESS[CHAIN_ID],
-        ERC4626_SUPPLY_FUSE_SLOT4_ADDRESS[CHAIN_ID],
-        UNIVERSAL_TOKEN_SWAPPER_FUSE_ADDRESS[CHAIN_ID],
-      ];
-
-      await plasmaVault.addFuses(ownerClient, supplyFuses);
+      // Step 3: Add supply fuses
+      await addFuses(ownerClient, plasmaVault, CHAIN_ID);
       console.log('Fuses added');
 
-      // ─── Step 4: Add balance fuses ───
-
-      const balanceFuseConfigs = [
-        { fuse: ERC4626_BALANCE_FUSE_SLOT1_ADDRESS[CHAIN_ID], marketId: YO_VAULT_SLOTS.yoUSD.marketId },
-        { fuse: ERC4626_BALANCE_FUSE_SLOT2_ADDRESS[CHAIN_ID], marketId: YO_VAULT_SLOTS.yoETH.marketId },
-        { fuse: ERC4626_BALANCE_FUSE_SLOT3_ADDRESS[CHAIN_ID], marketId: YO_VAULT_SLOTS.yoBTC.marketId },
-        { fuse: ERC4626_BALANCE_FUSE_SLOT4_ADDRESS[CHAIN_ID], marketId: YO_VAULT_SLOTS.yoEUR.marketId },
-      ];
-
-      for (const { fuse, marketId } of balanceFuseConfigs) {
-        await plasmaVault.addBalanceFuse(ownerClient, fuse, marketId);
-      }
-
-      // ─── Step 4b: Deploy ZeroBalanceFuse for swap market ───
-      // The swap market (MARKET_ID=12) needs a balance fuse that returns 0,
-      // since swaps don't hold persistent positions.
-      // Runtime bytecode: responds to MARKET_ID() with 12, balanceOf() with 0
-      const ZERO_BALANCE_FUSE_ADDRESS = '0x0000000000000000000000000000000000AB12CF' as Address;
-      await testClient.setCode({
-        address: ZERO_BALANCE_FUSE_ADDRESS,
-        bytecode:
-          '0x60003560e01c8063454dab2314601d5763722713f714602857600080fd5b600c60005260206000f35b600060005260206000f3',
-      });
-      await plasmaVault.addBalanceFuse(ownerClient, ZERO_BALANCE_FUSE_ADDRESS, SWAP_MARKET_ID);
-
+      // Step 4: Add balance fuses (including ZeroBalanceFuse for swap market)
+      await addBalanceFuses(ownerClient, plasmaVault, CHAIN_ID);
       console.log('Balance fuses added (including ZeroBalanceFuse for swap market)');
 
-      // ─── Step 5: Configure substrates for yoUSD ───
+      // Step 5: Configure substrates
+      await configureSubstrates(ownerClient, plasmaVault, CHAIN_ID);
+      console.log('Substrates configured');
 
-      const yoUsdSubstrate = pad(yoUsdAddress, { size: 32 }).toLowerCase() as Hex;
-      await plasmaVault.grantMarketSubstrates(
-        ownerClient,
-        YO_VAULT_SLOTS.yoUSD.marketId,
-        [yoUsdSubstrate],
-      );
+      // Step 6: Update dependency graphs
+      await updateDependencyGraphs(ownerClient, plasmaVault);
+      console.log('Dependency graphs updated');
 
-      // ─── Step 6: Update dependency balance graph for yoUSD ───
-
-      await plasmaVault.updateDependencyBalanceGraph(
-        ownerClient,
-        YO_VAULT_SLOTS.yoUSD.marketId,
-        [],
-      );
-
-      // ─── Step 7: Fund owner with USDC and deposit ───
+      // ─── Test-specific setup: Fund owner with USDC and deposit ───
 
       const depositAmount = 100_000000n; // 100 USDC
 
@@ -235,7 +162,7 @@ describe(
 
       console.log('Deposited', depositAmount, 'USDC into vault');
 
-      // ─── Step 8: Allocate 50 USDC to yoUSD ───
+      // ─── Allocate 50 USDC to yoUSD ───
 
       const allocateAmount = 50_000000n; // 50 USDC
       const supplyFuseSlot1 = ERC4626_SUPPLY_FUSE_SLOT1_ADDRESS[CHAIN_ID];
@@ -251,6 +178,21 @@ describe(
 
       await plasmaVault.execute(ownerClient, [[enterAction]]);
       console.log('Allocated 50 USDC to yoUSD');
+
+      // ─── Deploy and register YoRedeemFuse ───
+
+      const yoRedeemFuseMarketId = YO_VAULT_SLOTS.yoUSD.marketId;
+      const deployHash = await ownerClient.deployContract({
+        abi: YoRedeemFuseArtifact.abi,
+        bytecode: YoRedeemFuseArtifact.bytecode as `0x${string}`,
+        args: [yoRedeemFuseMarketId],
+      });
+      const deployReceipt = await publicClient.waitForTransactionReceipt({ hash: deployHash });
+      yoRedeemFuseAddress = deployReceipt.contractAddress!;
+      console.log('YoRedeemFuse deployed:', yoRedeemFuseAddress);
+
+      await plasmaVault.addFuses(ownerClient, [yoRedeemFuseAddress]);
+      console.log('YoRedeemFuse registered on PlasmaVault');
     });
 
     after(async () => {
@@ -291,11 +233,9 @@ describe(
       console.log('yoUSD shares worth:', shareValue, 'USDC');
     });
 
-    // ─── Phase 1: Withdraw from yoUSD via requestRedeem ───
+    // ─── Phase 1: Withdraw from yoUSD via YoRedeemFuse ───
 
-    it('should withdraw from yoUSD via requestRedeem (impersonated)', async () => {
-      const { viem } = connection;
-
+    it('should withdraw from yoUSD via YoRedeemFuse', async () => {
       // Read vault's yoUSD share balance
       const yoUsdShares = await publicClient.readContract({
         address: yoUsdAddress,
@@ -313,23 +253,18 @@ describe(
         args: [vaultAddress],
       });
 
-      // Impersonate the PlasmaVault to call yoUSD.redeem() directly
-      // This proves: msg.sender = PlasmaVault = owner → satisfies requestRedeem check
-      await testClient.impersonateAccount({ address: vaultAddress });
-      await testClient.setBalance({ address: vaultAddress, value: BigInt(1e18) });
+      // Build fuse exit action — runs via delegatecall from PlasmaVault
+      // so address(this) = PlasmaVault = share owner, satisfying YoVault's owner check
+      const exitAction = {
+        fuse: yoRedeemFuseAddress,
+        data: encodeFunctionData({
+          abi: yoRedeemFuseAbi,
+          functionName: 'exit',
+          args: [{ vault: yoUsdAddress, shares: yoUsdShares }],
+        }),
+      };
 
-      const vaultWalletClient = await viem.getWalletClient(vaultAddress);
-
-      // Call redeem() which delegates to requestRedeem()
-      // For small amounts (50 USDC << vault TVL), this is instant
-      await vaultWalletClient.writeContract({
-        address: yoUsdAddress,
-        abi: erc4626Abi,
-        functionName: 'redeem',
-        args: [yoUsdShares, vaultAddress, vaultAddress],
-      });
-
-      await testClient.stopImpersonatingAccount({ address: vaultAddress });
+      await plasmaVault.execute(ownerClient, [[exitAction]]);
 
       // Verify yoUSD shares burned
       const yoUsdSharesAfter = await publicClient.readContract({
@@ -361,15 +296,6 @@ describe(
 
       // The SwapExecutor receives WETH from the router and sweeps it back to the vault
       const EXECUTOR_ADDRESS = '0x591435c065fce9713c8B112fcBf5Af98b8975cB3' as Address;
-
-      // ─── Configure swap substrates ───
-      // Need: USDC (tokenIn), WETH (tokenOut), SwapRouter02 (target)
-      const swapSubstrates = [
-        pad(usdcAddress, { size: 32 }).toLowerCase() as Hex,
-        pad(wethAddress, { size: 32 }).toLowerCase() as Hex,
-        pad(swapRouter02Address, { size: 32 }).toLowerCase() as Hex,
-      ];
-      await plasmaVault.grantMarketSubstrates(ownerClient, SWAP_MARKET_ID, swapSubstrates);
 
       // ─── Encode swap calldata ───
       // Step 1: USDC.approve(SwapRouter02, amount) — executor approves router
@@ -452,19 +378,6 @@ describe(
 
     it('should allocate WETH to yoETH', async () => {
       const supplyFuseSlot2 = ERC4626_SUPPLY_FUSE_SLOT2_ADDRESS[CHAIN_ID];
-
-      // ─── Configure yoETH substrate + dependency graph ───
-      const yoEthSubstrate = pad(yoEthAddress, { size: 32 }).toLowerCase() as Hex;
-      await plasmaVault.grantMarketSubstrates(
-        ownerClient,
-        YO_VAULT_SLOTS.yoETH.marketId,
-        [yoEthSubstrate],
-      );
-      await plasmaVault.updateDependencyBalanceGraph(
-        ownerClient,
-        YO_VAULT_SLOTS.yoETH.marketId,
-        [],
-      );
 
       // Read available WETH
       const wethBalance = await publicClient.readContract({

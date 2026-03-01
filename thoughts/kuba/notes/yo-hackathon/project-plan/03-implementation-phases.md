@@ -27,14 +27,24 @@ Do NOT create screenshots at repository root level.
 
 ## Phase 1: Smart Contract Setup & Vault Creation
 
-### Overview
-Set up the on-chain infrastructure. Create vault creation utilities within `packages/web/src/yo-treasury/` that will be used by the frontend onboarding flow. Validate everything with Hardhat fork tests. **No new package** — constants, ABIs, and vault creation logic live in `packages/web/src/yo-treasury/`. **Test on Hardhat fork, not live chain.**
+> **STATUS: DONE** (FSN-0044, FSN-0045)
+> Implemented in `packages/sdk/src/markets/yo/` (not `packages/web/` as originally planned).
+> Fork tests at `packages/hardhat-tests/test/yo-treasury/create-vault.ts` — all 5 pass.
+> See: `thoughts/shared/plans/2026-02-28-FSN-0044-yo-treasury-foundation.md`
+> See: `thoughts/shared/plans/2026-02-28-FSN-0045-yo-withdraw-swap-allocate.md`
 
-### Implementation Order
-1. Address constants and ABIs (data layer) in `packages/web/src/yo-treasury/constants/`
-2. Vault creation tx builders in `packages/web/src/yo-treasury/lib/`
-3. Fork tests to verify everything works
-4. Only then move to Phase 2
+### Overview
+~~Set up the on-chain infrastructure. Create vault creation utilities within `packages/web/src/yo-treasury/` that will be used by the frontend onboarding flow.~~
+
+**Actual implementation**: SDK market module at `packages/sdk/src/markets/yo/` with ABIs, address constants, role constants, and vault creation library. Fork tests at `packages/hardhat-tests/test/yo-treasury/`. Constants and ABIs are exported from `@ipor/fusion-sdk`, not from `packages/web/`.
+
+### Implementation Order (Actual)
+1. ~~Address constants and ABIs in `packages/web/src/yo-treasury/constants/`~~
+   → Implemented in `packages/sdk/src/markets/yo/` as a proper SDK market module
+2. ~~Vault creation tx builders in `packages/web/src/yo-treasury/lib/`~~
+   → Implemented in `packages/sdk/src/markets/yo/create-vault.ts`
+3. Fork tests → `packages/hardhat-tests/test/yo-treasury/create-vault.ts`
+4. ✓ Phase 1 complete
 
 ### Changes Required
 
@@ -172,24 +182,27 @@ connection = await network.connect({
 });
 ```
 
-### Success Criteria
+### Success Criteria (Actual Results)
 
 #### Automated Verification:
-- [ ] Fork tests pass: all vault creation steps succeed on Hardhat Base fork
-- [ ] Vault created with correct underlying (USDC)
-- [ ] All roles granted including WHITELIST_ROLE (verify with `hasRole`)
-- [ ] All fuses installed (verify with `getFuses`)
-- [ ] Test deposit of 1 USDC into the vault works (requires WHITELIST_ROLE)
-- [ ] Test `PlasmaVault.execute([Erc4626SupplyFuse.enter(yoUSD, 1 USDC)])` works
-- [ ] Test `PlasmaVault.execute([UniversalTokenSwapperFuse.enter(USDC→WETH)])` works
-- [ ] Test `Erc4626SupplyFuse.exit(yoUSD)` works (withdraw from YO)
-- [ ] TypeScript compiles: `pnpm tsc --noEmit`
+- [x] Fork tests pass — 5/5 tests pass on Base fork at block 42755236
+- [x] Vault created with correct underlying (USDC) ✓
+- [x] All roles granted including WHITELIST_ROLE=800 ✓
+- [x] All fuses installed (4 ERC4626Supply + UniversalTokenSwapper) ✓
+- [x] Deposit into vault works (100 USDC with WHITELIST_ROLE) ✓
+- [x] PlasmaVault.execute with Erc4626SupplyFuse.enter(yoUSD) ✓
+- [x] PlasmaVault.execute with UniversalTokenSwapperFuse.enter (USDC→WETH via Uniswap V3) ✓
+- [x] Withdrawal from yoUSD via impersonated redeem() ✓ (Erc4626SupplyFuse.exit fails — YoVault.withdraw() is disabled)
+- [x] Compound swap+allocate in single execute() call ✓
+- [x] TypeScript compiles ✓
 
-#### Manual Verification:
-- [ ] Script can be run on live Base (optional, after fork tests pass)
-- [ ] YO vault shares appear in vault balance after test allocation
+#### Issues Found & Resolved:
+- ~~Erc4626SupplyFuse.exit() does NOT work with YO vaults (withdraw() is disabled)~~ → **FIXED**: Created `YoRedeemFuse` (`packages/hardhat-tests/contracts/YoRedeemFuse.sol`) — calls `redeem()` instead of `withdraw()`. ABI exported as `yoRedeemFuseAbi` from `@ipor/fusion-sdk`. Fork test deploys + registers it dynamically and proves withdrawal works through the fuse system (no impersonation). See `thoughts/kuba/notes/yo-hackathon/plans/yo-redeem-fuse.md`.
+- ZeroBalanceFuse needed for swap market — test uses bytecode hack, production needs deployment
+- SDK library functions untested (test does everything inline) — being fixed in FSN-0046a
+- **YoRedeemFuse not yet deployed to Base** — only needed when executing real transactions in the web app (Phase 3). Deploy as late as possible.
 
-**Implementation Note**: After completing this phase and all automated verification passes, pause for review before Phase 2.
+**Implementation Note**: Phase 1 complete. Follow-up items tracked in FSN-0046a/b/c.
 
 ---
 
@@ -325,7 +338,9 @@ Includes Anvil fork simulation (reuse `simulateOnFork` from alpha tools).
 
 **File**: `packages/mastra/src/tools/yo-treasury/create-withdraw-action.ts` (new)
 
-Creates Erc4626SupplyFuse.exit FuseAction.
+Creates YoRedeemFuse.exit FuseAction (NOT Erc4626SupplyFuse.exit — YoVault.withdraw() is disabled).
+Uses `yoRedeemFuseAbi` from `@ipor/fusion-sdk`. Share-denominated — reads vault's yoVault share
+balance and passes it to `exit({ vault, shares })`.
 
 #### 6. Swap Action Tool
 
@@ -440,10 +455,12 @@ Standard form:
 Multi-step stepper:
 - Step 1: Select chain (Base recommended)
 - Step 2: Confirm vault creation → FusionFactory.clone()
-- Step 3: Configure vault → Grant roles (incl. WHITELIST_ROLE) + Add fuses + Configure substrates
+- Step 3: Configure vault → Grant roles (incl. WHITELIST_ROLE) + Add fuses (incl. YoRedeemFuse) + Configure substrates
 - Step 4: Ready! → Navigate to first deposit prompt
 
 **No `convertToPublicVault` step.**
+
+**Pre-requisite: Deploy YoRedeemFuse to Base** — The custom fuse must be deployed once on Base before any vault creation flow can register it. This is a one-time deployment step. Delay until Phase 3 begins (not needed during agent development in Phase 2). Also deploy ZeroBalanceFuse if not yet done (FSN-0046b).
 
 #### 6. First Deposit Prompt
 

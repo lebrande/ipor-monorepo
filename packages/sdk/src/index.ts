@@ -71,6 +71,7 @@ export {
   yoErc4626SupplyFuseAbi,
   swapRouter02Abi,
   yoUniversalTokenSwapperFuseAbi,
+  yoRedeemFuseAbi,
   FUSION_FACTORY_ADDRESS,
   ERC4626_SUPPLY_FUSE_SLOT1_ADDRESS,
   ERC4626_SUPPLY_FUSE_SLOT2_ADDRESS,
@@ -93,6 +94,7 @@ export {
   ODOS_ROUTER_ADDRESS,
   KYBER_SWAP_ROUTER_ADDRESS,
   UNISWAP_SWAP_ROUTER_02_ADDRESS,
+  ZERO_BALANCE_FUSE_ADDRESS,
   YO_TREASURY_ROLES,
   YO_VAULT_SLOTS,
   SWAP_MARKET_ID,
@@ -105,4 +107,5 @@ export {
   createAndConfigureVault,
   type VaultCreationResult,
   type YoTreasuryConfig,
+  type CreateAndConfigureOptions,
 } from './markets/yo';

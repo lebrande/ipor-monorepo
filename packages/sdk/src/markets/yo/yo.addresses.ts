@@ -106,3 +106,10 @@ export const KYBER_SWAP_ROUTER_ADDRESS = createChainAddresses({
 export const UNISWAP_SWAP_ROUTER_02_ADDRESS = createChainAddresses({
   [base.id]: '0x2626664c2603336E57B271c5C0b26F421741e481',
 });
+
+// ─── ZeroBalanceFuse for Swap Market ───
+// Required for PlasmaVault.execute() to work with UniversalTokenSwapperFuse.
+// Without this, _updateMarketsBalances() fails with AddressEmptyCode(address(0)).
+export const ZERO_BALANCE_FUSE_ADDRESS = createChainAddresses({
+  [base.id]: '0x706ca1cA4EcE9CF23301D6AB35ce6fb7Cf25DA15',
+});

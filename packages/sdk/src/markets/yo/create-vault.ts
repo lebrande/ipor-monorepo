@@ -12,6 +12,7 @@ import {
   ERC4626_BALANCE_FUSE_SLOT3_ADDRESS,
   ERC4626_BALANCE_FUSE_SLOT4_ADDRESS,
   UNIVERSAL_TOKEN_SWAPPER_FUSE_ADDRESS,
+  ZERO_BALANCE_FUSE_ADDRESS,
   YO_USD_ADDRESS,
   YO_ETH_ADDRESS,
   YO_BTC_ADDRESS,
@@ -39,6 +40,7 @@ function toSubstrate(address: Address): Hex {
 export interface VaultCreationResult {
   vaultAddress: Address;
   accessManagerAddress: Address;
+  plasmaVault: PlasmaVault;
   txHash: `0x${string}`;
 }
 
@@ -50,6 +52,10 @@ export interface YoTreasuryConfig {
   vaultSymbol?: string;
   redemptionDelayInSeconds?: bigint;
   daoFeePackageIndex?: bigint;
+}
+
+export interface CreateAndConfigureOptions {
+  zeroBalanceFuseAddress?: Address;
 }
 
 /**
@@ -80,25 +86,24 @@ export async function cloneVault(
   const txHash = await walletClient.writeContract(request);
   await publicClient.waitForTransactionReceipt({ hash: txHash });
 
+  const plasmaVault = await PlasmaVault.create(publicClient, result.plasmaVault);
+
   return {
     vaultAddress: result.plasmaVault,
     accessManagerAddress: result.accessManager,
+    plasmaVault,
     txHash,
   };
 }
 
 /**
  * Grant all YO Treasury roles (ATOMIST, FUSE_MANAGER, ALPHA, WHITELIST) to the owner.
- * Must be called by the vault's ADMIN (the owner address set during clone).
  */
 export async function grantRoles(
-  publicClient: PublicClient,
   walletClient: WalletClient,
-  vaultAddress: Address,
+  plasmaVault: PlasmaVault,
   ownerAddress: Address,
 ): Promise<void> {
-  const plasmaVault = await PlasmaVault.create(publicClient, vaultAddress);
-
   const roles = [
     YO_TREASURY_ROLES.ATOMIST,
     YO_TREASURY_ROLES.FUSE_MANAGER,
@@ -116,13 +121,10 @@ export async function grantRoles(
  * Requires FUSE_MANAGER_ROLE.
  */
 export async function addFuses(
-  publicClient: PublicClient,
   walletClient: WalletClient,
-  vaultAddress: Address,
+  plasmaVault: PlasmaVault,
   chainId: ChainId,
 ): Promise<void> {
-  const plasmaVault = await PlasmaVault.create(publicClient, vaultAddress);
-
   const fuseAddresses: Address[] = [
     requireAddress(ERC4626_SUPPLY_FUSE_SLOT1_ADDRESS[chainId], 'ERC4626_SUPPLY_FUSE_SLOT1'),
     requireAddress(ERC4626_SUPPLY_FUSE_SLOT2_ADDRESS[chainId], 'ERC4626_SUPPLY_FUSE_SLOT2'),
@@ -135,17 +137,15 @@ export async function addFuses(
 }
 
 /**
- * Add balance fuses for each ERC4626 market slot.
+ * Add balance fuses for each ERC4626 market slot and optionally the ZeroBalanceFuse for the swap market.
  * Requires FUSE_MANAGER_ROLE.
  */
 export async function addBalanceFuses(
-  publicClient: PublicClient,
   walletClient: WalletClient,
-  vaultAddress: Address,
+  plasmaVault: PlasmaVault,
   chainId: ChainId,
+  options?: { zeroBalanceFuseAddress?: Address },
 ): Promise<void> {
-  const plasmaVault = await PlasmaVault.create(publicClient, vaultAddress);
-
   const balanceFuses = [
     { fuse: requireAddress(ERC4626_BALANCE_FUSE_SLOT1_ADDRESS[chainId], 'ERC4626_BALANCE_FUSE_SLOT1'), marketId: YO_VAULT_SLOTS.yoUSD.marketId },
     { fuse: requireAddress(ERC4626_BALANCE_FUSE_SLOT2_ADDRESS[chainId], 'ERC4626_BALANCE_FUSE_SLOT2'), marketId: YO_VAULT_SLOTS.yoETH.marketId },
@@ -156,6 +156,12 @@ export async function addBalanceFuses(
   for (const { fuse, marketId } of balanceFuses) {
     await plasmaVault.addBalanceFuse(walletClient, fuse, marketId);
   }
+
+  // Add ZeroBalanceFuse for swap market if address is provided or configured on-chain
+  const zeroBalanceFuse = options?.zeroBalanceFuseAddress ?? ZERO_BALANCE_FUSE_ADDRESS[chainId];
+  if (zeroBalanceFuse) {
+    await plasmaVault.addBalanceFuse(walletClient, zeroBalanceFuse, SWAP_MARKET_ID);
+  }
 }
 
 /**
@@ -165,13 +171,10 @@ export async function addBalanceFuses(
  * Requires ATOMIST_ROLE.
  */
 export async function configureSubstrates(
-  publicClient: PublicClient,
   walletClient: WalletClient,
-  vaultAddress: Address,
+  plasmaVault: PlasmaVault,
   chainId: ChainId,
 ): Promise<void> {
-  const plasmaVault = await PlasmaVault.create(publicClient, vaultAddress);
-
   const erc4626Markets = [
     { marketId: YO_VAULT_SLOTS.yoUSD.marketId, vault: requireAddress(YO_USD_ADDRESS[chainId], 'YO_USD') },
     { marketId: YO_VAULT_SLOTS.yoETH.marketId, vault: requireAddress(YO_ETH_ADDRESS[chainId], 'YO_ETH') },
@@ -201,12 +204,9 @@ export async function configureSubstrates(
  * Requires FUSE_MANAGER_ROLE.
  */
 export async function updateDependencyGraphs(
-  publicClient: PublicClient,
   walletClient: WalletClient,
-  vaultAddress: Address,
+  plasmaVault: PlasmaVault,
 ): Promise<void> {
-  const plasmaVault = await PlasmaVault.create(publicClient, vaultAddress);
-
   const marketIds = [
     YO_VAULT_SLOTS.yoUSD.marketId,
     YO_VAULT_SLOTS.yoETH.marketId,
@@ -227,12 +227,18 @@ export async function createAndConfigureVault(
   publicClient: PublicClient,
   walletClient: WalletClient,
   config: YoTreasuryConfig,
+  options?: CreateAndConfigureOptions,
 ): Promise<VaultCreationResult> {
   const result = await cloneVault(publicClient, walletClient, config);
-  await grantRoles(publicClient, walletClient, result.vaultAddress, config.ownerAddress);
-  await addFuses(publicClient, walletClient, result.vaultAddress, config.chainId);
-  await addBalanceFuses(publicClient, walletClient, result.vaultAddress, config.chainId);
-  await configureSubstrates(publicClient, walletClient, result.vaultAddress, config.chainId);
-  await updateDependencyGraphs(publicClient, walletClient, result.vaultAddress);
+  const { plasmaVault } = result;
+
+  await grantRoles(walletClient, plasmaVault, config.ownerAddress);
+  await addFuses(walletClient, plasmaVault, config.chainId);
+  await addBalanceFuses(walletClient, plasmaVault, config.chainId, {
+    zeroBalanceFuseAddress: options?.zeroBalanceFuseAddress,
+  });
+  await configureSubstrates(walletClient, plasmaVault, config.chainId);
+  await updateDependencyGraphs(walletClient, plasmaVault);
+
   return result;
 }

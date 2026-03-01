@@ -6,18 +6,31 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 ---
 
 ## Phase 1: Smart Contract Setup & Vault Creation
-- [ ] Create `packages/web/src/yo-treasury/constants/addresses.ts` — address constants per chain (factory, fuses, YO vaults, tokens, routers)
-- [ ] Create `packages/web/src/yo-treasury/constants/abis.ts` — check `@ipor/fusion-sdk` exports first, supplement as needed
-- [ ] Create `packages/web/src/yo-treasury/lib/create-vault.ts` — vault creation tx builders (used by onboarding UI + fork tests)
-- [ ] Write Hardhat fork tests for vault creation on Base
-- [ ] Run fork tests — verify vault creation succeeds
-- [ ] Verify roles granted including WHITELIST_ROLE=800 (read hasRole on-chain)
-- [ ] Verify fuses installed (verify with getFuses)
-- [ ] Test deposit into vault (1 USDC — requires WHITELIST_ROLE)
-- [ ] Test PlasmaVault.execute with Erc4626SupplyFuse.enter(yoUSD)
-- [ ] Test PlasmaVault.execute with UniversalTokenSwapperFuse.enter (USDC→WETH swap)
-- [ ] Verify Erc4626SupplyFuse.exit(yoUSD) works (withdraw from YO)
-- [ ] All fork tests pass: `pnpm test -- --grep yo-treasury`
+- [x] ~~Create `packages/web/src/yo-treasury/constants/addresses.ts`~~ → `packages/sdk/src/markets/yo/yo.addresses.ts`
+- [x] ~~Create `packages/web/src/yo-treasury/constants/abis.ts`~~ → `packages/sdk/src/markets/yo/abi/*.abi.ts`
+- [x] ~~Create `packages/web/src/yo-treasury/lib/create-vault.ts`~~ → `packages/sdk/src/markets/yo/create-vault.ts`
+- [x] Write Hardhat fork tests for vault creation on Base
+- [x] Run fork tests — verify vault creation succeeds
+- [x] Verify roles granted including WHITELIST_ROLE=800
+- [x] Verify fuses installed
+- [x] Test deposit into vault (100 USDC — requires WHITELIST_ROLE)
+- [x] Test PlasmaVault.execute with Erc4626SupplyFuse.enter(yoUSD)
+- [x] Test PlasmaVault.execute with UniversalTokenSwapperFuse.enter (USDC→WETH via Uniswap V3)
+- [x] ~~Verify Erc4626SupplyFuse.exit(yoUSD) works~~ → **BLOCKED**: YoVault.withdraw() is disabled. **FIXED**: Created `YoRedeemFuse` — standalone Solidity fuse calling `redeem()` instead of `withdraw()`. Fork test deploys + registers it and proves withdrawal through fuse system (no impersonation).
+- [x] All fork tests pass (5/5) — including YoRedeemFuse-based withdrawal
+
+### Phase 1 Follow-up (FSN-0046):
+- [ ] Fix SDK `create-vault.ts` library (FSN-0046a)
+- [ ] Refactor test to use SDK library (FSN-0046a)
+- [ ] Deploy ZeroBalanceFuse(12) on Base (FSN-0046b)
+- [x] ~~Update obsolete project plans (FSN-0046c)~~ → Done
+
+### YoRedeemFuse (completed, deployment deferred):
+- [x] Create `YoRedeemFuse.sol` standalone Solidity fuse (Hardhat 0.8.28)
+- [x] Create `yoRedeemFuseAbi` TypeScript ABI + export from `@ipor/fusion-sdk`
+- [x] Replace impersonation-based withdraw test with fuse-based test
+- [x] All 5 fork tests pass with YoRedeemFuse
+- [ ] Deploy YoRedeemFuse to Base — **deferred to Phase 3** (not needed until real web app transactions)
 
 ## Phase 2: AI Agent (Mastra)
 - [ ] Create tool output type definitions (YoTreasuryToolOutput union)
@@ -25,7 +38,7 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [ ] Implement getYoVaultDetailsTool (deep dive on single vault)
 - [ ] Implement getTreasuryAllocationTool (read Fusion vault markets via @ipor/fusion-sdk)
 - [ ] Implement createAllocationActionTool (Erc4626SupplyFuse.enter)
-- [ ] Implement createWithdrawActionTool (Erc4626SupplyFuse.exit)
+- [ ] Implement createWithdrawActionTool (YoRedeemFuse.exit — uses `yoRedeemFuseAbi`)
 - [ ] Implement createSwapActionTool (Odos/KyberSwap/Velora API + UniversalTokenSwapperFuse)
 - [ ] Wire up displayPendingActionsTool and executePendingActionsTool (reuse from alpha)
 - [ ] Wire up Anvil fork simulation (reuse simulateOnFork)
@@ -39,6 +52,12 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [ ] Verify agent does NOT handle deposit/withdraw from treasury
 
 ## Phase 3: Frontend — Onboarding & Dashboard (Primary UI)
+
+### Pre-requisite: On-chain deployments (do this first, once, before any real tx flow)
+- [ ] Deploy YoRedeemFuse to Base (one instance per market, or one shared if market ID doesn't matter)
+- [ ] Deploy ZeroBalanceFuse(12) to Base (FSN-0046b)
+- [ ] Add deployed YoRedeemFuse address to `yo.addresses.ts` and vault creation flow
+
 - [ ] Create data hooks: useVaultBalances, useYoVaultData
 - [ ] Build PortfolioSummary component (total value, unallocated balance)
 - [ ] Build AllocationBreakdown component (per-YO-vault positions with APR)
@@ -47,7 +66,7 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [ ] Build WithdrawForm component (standard USDC withdraw — web UI, NOT chat)
 - [ ] Build TreasuryDashboard layout (compose above components)
 - [ ] Build ChainSelector component (Base/Ethereum/Arbitrum)
-- [ ] Build CreateVaultFlow with transaction stepper (NO convertToPublicVault step)
+- [ ] Build CreateVaultFlow with transaction stepper (NO convertToPublicVault step, include YoRedeemFuse registration)
 - [ ] Implement WHITELIST_ROLE grant step in vault creation
 - [ ] Build FirstDepositPrompt (shown after creation or when balance is zero)
 - [ ] Create /yo-treasury page route with state-based rendering

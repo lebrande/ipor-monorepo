@@ -4,6 +4,7 @@ export { plasmaVaultFactoryAbi } from './abi/plasma-vault-factory.abi';
 export { yoErc4626SupplyFuseAbi } from './abi/erc4626-supply-fuse.abi';
 export { swapRouter02Abi } from './abi/swap-router-02.abi';
 export { yoUniversalTokenSwapperFuseAbi } from './abi/universal-token-swapper-fuse.abi';
+export { yoRedeemFuseAbi } from './abi/yo-redeem-fuse.abi';
 
 // Addresses
 export {
@@ -29,6 +30,7 @@ export {
   ODOS_ROUTER_ADDRESS,
   KYBER_SWAP_ROUTER_ADDRESS,
   UNISWAP_SWAP_ROUTER_02_ADDRESS,
+  ZERO_BALANCE_FUSE_ADDRESS,
 } from './yo.addresses';
 
 // Constants
@@ -45,4 +47,5 @@ export {
   createAndConfigureVault,
   type VaultCreationResult,
   type YoTreasuryConfig,
+  type CreateAndConfigureOptions,
 } from './create-vault';

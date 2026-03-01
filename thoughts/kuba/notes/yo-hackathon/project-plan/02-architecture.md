@@ -63,17 +63,26 @@ User's PlasmaVault (ERC4626)
 │   └── WHITELIST_ROLE (800) → User (deposit access, NOT public vault)
 │
 ├── Installed Fuses
-│   ├── Erc4626SupplyFuse (market ERC4626_0001) → yoUSD
-│   ├── Erc4626SupplyFuse (market ERC4626_0002) → yoETH
-│   ├── Erc4626SupplyFuse (market ERC4626_0003) → yoBTC
-│   ├── Erc4626SupplyFuse (market ERC4626_0004) → yoEUR
+│   ├── Erc4626SupplyFuse (market ERC4626_0001) → yoUSD  (deposit only)
+│   ├── Erc4626SupplyFuse (market ERC4626_0002) → yoETH  (deposit only)
+│   ├── Erc4626SupplyFuse (market ERC4626_0003) → yoBTC  (deposit only)
+│   ├── Erc4626SupplyFuse (market ERC4626_0004) → yoEUR  (deposit only)
+│   ├── YoRedeemFuse (market ERC4626_0001) → yoUSD withdrawal via redeem()
+│   │   NOTE: Erc4626SupplyFuse.exit() calls withdraw() which YO vaults disable.
+│   │   YoRedeemFuse calls redeem() instead. One instance per market needed.
+│   │   Deploy to Base only when real transactions are needed (Phase 3).
 │   └── UniversalTokenSwapperFuse (market for swaps) → Odos/KyberSwap/Velora
 │
 ├── Balance Fuses (one per market, for portfolio tracking)
 │   ├── Erc4626BalanceFuse (market ERC4626_0001)
 │   ├── Erc4626BalanceFuse (market ERC4626_0002)
 │   ├── Erc4626BalanceFuse (market ERC4626_0003)
-│   └── Erc4626BalanceFuse (market ERC4626_0004)
+│   ├── Erc4626BalanceFuse (market ERC4626_0004)
+│   └── ZeroBalanceFuse (market UNIVERSAL_TOKEN_SWAPPER = 12)  ← REQUIRED!
+│
+│   **IMPORTANT**: The ZeroBalanceFuse for the swap market is REQUIRED. After PlasmaVault.execute()
+│   delegatecalls a fuse, it calls _updateMarketsBalances() for each touched market. Without a
+│   balance fuse for market 12, this reverts with AddressEmptyCode(address(0)).
 │
 ├── Whitelisted Substrates
 │   ├── ERC4626_0001: [yoUSD address]
@@ -105,6 +114,10 @@ User's PlasmaVault (ERC4626)
 | **Odos Router (Base)** | `0x19cEeAd7105607Cd444F5ad10dd51356436095a1` |
 | **KyberSwap Router (Base)** | `0x6131B5fae19EA4f9D964eAc0408E4408b66337b5` |
 | **Velora/Paraswap Router (Base)** | TBD — research during implementation |
+| **Uniswap V3 SwapRouter02** | `0x2626664c2603336E57B271c5C0b26F421741e481` |
+| **SwapExecutor** | `0x591435c065fce9713c8B112fcBf5Af98b8975cB3` |
+| **YoRedeemFuse** | TBD — deploy to Base in Phase 3 (not needed until real txs) |
+| **ZeroBalanceFuse(12)** | TBD — see FSN-0046b |
 | **YoGateway** | `0xF1EeE0957267b1A474323Ff9CfF7719E964969FA` |
 
 ### YO Vault Addresses (Base)
@@ -122,6 +135,8 @@ After user clicks "Create Treasury", the following transactions execute sequenti
 
 ```
 TX 1: FusionFactory.clone(name, symbol, underlyingToken=USDC, 1, owner, 0)
+       Note: The deployed FusionFactory on Base has 6 params (including daoFeePackageIndex).
+       The local source at external/ipor-fusion/contracts/factory/FusionFactory.sol has only 5 — it's outdated.
        → Creates PlasmaVault + AccessManager + all managers
        → Returns FusionInstance with vault + accessManager addresses
        → User gets OWNER_ROLE automatically
@@ -136,13 +151,15 @@ TX 6: PlasmaVault.addFuses([
          erc4626SupplyFuse_slot2,
          erc4626SupplyFuse_slot3,
          erc4626SupplyFuse_slot4,
-         universalTokenSwapperFuse
+         universalTokenSwapperFuse,
+         yoRedeemFuse  // calls redeem() instead of withdraw() — needed for YO vault exits
        ])
 
 TX 7: PlasmaVault.addBalanceFuse(100001n, erc4626BalanceFuse_slot1)
 TX 8: PlasmaVault.addBalanceFuse(100002n, erc4626BalanceFuse_slot2)
 TX 9: PlasmaVault.addBalanceFuse(100003n, erc4626BalanceFuse_slot3)
 TX 10: PlasmaVault.addBalanceFuse(100004n, erc4626BalanceFuse_slot4)
+TX 10b: PlasmaVault.addBalanceFuse(12n, zeroBalanceFuse)  ← swap market balance fuse
 
 TX 11: PlasmaVault.grantMarketSubstrates(100001n, [pad(yoUSD)])
 TX 12: PlasmaVault.grantMarketSubstrates(100002n, [pad(yoETH)])
@@ -159,6 +176,31 @@ TX 16: PlasmaVault.updateDependencyBalanceGraphs(
 ```
 
 **Note**: No `convertToPublicVault()` — vault remains non-public. Only the user (with WHITELIST_ROLE) can deposit. This is by design and is irreversible if public.
+
+### Known Limitations (Discovered During Implementation)
+
+1. **YoVault.withdraw() is disabled** — Permanently reverts with `Errors.UseRequestRedeem()`.
+   The `Erc4626SupplyFuse.exit()` calls `IERC4626.withdraw()`, hitting this revert.
+   **SOLVED**: Created `YoRedeemFuse` — a standalone Solidity fuse compiled with Hardhat (0.8.28)
+   that calls `redeem()` instead of `withdraw()`. Share-denominated exit, caps at actual balance,
+   reverts with `AsyncRedemptionNotSupported()` if redemption returns 0.
+   - Source: `packages/hardhat-tests/contracts/YoRedeemFuse.sol`
+   - ABI: `packages/sdk/src/markets/yo/abi/yo-redeem-fuse.abi.ts` (exported as `yoRedeemFuseAbi`)
+   - Fork test deploys + registers it dynamically — no on-chain deployment yet.
+   - **Deploy to Base only when real transactions are needed** (Phase 3 web integration).
+
+2. **YoVault.redeem() requires msg.sender == owner** — The PlasmaVault can only redeem
+   if it's the share owner (which it is after allocating via Erc4626SupplyFuse.enter).
+   **SOLVED**: YoRedeemFuse runs via delegatecall from PlasmaVault, so `address(this)` = PlasmaVault
+   = share owner, satisfying YoVault's owner check. No impersonation needed.
+
+3. **PriceOracleMiddleware** — The UniversalTokenSwapperFuse checks slippage via the vault's
+   price oracle. Factory-cloned vaults come with a PriceManager but it may not have feeds
+   configured for all token pairs. This didn't block the POC tests.
+
+4. **Local Solidity source is outdated** — `external/ipor-fusion/contracts/factory/FusionFactory.sol`
+   shows 5 params for `clone()`, but the deployed contract on Base has 6
+   (includes `daoFeePackageIndex_`).
 
 **Optimization**: Many of these can be batched:
 - TXs 2-5 could be combined if AccessManager supports multicall
@@ -190,7 +232,7 @@ Based on existing `alphaAgent` pattern from `packages/mastra/src/agents/alpha-ag
 | `getYoVaultDetailsTool` | Deep dive on a specific vault | `@yo-protocol/core` getVaultState + snapshot | `yo-vault-details` |
 | `getTreasuryAllocationTool` | Read user's Fusion vault allocation | `@ipor/fusion-sdk` readVaultBalances | `treasury-allocation` |
 | `createAllocationActionTool` | Create Erc4626SupplyFuse.enter FuseAction | `@ipor/fusion-sdk` + simulation | `action-with-simulation` |
-| `createWithdrawActionTool` | Create Erc4626SupplyFuse.exit FuseAction | `@ipor/fusion-sdk` + simulation | `action-with-simulation` |
+| `createWithdrawActionTool` | Create YoRedeemFuse.exit FuseAction (redeem, not withdraw) | `@ipor/fusion-sdk` + simulation | `action-with-simulation` |
 | `createSwapActionTool` | Create UniversalTokenSwapperFuse.enter FuseAction | Odos/KyberSwap/Velora API + fusion-sdk | `action-with-simulation` |
 | `displayPendingActionsTool` | Show accumulated pending actions | working memory | `pending-actions` |
 | `executePendingActionsTool` | Flatten and send to UI for signing | working memory | `execute-actions` |
