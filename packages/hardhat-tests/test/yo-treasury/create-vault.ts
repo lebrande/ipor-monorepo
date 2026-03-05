@@ -18,13 +18,13 @@ import {
   ERC4626_SUPPLY_FUSE_SLOT2_ADDRESS,
   UNIVERSAL_TOKEN_SWAPPER_FUSE_ADDRESS,
   UNISWAP_SWAP_ROUTER_02_ADDRESS,
+  SWAP_EXECUTOR_ADDRESS,
   SWAP_MARKET_ID,
   YO_VAULT_SLOTS,
   YO_USD_ADDRESS,
   YO_ETH_ADDRESS,
   YO_USDC_ADDRESS,
   YO_WETH_ADDRESS,
-  type VaultCreationResult,
 } from '@ipor/fusion-sdk';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
@@ -55,6 +55,7 @@ describe(
     const BLOCK_NUMBER = 42755236;
     const CHAIN_ID = base.id;
     const OWNER_ADDRESS = ANVIL_TEST_ACCOUNT[0].address;
+    const EXECUTOR_ADDRESS = SWAP_EXECUTOR_ADDRESS[CHAIN_ID]!;
 
     let connection: NetworkConnection<'op'>;
     let vaultAddress: Address;
@@ -294,9 +295,6 @@ describe(
       const swapFuseAddress = UNIVERSAL_TOKEN_SWAPPER_FUSE_ADDRESS[CHAIN_ID];
       const swapAmount = 10_000000n; // 10 USDC
 
-      // The SwapExecutor receives WETH from the router and sweeps it back to the vault
-      const EXECUTOR_ADDRESS = '0x591435c065fce9713c8B112fcBf5Af98b8975cB3' as Address;
-
       // ─── Encode swap calldata ───
       // Step 1: USDC.approve(SwapRouter02, amount) — executor approves router
       // Step 2: SwapRouter02.exactInputSingle({...}) — router pulls USDC, sends WETH
@@ -427,7 +425,6 @@ describe(
       const swapRouter02Address = UNISWAP_SWAP_ROUTER_02_ADDRESS[CHAIN_ID];
       const swapFuseAddress = UNIVERSAL_TOKEN_SWAPPER_FUSE_ADDRESS[CHAIN_ID];
       const supplyFuseSlot2 = ERC4626_SUPPLY_FUSE_SLOT2_ADDRESS[CHAIN_ID];
-      const EXECUTOR_ADDRESS = '0x591435c065fce9713c8B112fcBf5Af98b8975cB3' as Address;
 
       // Use remaining USDC in vault
       const vaultUsdc = await publicClient.readContract({

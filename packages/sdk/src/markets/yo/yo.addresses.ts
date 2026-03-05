@@ -49,6 +49,13 @@ export const UNIVERSAL_TOKEN_SWAPPER_FUSE_ADDRESS = createChainAddresses({
   [base.id]: '0xdBc5f9962CE85749F1b3c51BA0473909229E3807',
 });
 
+// ─── SwapExecutor (immutable in UniversalTokenSwapperFuse bytecode) ───
+// The executor receives tokens from the swap router and sweeps them back to the vault.
+
+export const SWAP_EXECUTOR_ADDRESS = createChainAddresses({
+  [base.id]: '0x591435c065fce9713c8B112fcBf5Af98b8975cB3',
+});
+
 // ─── YO Vault Addresses ───
 
 export const YO_USD_ADDRESS = createChainAddresses({

@@ -20,10 +20,11 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [x] All fork tests pass (5/5) — including YoRedeemFuse-based withdrawal
 
 ### Phase 1 Follow-up (FSN-0046):
-- [ ] Fix SDK `create-vault.ts` library (FSN-0046a)
-- [ ] Refactor test to use SDK library (FSN-0046a)
-- [ ] Deploy ZeroBalanceFuse(12) on Base (FSN-0046b)
+- [x] ~~Fix SDK `create-vault.ts` library (FSN-0046a)~~ → Done. Functions accept `PlasmaVault` instance, `addBalanceFuses()` handles ZeroBalanceFuse.
+- [x] ~~Refactor test to use SDK library (FSN-0046a)~~ → Done. Test `before()` uses SDK library functions.
+- [x] ~~Deploy ZeroBalanceFuse(12) on Base (FSN-0046b)~~ → Done. Address: `0x706ca1cA4EcE9CF23301D6AB35ce6fb7Cf25DA15`
 - [x] ~~Update obsolete project plans (FSN-0046c)~~ → Done
+- [x] ~~Code review cleanup (FSN-0047)~~ → Done. Removed unused `VaultCreationResult` import, added `SWAP_EXECUTOR_ADDRESS` to SDK, deduplicated executor address in test.
 
 ### YoRedeemFuse (completed, deployment deferred):
 - [x] Create `YoRedeemFuse.sol` standalone Solidity fuse (Hardhat 0.8.28)
@@ -54,9 +55,9 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 ## Phase 3: Frontend — Onboarding & Dashboard (Primary UI)
 
 ### Pre-requisite: On-chain deployments (do this first, once, before any real tx flow)
-- [ ] Deploy YoRedeemFuse to Base (one instance per market, or one shared if market ID doesn't matter)
-- [ ] Deploy ZeroBalanceFuse(12) to Base (FSN-0046b)
-- [ ] Add deployed YoRedeemFuse address to `yo.addresses.ts` and vault creation flow
+- [ ] Deploy YoRedeemFuse to Base (one instance per market — MARKET_ID is immutable, need 4 instances for yoUSD/yoETH/yoBTC/yoEUR)
+- [x] ~~Deploy ZeroBalanceFuse(12) to Base (FSN-0046b)~~ → Done. Address: `0x706ca1cA4EcE9CF23301D6AB35ce6fb7Cf25DA15`
+- [ ] Add deployed YoRedeemFuse addresses to `yo.addresses.ts` and vault creation flow
 
 - [ ] Create data hooks: useVaultBalances, useYoVaultData
 - [ ] Build PortfolioSummary component (total value, unallocated balance)
