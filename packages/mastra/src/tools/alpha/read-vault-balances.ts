@@ -88,7 +88,8 @@ function formatProtocolName(marketId: string): string {
     SPARK: 'Spark',
     MOONWELL: 'Moonwell',
   };
-  return names[marketId] ?? marketId;
+  if (names[marketId]) return names[marketId];
+  return marketId;
 }
 
 /** Balance snapshot for a vault — ERC20 tokens + market positions */

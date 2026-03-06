@@ -9,8 +9,8 @@ export const executePendingActionsTool = createTool({
     chainId: z.number().describe('Chain ID (1=Ethereum, 42161=Arbitrum, 8453=Base)'),
     actions: z.array(z.object({
       id: z.string(),
-      protocol: z.enum(['aave-v3', 'morpho', 'euler-v2']),
-      actionType: z.enum(['supply', 'withdraw', 'borrow', 'repay']),
+      protocol: z.string(),
+      actionType: z.string(),
       description: z.string(),
       fuseActions: z.array(z.object({
         fuse: z.string(),

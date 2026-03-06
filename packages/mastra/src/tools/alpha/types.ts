@@ -22,8 +22,8 @@ export type PendingActionsOutput = {
   type: 'pending-actions';
   actions: Array<{
     id: string;
-    protocol: 'aave-v3' | 'morpho' | 'euler-v2';
-    actionType: 'supply' | 'withdraw' | 'borrow' | 'repay';
+    protocol: string;
+    actionType: string;
     description: string;
     fuseActions: Array<{
       fuse: string;
@@ -127,8 +127,8 @@ export type ExecuteActionsOutput = {
 export type ActionWithSimulationOutput = {
   type: 'action-with-simulation';
   success: boolean;
-  protocol: 'aave-v3' | 'morpho' | 'euler-v2';
-  actionType: 'supply' | 'withdraw' | 'borrow' | 'repay';
+  protocol: string;
+  actionType: string;
   description: string;
   fuseActions: Array<{
     fuse: string;

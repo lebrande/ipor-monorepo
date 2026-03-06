@@ -9,8 +9,8 @@ Pass the current pendingActions from your working memory as input.`,
   inputSchema: z.object({
     actions: z.array(z.object({
       id: z.string(),
-      protocol: z.enum(['aave-v3', 'morpho', 'euler-v2']),
-      actionType: z.enum(['supply', 'withdraw', 'borrow', 'repay']),
+      protocol: z.string(),
+      actionType: z.string(),
       description: z.string(),
       fuseActions: z.array(z.object({
         fuse: z.string(),
@@ -23,8 +23,8 @@ Pass the current pendingActions from your working memory as input.`,
     type: z.literal('pending-actions'),
     actions: z.array(z.object({
       id: z.string(),
-      protocol: z.enum(['aave-v3', 'morpho', 'euler-v2']),
-      actionType: z.enum(['supply', 'withdraw', 'borrow', 'repay']),
+      protocol: z.string(),
+      actionType: z.string(),
       description: z.string(),
       fuseActions: z.array(z.object({
         fuse: z.string(),

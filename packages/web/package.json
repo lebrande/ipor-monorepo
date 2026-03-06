@@ -47,7 +47,7 @@
     "@tanstack/react-table": "8.21.3",
     "@types/react": "19.0.12",
     "@types/react-dom": "19.0.4",
-    "@yo-protocol/core": "^0.0.3",
+    "@yo-protocol/core": "^1.0.4",
     "ai": "6.0.84",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

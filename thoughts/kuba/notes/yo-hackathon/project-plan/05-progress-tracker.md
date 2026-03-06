@@ -34,23 +34,29 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [ ] Deploy YoRedeemFuse to Base — **deferred to Phase 3** (not needed until real web app transactions)
 
 ## Phase 2: AI Agent (Mastra)
-- [ ] Create tool output type definitions (YoTreasuryToolOutput union)
-- [ ] Implement getYoVaultsTool (list vaults with APY/TVL)
-- [ ] Implement getYoVaultDetailsTool (deep dive on single vault)
-- [ ] Implement getTreasuryAllocationTool (read Fusion vault markets via @ipor/fusion-sdk)
-- [ ] Implement createAllocationActionTool (Erc4626SupplyFuse.enter)
-- [ ] Implement createWithdrawActionTool (YoRedeemFuse.exit — uses `yoRedeemFuseAbi`)
-- [ ] Implement createSwapActionTool (Odos/KyberSwap/Velora API + UniversalTokenSwapperFuse)
-- [ ] Wire up displayPendingActionsTool and executePendingActionsTool (reuse from alpha)
-- [ ] Wire up Anvil fork simulation (reuse simulateOnFork)
-- [ ] Create yo-treasury-agent.ts with system prompt (alpha actions only, no deposit/withdraw)
-- [ ] Register agent in mastra/index.ts
-- [ ] Write automated test scripts for tool validation
-- [ ] Test in Mastra Studio: "What are my yield options?"
-- [ ] Test in Mastra Studio: "Show my allocation"
-- [ ] Test in Mastra Studio: "Allocate 100 USDC to yoUSD" (with simulation)
-- [ ] Test in Mastra Studio: "Swap 50 USDC to WETH" (Odos integration)
+- [x] Create tool output type definitions (`packages/mastra/src/tools/yo-treasury/types.ts` — `YoVaultsOutput`, `YoActionWithSimulationOutput`)
+- [x] Implement getYoVaultsTool (list vaults via `@yo-protocol/core` SDK)
+- [x] ~~Implement getYoVaultDetailsTool~~ → Merged into getYoVaultsTool (snapshot data included when SDK works)
+- [x] Implement getTreasuryAllocationTool (wraps `readVaultBalances` — now with ERC4626 support)
+- [x] Implement createYoAllocationActionTool (Erc4626SupplyFuse.enter, per-slot fuse addresses)
+- [x] Implement createYoWithdrawActionTool (YoRedeemFuse.exit — uses `yoRedeemFuseAbi`)
+- [x] Implement createYoSwapActionTool (Odos API quote+assemble + UniversalTokenSwapperFuse.enter)
+- [x] Wire up displayPendingActionsTool and executePendingActionsTool (reused from alpha, relaxed protocol enums to `z.string()`)
+- [x] Wire up Anvil fork simulation (reuses `simulateOnFork` as-is)
+- [x] Create yo-treasury-agent.ts with system prompt, working memory, 7 tools
+- [x] Register agent in mastra/index.ts
+- [x] Extend `readVaultBalances` for ERC4626 markets (shared improvement for alpha + yo agents)
+- [x] Test in Mastra Studio: "What are my yield options?" → returns 4 YO vaults ✓
+- [ ] Test in Mastra Studio: "Show my allocation" (needs a real treasury vault on Base)
+- [ ] Test in Mastra Studio: "Allocate 100 USDC to yoUSD" (needs a real treasury vault on Base)
+- [ ] Test in Mastra Studio: "Swap 50 USDC to WETH" (Odos integration — needs real vault)
 - [ ] Verify agent does NOT handle deposit/withdraw from treasury
+
+### Phase 2 Implementation Notes:
+- **`@yo-protocol/core` v0.0.3 bug**: `getVaultSnapshot()` throws Zod validation error (`idleBalances.raw` comes back as number, expects string). APY/TVL fields return null until SDK is fixed. Tool handles this gracefully.
+- **No `getYoVaultDetailsTool`**: Merged into getYoVaultsTool — one tool returns all vault metadata + snapshot data.
+- **ERC4626 readVaultBalances**: Added branch detecting `MARKET_100xxx` / `ERC4626_xxxx` market names. Reads share balances via `erc4626Abi.convertToAssets`, gets USD prices from price oracle. Benefits both alpha and YO agents.
+- **Protocol enum relaxation**: Changed `PendingActionsOutput.protocol` and `ActionWithSimulationOutput.protocol` from narrow enum to `string` so `'yo-erc4626'` and `'yo-swap'` work alongside `'aave-v3'`/`'morpho'`/`'euler-v2'`.
 
 ## Phase 3: Frontend — Onboarding & Dashboard (Primary UI)
 

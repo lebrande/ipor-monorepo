@@ -1,14 +1,23 @@
 ---
 name: yo-protocol-cli
-description: >
-  Use the Yo Protocol CLI (`@yo-protocol/cli`) — an agent-first transaction builder for ERC-4626 yield
-  vaults on Ethereum (1), Base (8453), and Arbitrum (42161). The `yo` binary outputs structured JSON to
-  stdout, never requires or accepts private keys, and is designed for agent/bot consumption. Use when
-  scripting vault interactions, building unsigned transaction calldata for Safe/AA wallets, querying
-  on-chain vault state or balances via RPC, fetching off-chain snapshots/yield/TVL/user data from the
-  Yo API, or piping CLI output into other tools. Triggers on mentions of yo CLI, yo command, yo prepare,
-  yo read, yo api, yo info, yo schema, @yo-protocol/cli, or agent-first transaction building for Yo Protocol.
+description: >-
+  ALWAYS use this skill when the user mentions the Yo Protocol CLI, the `yo` command, `@yo-protocol/cli`,
+  or wants to interact with Yo Protocol vaults (yoETH, yoUSD, yoBTC, yoEUR, yoGOLD, yoUSDT) from a shell
+  script, terminal, or command line. This skill covers the `yo` binary — an agent-first transaction builder
+  that outputs JSON to stdout for ERC-4626 yield vaults on Ethereum, Base, and Arbitrum. Use it for:
+  building unsigned calldata for Safe/AA wallets (`yo prepare`), querying on-chain vault state via RPC
+  (`yo read`), fetching yield/TVL/snapshot data from the REST API (`yo api`), listing vaults and chains
+  (`yo info`), piping output into jq or other tools, setting up YO_RPC_URL, or any bash/shell automation
+  involving Yo Protocol. Also trigger when the user asks about vault exchange rates, share balances, pending
+  redemptions, or deposit previews in a scripting context. Do NOT use for React hooks (@yo-protocol/react)
+  or TypeScript SDK code (@yo-protocol/core) — those have dedicated skills.
+author: yoprotocol
+homepage: https://github.com/yoprotocol/yo-protocol-skills
+source: https://github.com/yoprotocol/yo-protocol-skills/tree/main/skills/yo-protocol-cli
 ---
+
+Official Yo Protocol skill.
+Canonical repository: https://github.com/yoprotocol/yo-protocol-skills
 
 # Yo Protocol CLI — Complete Reference
 
@@ -30,11 +39,11 @@ npm: https://www.npmjs.com/package/@yo-protocol/cli
 
 Every command inherits these:
 
-| Flag | Description | Default | Env |
-|------|-------------|---------|-----|
-| `--rpc-url <url>` | RPC endpoint | — | `YO_RPC_URL` |
-| `--chain <id>` | Chain ID: `1`, `8453`, or `42161` | `1` | — |
-| `--raw` | Treat amounts as raw bigint strings (skip decimal conversion) | `false` | — |
+| Flag              | Description                                                   | Default | Env          |
+| ----------------- | ------------------------------------------------------------- | ------- | ------------ |
+| `--rpc-url <url>` | RPC endpoint                                                  | —       | `YO_RPC_URL` |
+| `--chain <id>`    | Chain ID: `1`, `8453`, or `42161`                             | `1`     | —            |
+| `--raw`           | Treat amounts as raw bigint strings (skip decimal conversion) | `false` | —            |
 
 ## Output Format
 
@@ -57,24 +66,25 @@ Error codes: `INVALID_VAULT`, `INVALID_AMOUNT`, `INVALID_ADDRESS`, `INVALID_CHAI
 
 Vaults can be referenced by ID or address. Use `yo info vaults` to list all.
 
-| ID | Address | Underlying | Decimals | Chains |
-|----|---------|-----------|----------|--------|
-| `yoETH` | `0x3a43aec53490cb9fa922847385d82fe25d0e9de7` | WETH | 18 | 1, 8453 |
-| `yoBTC` | `0xbcbc8cb4d1e8ed048a6276a5e94a3e952660bcbc` | cbBTC | 8 | 1, 8453 |
-| `yoUSD` | `0x0000000f2eb9f69274678c76222b35eec7588a65` | USDC | 6 | 1, 8453, 42161 |
-| `yoEUR` | `0x50c749ae210d3977adc824ae11f3c7fd10c871e9` | EURC | 6 | 1, 8453 |
-| `yoGOLD` | `0x586675A3a46B008d8408933cf42d8ff6c9CC61a1` | XAUt | 6 | 1 |
-| `yoUSDT` | `0xb9a7da9e90d3b428083bae04b860faa6325b721e` | USDT | 6 | 1 |
+| ID       | Address                                      | Underlying | Decimals | Chains         |
+| -------- | -------------------------------------------- | ---------- | -------- | -------------- |
+| `yoETH`  | `0x3a43aec53490cb9fa922847385d82fe25d0e9de7` | WETH       | 18       | 1, 8453        |
+| `yoBTC`  | `0xbcbc8cb4d1e8ed048a6276a5e94a3e952660bcbc` | cbBTC      | 8        | 1, 8453        |
+| `yoUSD`  | `0x0000000f2eb9f69274678c76222b35eec7588a65` | USDC       | 6        | 1, 8453, 42161 |
+| `yoEUR`  | `0x50c749ae210d3977adc824ae11f3c7fd10c871e9` | EURC       | 6        | 1, 8453        |
+| `yoGOLD` | `0x586675A3a46B008d8408933cf42d8ff6c9CC61a1` | XAUt       | 6        | 1              |
+| `yoUSDT` | `0xb9a7da9e90d3b428083bae04b860faa6325b721e` | USDT       | 6        | 1              |
 
 Gateway address: `0xF1EeE0957267b1A474323Ff9CfF7719E964969FA`
 
----
+______________________________________________________________________
 
 ## Command Groups
 
 ### 1. `yo info` — Local Lookups (no RPC)
 
 #### `yo info vaults`
+
 List all known vaults. Respects `--chain` to filter.
 
 ```bash
@@ -85,6 +95,7 @@ yo info vaults --chain 8453
 Returns array of `{ id, name, address, underlying, decimals, chains }`.
 
 #### `yo info resolve <vaultOrId>`
+
 Resolve a vault ID (e.g. `yoETH`) or address to full config.
 
 ```bash
@@ -95,6 +106,7 @@ yo info resolve 0x3a43aec53490cb9fa922847385d82fe25d0e9de7
 Returns `{ address, id, name, underlying: { symbol, decimals }, chains }`.
 
 #### `yo info chains`
+
 List supported chains.
 
 ```bash
@@ -103,13 +115,14 @@ yo info chains
 
 Returns array of `{ chainId, network }`.
 
----
+______________________________________________________________________
 
 ### 2. `yo read` — On-Chain Queries (requires RPC)
 
 All `read` commands need an RPC endpoint via `--rpc-url` or `YO_RPC_URL`.
 
 #### `yo read vault-state --vault <id|addr>`
+
 Full on-chain vault state.
 
 ```bash
@@ -119,6 +132,7 @@ yo read vault-state --vault yoUSD --rpc-url https://eth.llamarpc.com
 Returns `{ address, name, symbol, decimals, totalAssets, totalAssets_formatted, totalSupply, totalSupply_formatted, asset, assetDecimals, exchangeRate, exchangeRate_formatted }`.
 
 #### `yo read token-balance --token <addr> --account <addr>`
+
 ERC-20 token balance.
 
 ```bash
@@ -130,6 +144,7 @@ yo read token-balance \
 Returns `{ token, account, balance, balance_formatted, decimals }`.
 
 #### `yo read share-balance --vault <id|addr> --account <addr>`
+
 Vault share balance for an account.
 
 ```bash
@@ -139,6 +154,7 @@ yo read share-balance --vault yoETH --account 0xYourAddress
 Returns `{ vault, account, balance, balance_formatted, decimals }`.
 
 #### `yo read position --vault <id|addr> --account <addr>`
+
 User vault position (shares + asset value).
 
 ```bash
@@ -148,6 +164,7 @@ yo read position --vault yoUSD --account 0xYourAddress
 Returns `{ vault, account, shares, shares_formatted, assets, assets_formatted, shareDecimals, assetDecimals }`.
 
 #### `yo read allowance --token <addr> --owner <addr> [--spender <addr>]`
+
 ERC-20 allowance. Spender defaults to Gateway.
 
 ```bash
@@ -159,6 +176,7 @@ yo read allowance \
 Returns `{ token, owner, spender, allowance }`.
 
 #### `yo read preview-deposit --vault <id|addr> --amount <n>`
+
 Preview how many shares for a given asset deposit.
 
 ```bash
@@ -168,6 +186,7 @@ yo read preview-deposit --vault yoUSD --amount 100
 Returns `{ vault, assets, assets_formatted, shares, assetDecimals }`.
 
 #### `yo read preview-redeem --vault <id|addr> --shares <n>`
+
 Preview how many assets for a given share redemption.
 
 ```bash
@@ -177,6 +196,7 @@ yo read preview-redeem --vault yoUSD --shares 100
 Returns `{ vault, shares, shares_formatted, assets, assets_formatted, shareDecimals, assetDecimals }`.
 
 #### `yo read max-deposit --vault <id|addr> --receiver <addr>`
+
 Maximum depositable amount for a receiver.
 
 ```bash
@@ -186,6 +206,7 @@ yo read max-deposit --vault yoUSD --receiver 0xYourAddress
 Returns `{ vault, receiver, maxDeposit, maxDeposit_formatted, decimals }`.
 
 #### `yo read max-redeem --vault <id|addr> --owner <addr>`
+
 Maximum redeemable shares for an owner.
 
 ```bash
@@ -194,13 +215,14 @@ yo read max-redeem --vault yoUSD --owner 0xYourAddress
 
 Returns `{ vault, owner, maxRedeem, maxRedeem_formatted, decimals }`.
 
----
+______________________________________________________________________
 
 ### 3. `yo prepare` — Build Unsigned Transaction Calldata
 
 Build `{ to, data, value }` objects for Safe multisig, Account Abstraction, or any external signer. **No private keys needed.**
 
 #### `yo prepare approve --token <addr> --amount <n> [--spender <addr>] [--decimals <n>]`
+
 Build ERC-20 approve transaction. Spender defaults to Gateway. Fetches decimals from RPC if not provided and `--raw` is not set.
 
 ```bash
@@ -213,6 +235,7 @@ yo prepare approve \
 Returns `{ to, data, value }`.
 
 #### `yo prepare deposit --vault <id|addr> --amount <n> [--recipient <addr>] [--slippage-bps <n>]`
+
 Build gateway deposit transaction.
 
 ```bash
@@ -222,6 +245,7 @@ yo prepare deposit --vault yoUSD --amount 100 --recipient 0xSafeAddress
 Returns `{ to, data, value }`.
 
 #### `yo prepare redeem --vault <id|addr> --shares <n> [--recipient <addr>] [--slippage-bps <n>]`
+
 Build gateway redeem transaction.
 
 ```bash
@@ -231,15 +255,17 @@ yo prepare redeem --vault yoUSD --shares 100 --recipient 0xSafeAddress
 Returns `{ to, data, value }`.
 
 #### ~~`yo prepare deposit-with-approval`~~ — DEPRECATED, DO NOT USE
+
 This command is unreliable. **Always use separate `yo prepare approve` + `yo prepare deposit` instead.** When executing the transactions, wait for the approve tx to confirm on-chain before submitting the deposit tx.
 
----
+______________________________________________________________________
 
 ### 4. `yo api` — Off-Chain API Queries (no RPC needed)
 
 Queries the Yo REST API (`https://api.yo.xyz`). Requires `--chain` to determine the network.
 
 #### `yo api vault-snapshot --vault <id|addr>`
+
 Comprehensive vault data: TVL, yield (1d/7d/30d), protocols, share price.
 
 ```bash
@@ -247,6 +273,7 @@ yo api vault-snapshot --vault yoUSD
 ```
 
 #### `yo api vault-yield --vault <id|addr>`
+
 Historical yield timeseries. Returns `{ timestamp, value }[]`.
 
 ```bash
@@ -254,6 +281,7 @@ yo api vault-yield --vault yoETH
 ```
 
 #### `yo api vault-tvl --vault <id|addr>`
+
 Historical TVL timeseries. Returns `{ timestamp, value }[]`.
 
 ```bash
@@ -261,6 +289,7 @@ yo api vault-tvl --vault yoETH
 ```
 
 #### `yo api user-history --vault <id|addr> --user <addr> [--limit <n>]`
+
 User transaction history (deposits, withdraws, redeems).
 
 ```bash
@@ -268,6 +297,7 @@ yo api user-history --vault yoUSD --user 0xYourAddress --limit 10
 ```
 
 #### `yo api user-pending --vault <id|addr> --user <addr>`
+
 User pending redemptions.
 
 ```bash
@@ -275,13 +305,14 @@ yo api user-pending --vault yoUSD --user 0xYourAddress
 ```
 
 #### `yo api user-points --user <addr>`
+
 User points.
 
 ```bash
 yo api user-points --user 0xYourAddress
 ```
 
----
+______________________________________________________________________
 
 ### 5. `yo schema` — Agent Discovery
 
@@ -293,7 +324,7 @@ yo schema
 
 Returns complete schema with all commands, options, arguments, vault configs, chains, gateway address, and output format specs. Use this to build dynamic agent tooling on top of the CLI.
 
----
+______________________________________________________________________
 
 ## Amount Handling
 
@@ -376,10 +407,10 @@ yo read preview-redeem --vault yoUSD --shares 100000000 --raw
 ## Important Notes
 
 1. **No private keys** — The CLI only builds calldata and queries state. Signing and submitting transactions is your responsibility.
-2. **`--chain` defaults to 1 (Ethereum)** — Always specify `--chain 8453` for Base or `--chain 42161` for Arbitrum.
-3. **RPC required for `read` and `prepare`** — Set `YO_RPC_URL` env var or pass `--rpc-url` per command. `info` and `api` commands don't need RPC.
-4. **Vault IDs are case-sensitive** — Use `yoETH`, not `yoeth` or `YOETH`.
-5. **Always use separate `prepare approve` + `prepare deposit`** — Do NOT use `deposit-with-approval`. Wait for the approve tx to confirm on-chain before submitting the deposit tx.
-6. **Default slippage is 50 bps (0.5%)** — Override with `--slippage-bps`.
-7. **Gateway is the spender** — Approvals should target the Gateway (`0xF1EeE0957267b1A474323Ff9CfF7719E964969FA`), not the vault.
-8. **Cross-chain token addresses differ** — USDC on Ethereum vs Base vs Arbitrum are different contracts. Use `yo info resolve` to look up vault details.
+1. **`--chain` defaults to 1 (Ethereum)** — Always specify `--chain 8453` for Base or `--chain 42161` for Arbitrum.
+1. **RPC required for `read` and `prepare`** — Set `YO_RPC_URL` env var or pass `--rpc-url` per command. `info` and `api` commands don't need RPC.
+1. **Vault IDs are case-sensitive** — Use `yoETH`, not `yoeth` or `YOETH`.
+1. **Always use separate `prepare approve` + `prepare deposit`** — Do NOT use `deposit-with-approval`. Wait for the approve tx to confirm on-chain before submitting the deposit tx.
+1. **Default slippage is 50 bps (0.5%)** — Override with `--slippage-bps`.
+1. **Gateway is the spender** — Approvals should target the Gateway (`0xF1EeE0957267b1A474323Ff9CfF7719E964969FA`), not the vault.
+1. **Cross-chain token addresses differ** — USDC on Ethereum vs Base vs Arbitrum are different contracts. Use `yo info resolve` to look up vault details.
