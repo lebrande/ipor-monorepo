@@ -1,4 +1,4 @@
-import { Home, Vault, Activity, Users, type LucideIcon } from 'lucide-react';
+import { Home, Vault, Activity, Users, Landmark, type LucideIcon } from 'lucide-react';
 
 export interface NavItem {
   title: string;
@@ -26,6 +26,11 @@ export const navItems: NavItem[] = [
     title: 'Activity',
     url: '/activity',
     icon: Activity,
+  },
+  {
+    title: 'YO Treasury',
+    url: '/yo-treasury',
+    icon: Landmark,
   },
 ];
 
