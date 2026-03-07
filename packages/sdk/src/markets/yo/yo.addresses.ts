@@ -114,6 +114,24 @@ export const UNISWAP_SWAP_ROUTER_02_ADDRESS = createChainAddresses({
   [base.id]: '0x2626664c2603336E57B271c5C0b26F421741e481',
 });
 
+// ─── YoRedeemFuse per slot (calls redeem() instead of withdraw()) ───
+
+export const YO_REDEEM_FUSE_SLOT1_ADDRESS = createChainAddresses({
+  [base.id]: '0x6f7248f6d057e5f775a2608a71e1b0050b1adb95',
+});
+
+export const YO_REDEEM_FUSE_SLOT2_ADDRESS = createChainAddresses({
+  [base.id]: '0xaebd1bab51368b0382a3f963468cab3edc524e5d',
+});
+
+export const YO_REDEEM_FUSE_SLOT3_ADDRESS = createChainAddresses({
+  [base.id]: '0x5760089c08a2b805760f0f86e867bffa9543aa41',
+});
+
+export const YO_REDEEM_FUSE_SLOT4_ADDRESS = createChainAddresses({
+  [base.id]: '0x7CB5E0e8083392EdEB4AaF68838215A3dD1831e5',
+});
+
 // ─── ZeroBalanceFuse for Swap Market ───
 // Required for PlasmaVault.execute() to work with UniversalTokenSwapperFuse.
 // Without this, _updateMarketsBalances() fails with AddressEmptyCode(address(0)).

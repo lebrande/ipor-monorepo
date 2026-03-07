@@ -8,27 +8,23 @@ import {
   addBalanceFuses,
   configureSubstrates,
   updateDependencyGraphs,
-  // ABIs still needed for test-specific operations (deposit, allocate, swap, etc.)
+  // ABIs for test-specific operations (deposit, allocate, swap, etc.)
   yoErc4626SupplyFuseAbi,
   yoRedeemFuseAbi,
   swapRouter02Abi,
   yoUniversalTokenSwapperFuseAbi,
-  // Addresses still needed for test-specific operations
+  // Addresses for test-specific operations
   ERC4626_SUPPLY_FUSE_SLOT1_ADDRESS,
   ERC4626_SUPPLY_FUSE_SLOT2_ADDRESS,
   UNIVERSAL_TOKEN_SWAPPER_FUSE_ADDRESS,
+  YO_REDEEM_FUSE_SLOT1_ADDRESS,
   UNISWAP_SWAP_ROUTER_02_ADDRESS,
   SWAP_EXECUTOR_ADDRESS,
-  SWAP_MARKET_ID,
-  YO_VAULT_SLOTS,
   YO_USD_ADDRESS,
   YO_ETH_ADDRESS,
   YO_USDC_ADDRESS,
   YO_WETH_ADDRESS,
 } from '@ipor/fusion-sdk';
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-const YoRedeemFuseArtifact = require('../../artifacts/contracts/YoRedeemFuse.sol/YoRedeemFuse.json');
 import { NetworkConnection } from 'hardhat/types/network';
 import { network } from 'hardhat';
 import { env } from '../../lib/env';
@@ -46,13 +42,19 @@ import {
   type Hex,
 } from 'viem';
 
+// Note: YoRedeemFuse instances are deployed on Base mainnet:
+// Slot1 (yoUSD): 0x6f7248f6d057e5f775a2608a71e1b0050b1adb95
+// Slot2 (yoETH): 0xaebd1bab51368b0382a3f963468cab3edc524e5d
+// Slot3 (yoBTC): 0x5760089c08a2b805760f0f86e867bffa9543aa41
+// Slot4 (yoEUR): 0x7CB5E0e8083392EdEB4AaF68838215A3dD1831e5
+
 import '@nomicfoundation/hardhat-toolbox-viem';
 
 describe(
   'YO Treasury - vault creation and allocation lifecycle',
   { timeout: 180_000 },
   () => {
-    const BLOCK_NUMBER = 42755236;
+    const BLOCK_NUMBER = 42988200;
     const CHAIN_ID = base.id;
     const OWNER_ADDRESS = ANVIL_TEST_ACCOUNT[0].address;
     const EXECUTOR_ADDRESS = SWAP_EXECUTOR_ADDRESS[CHAIN_ID]!;
@@ -63,7 +65,6 @@ describe(
     let publicClient: Awaited<ReturnType<NetworkConnection<'op'>['viem']['getPublicClient']>>;
     let testClient: Awaited<ReturnType<NetworkConnection<'op'>['viem']['getTestClient']>>;
     let ownerClient: Awaited<ReturnType<NetworkConnection<'op'>['viem']['getWalletClient']>>;
-    let yoRedeemFuseAddress: Address;
 
     const usdcAddress = YO_USDC_ADDRESS[CHAIN_ID];
     const yoUsdAddress = YO_USD_ADDRESS[CHAIN_ID];
@@ -112,9 +113,9 @@ describe(
       await grantRoles(ownerClient, plasmaVault, OWNER_ADDRESS);
       console.log('Roles granted');
 
-      // Step 3: Add supply fuses
+      // Step 3: Add fuses (4 supply + 4 YoRedeemFuse + 1 swap = 9 fuses)
       await addFuses(ownerClient, plasmaVault, CHAIN_ID);
-      console.log('Fuses added');
+      console.log('Fuses added (including deployed YoRedeemFuse instances)');
 
       // Step 4: Add balance fuses (including ZeroBalanceFuse for swap market)
       await addBalanceFuses(ownerClient, plasmaVault, CHAIN_ID);
@@ -180,20 +181,7 @@ describe(
       await plasmaVault.execute(ownerClient, [[enterAction]]);
       console.log('Allocated 50 USDC to yoUSD');
 
-      // ─── Deploy and register YoRedeemFuse ───
-
-      const yoRedeemFuseMarketId = YO_VAULT_SLOTS.yoUSD.marketId;
-      const deployHash = await ownerClient.deployContract({
-        abi: YoRedeemFuseArtifact.abi,
-        bytecode: YoRedeemFuseArtifact.bytecode as `0x${string}`,
-        args: [yoRedeemFuseMarketId],
-      });
-      const deployReceipt = await publicClient.waitForTransactionReceipt({ hash: deployHash });
-      yoRedeemFuseAddress = deployReceipt.contractAddress!;
-      console.log('YoRedeemFuse deployed:', yoRedeemFuseAddress);
-
-      await plasmaVault.addFuses(ownerClient, [yoRedeemFuseAddress]);
-      console.log('YoRedeemFuse registered on PlasmaVault');
+      // YoRedeemFuse instances are now deployed on Base and included in addFuses()
     });
 
     after(async () => {
@@ -257,7 +245,7 @@ describe(
       // Build fuse exit action — runs via delegatecall from PlasmaVault
       // so address(this) = PlasmaVault = share owner, satisfying YoVault's owner check
       const exitAction = {
-        fuse: yoRedeemFuseAddress,
+        fuse: YO_REDEEM_FUSE_SLOT1_ADDRESS[CHAIN_ID],
         data: encodeFunctionData({
           abi: yoRedeemFuseAbi,
           functionName: 'exit',
