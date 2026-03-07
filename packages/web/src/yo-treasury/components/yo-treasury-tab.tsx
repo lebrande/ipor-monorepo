@@ -2,7 +2,7 @@
 
 import { TreasuryChat } from './treasury-chat';
 import { DepositForm } from './deposit-form';
-import { WithdrawPlaceholder } from './withdraw-placeholder';
+import { WithdrawForm } from './withdraw-form';
 import { useAccount } from 'wagmi';
 import type { ChainId } from '@/app/chains.config';
 import type { Address } from 'viem';
@@ -29,7 +29,7 @@ export function YoTreasuryTab({ chainId, vaultAddress }: Props) {
       {/* Right column: Deposit + Withdraw */}
       <div className="w-80 shrink-0 sticky top-0 self-start space-y-3">
         <DepositForm chainId={chainId} vaultAddress={vaultAddress} />
-        <WithdrawPlaceholder />
+        <WithdrawForm chainId={chainId} vaultAddress={vaultAddress} />
       </div>
     </div>
   );

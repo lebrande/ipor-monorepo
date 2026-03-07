@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { WalletDecorator } from '@/app/wallet.decorator';
-import { DepositForm } from './deposit-form';
+import { WithdrawForm } from './withdraw-form';
 
-const meta: Meta<typeof DepositForm> = {
-  title: 'YO Treasury / Deposit Form',
-  component: DepositForm,
+const meta: Meta<typeof WithdrawForm> = {
+  title: 'YO Treasury / Withdraw Form',
+  component: WithdrawForm,
   decorators: [WalletDecorator],
   parameters: {
     layout: 'centered',
@@ -12,7 +12,7 @@ const meta: Meta<typeof DepositForm> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof DepositForm>;
+type Story = StoryObj<typeof WithdrawForm>;
 
 export const Base: Story = {
   args: {

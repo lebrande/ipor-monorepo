@@ -56,6 +56,14 @@
 - **Previous**: Demo vault had no deposited USDC.
 - **Status**: RESOLVED. 1 USDC deposited via Storybook E2E test (2026-03-07). Deposit form (approve + deposit) tested end-to-end.
 
+### RPC returns stale data immediately after tx confirmation
+- **Location**: `deposit-form.tsx`, `withdraw-form.tsx` — post-tx refetch effects
+- **Issue**: After `useWaitForTransactionReceipt` confirms, `refetch()` calls on `useReadContract` hooks may return stale data because the RPC node hasn't indexed the new block state yet.
+- **Root cause**: RPC load balancers may serve reads from a node that lags 1-2 blocks behind the node that confirmed the tx.
+- **Fix applied**: Delayed retry — `setTimeout(refetchAll, 2000)` fires a second refetch 2s after the initial one. Also important: do NOT use `return () => clearTimeout(timer)` in the effect cleanup, because `resetRedeem()`/`resetDeposit()` clears the tx hash, which makes `isRedeemConfirmed`/`isDepositConfirmed` go false, re-runs the effect, and fires the cleanup — cancelling the timer before it fires.
+- **Additional fix**: Display logic now checks `shareBalance === 0n` before `positionAssets !== undefined` — prevents showing stale cached `convertToAssets` value when shares are fully redeemed (query disabled but data retained).
+- **Pattern**: For wagmi post-tx refetches, always add a delayed retry and avoid cleanup functions that race with state resets.
+
 ## Smart Contracts
 
 ### ~~YoRedeemFuse not deployed to Base~~ RESOLVED

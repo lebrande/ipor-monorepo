@@ -119,8 +119,22 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [x] Playwright MCP: verified layout renders correctly (two-column, deposit card, withdraw placeholder)
 - [x] E2E test in Storybook: deposited 1 USDC into demo vault — approve → deposit → balance updated, position shows 1 USDC ($1.00)
 
-### Phase 3 remaining (dashboard, withdraw, polish):
-- [ ] Build WithdrawForm component (standard USDC withdraw — web UI, NOT chat) — **FSN-0059**
+### Withdraw Form (FSN-0059, completed 2026-03-07):
+- [x] Build WithdrawForm component (`withdraw-form.tsx`) — ERC4626 redeem flow
+  - Reads asset address, decimals, symbol, share balance, convertToAssets, convertToShares
+  - Single-step tx: `redeem(shares, receiver, owner)` — no approval needed
+  - `isMax` flag: Max uses raw shareBalance (avoids rounding), partial uses convertToShares
+  - States: connect wallet, enter amount, exceeds position, withdraw, success, error
+  - Max button, USD conversion, position display in asset + USD
+- [x] Replaced WithdrawPlaceholder with WithdrawForm in `yo-treasury-tab.tsx`
+- [x] Added `useSwitchChain` "Switch to chain" button to both deposit-form and withdraw-form
+- [x] Fixed stale balance after tx: delayed refetch (2s retry) to handle RPC lag
+- [x] Fixed zero-balance display: `shareBalance === 0n` check takes priority over stale cached `positionAssets`
+- [x] Create Storybook story with WalletDecorator + auto chain switch to Base
+- [x] TypeScript compiles clean
+- [x] E2E test in Storybook: withdrew 0.5 USDC (partial), then 0.5 USDC (max) — position updates to 0 USDC
+
+### Phase 3 remaining (dashboard, polish):
 - [ ] Create data hooks: useVaultBalances, useYoVaultData
 - [ ] Build PortfolioSummary component (total value, unallocated balance)
 - [ ] Build AllocationBreakdown component (per-YO-vault positions with APR)

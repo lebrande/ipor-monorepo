@@ -19,10 +19,11 @@ interface Props {
   vaultAddress: Address;
 }
 
-export function DepositForm({ chainId, vaultAddress }: Props) {
+export function WithdrawForm({ chainId, vaultAddress }: Props) {
   const { address: userAddress, chain } = useAccount();
   const { switchChain, isPending: isSwitching } = useSwitchChain();
   const [inputValue, setInputValue] = useState('');
+  const [isMax, setIsMax] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const isWrongChain = !!userAddress && chain?.id !== chainId;
 
@@ -51,24 +52,6 @@ export function DepositForm({ chainId, vaultAddress }: Props) {
     query: { enabled: !!assetAddress },
   });
 
-  const { data: walletBalance, refetch: refetchBalance } = useReadContract({
-    chainId,
-    address: assetAddress!,
-    abi: erc20Abi,
-    functionName: 'balanceOf',
-    args: [userAddress!],
-    query: { enabled: !!userAddress && !!assetAddress },
-  });
-
-  const { data: currentAllowance, refetch: refetchAllowance } = useReadContract({
-    chainId,
-    address: assetAddress!,
-    abi: erc20Abi,
-    functionName: 'allowance',
-    args: [userAddress!, vaultAddress],
-    query: { enabled: !!userAddress && !!assetAddress },
-  });
-
   const { data: shareBalance, refetch: refetchShares } = useReadContract({
     chainId,
     address: vaultAddress,
@@ -87,24 +70,29 @@ export function DepositForm({ chainId, vaultAddress }: Props) {
     query: { enabled: shareBalance !== undefined && shareBalance > 0n },
   });
 
+  const { data: walletBalance, refetch: refetchWalletBalance } = useReadContract({
+    chainId,
+    address: assetAddress!,
+    abi: erc20Abi,
+    functionName: 'balanceOf',
+    args: [userAddress!],
+    query: { enabled: !!userAddress && !!assetAddress },
+  });
+
   // ─── Derived values ───
 
   const decimals = assetDecimals ?? 6;
   const symbol = assetSymbol ?? 'USDC';
 
-  let depositAmount = 0n;
+  let withdrawAmount = 0n;
   let parseError = false;
   if (inputValue && inputValue !== '0') {
     try {
-      depositAmount = parseUnits(inputValue, decimals);
+      withdrawAmount = parseUnits(inputValue, decimals);
     } catch {
       parseError = true;
     }
   }
-
-  const walletFormatted = walletBalance !== undefined
-    ? formatUnits(walletBalance, decimals)
-    : undefined;
 
   const positionFormatted = shareBalance === 0n
     ? '0'
@@ -112,8 +100,8 @@ export function DepositForm({ chainId, vaultAddress }: Props) {
       ? formatUnits(positionAssets, decimals)
       : undefined;
 
-  const depositUsd = depositAmount > 0n
-    ? `$${Number(formatUnits(depositAmount, decimals)).toFixed(2)}`
+  const withdrawUsd = withdrawAmount > 0n
+    ? `$${Number(formatUnits(withdrawAmount, decimals)).toFixed(2)}`
     : '$0';
 
   const positionUsd = shareBalance === 0n
@@ -122,123 +110,97 @@ export function DepositForm({ chainId, vaultAddress }: Props) {
       ? `$${Number(formatUnits(positionAssets, decimals)).toFixed(2)}`
       : '-';
 
-  const needsApproval =
-    currentAllowance !== undefined &&
-    depositAmount > 0n &&
-    currentAllowance < depositAmount;
+  const hasEnoughPosition =
+    positionAssets !== undefined && withdrawAmount > 0n && withdrawAmount <= positionAssets;
 
-  const hasEnoughBalance =
-    walletBalance !== undefined && depositAmount > 0n && depositAmount <= walletBalance;
+  // Convert input USDC → shares for partial redeem
+  const { data: sharesToRedeem } = useReadContract({
+    chainId,
+    address: vaultAddress,
+    abi: erc4626Abi,
+    functionName: 'convertToShares',
+    args: [withdrawAmount],
+    query: { enabled: withdrawAmount > 0n && !isMax },
+  });
 
-  // ─── Approve transaction ───
+  const sharesReady = isMax
+    ? shareBalance !== undefined && shareBalance > 0n
+    : sharesToRedeem !== undefined && sharesToRedeem > 0n;
 
-  const {
-    writeContract: writeApprove,
-    data: approveTxHash,
-    isPending: isApproving,
-    error: approveError,
-    reset: resetApprove,
-  } = useWriteContract();
-
-  const { isLoading: isApproveConfirming, isSuccess: isApproveConfirmed } =
-    useWaitForTransactionReceipt({ hash: approveTxHash });
-
-  // ─── Deposit transaction ───
+  // ─── Redeem transaction ───
 
   const {
-    writeContract: writeDeposit,
-    data: depositTxHash,
-    isPending: isDepositing,
-    error: depositError,
-    reset: resetDeposit,
+    writeContract: writeRedeem,
+    data: redeemTxHash,
+    isPending: isRedeeming,
+    error: redeemError,
+    reset: resetRedeem,
   } = useWriteContract();
 
-  const { isLoading: isDepositConfirming, isSuccess: isDepositConfirmed } =
-    useWaitForTransactionReceipt({ hash: depositTxHash });
+  const { isLoading: isRedeemConfirming, isSuccess: isRedeemConfirmed } =
+    useWaitForTransactionReceipt({ hash: redeemTxHash });
 
   // ─── Effects ───
 
   useEffect(() => {
-    if (isApproveConfirmed) {
-      refetchAllowance();
-      resetApprove();
-    }
-  }, [isApproveConfirmed, refetchAllowance, resetApprove]);
-
-  useEffect(() => {
-    if (isDepositConfirmed) {
+    if (isRedeemConfirmed) {
       const refetchAll = () => {
-        refetchBalance();
-        refetchAllowance();
         refetchShares().then(() => refetchPosition());
+        refetchWalletBalance();
       };
       refetchAll();
       // Retry after delay — RPC may return stale data right after tx confirmation
       setTimeout(refetchAll, 2000);
-      resetDeposit();
+      resetRedeem();
       setInputValue('');
+      setIsMax(false);
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
     }
-  }, [isDepositConfirmed, refetchBalance, refetchAllowance, refetchShares, refetchPosition, resetDeposit]);
+  }, [isRedeemConfirmed, refetchShares, refetchPosition, refetchWalletBalance, resetRedeem]);
 
   // ─── Handlers ───
 
-  const handleApprove = useCallback(() => {
-    if (!assetAddress) return;
-    writeApprove({
-      address: assetAddress,
-      abi: erc20Abi,
-      functionName: 'approve',
-      args: [vaultAddress, depositAmount],
-      chainId,
-    });
-  }, [assetAddress, vaultAddress, depositAmount, chainId, writeApprove]);
-
-  const handleDeposit = useCallback(() => {
+  const handleRedeem = useCallback(() => {
     if (!userAddress) return;
-    writeDeposit({
+    const shares = isMax ? shareBalance! : sharesToRedeem!;
+    writeRedeem({
       address: vaultAddress,
       abi: erc4626Abi,
-      functionName: 'deposit',
-      args: [depositAmount, userAddress],
+      functionName: 'redeem',
+      args: [shares, userAddress, userAddress],
       chainId,
     });
-  }, [vaultAddress, depositAmount, userAddress, chainId, writeDeposit]);
+  }, [vaultAddress, userAddress, chainId, isMax, shareBalance, sharesToRedeem, writeRedeem]);
 
   const handleMax = useCallback(() => {
-    if (walletBalance !== undefined) {
-      setInputValue(formatUnits(walletBalance, decimals));
+    if (positionAssets !== undefined) {
+      setInputValue(formatUnits(positionAssets, decimals));
+      setIsMax(true);
     }
-  }, [walletBalance, decimals]);
+  }, [positionAssets, decimals]);
 
   // ─── State flags ───
 
-  const isBusy =
-    isApproving || isApproveConfirming || isDepositing || isDepositConfirming;
-  const error = approveError || depositError;
+  const isBusy = isRedeeming || isRedeemConfirming;
 
   const buttonLabel = (() => {
     if (!userAddress) return 'Connect Wallet';
-    if (isApproving) return 'Confirm in wallet...';
-    if (isApproveConfirming) return 'Approving...';
-    if (isDepositing) return 'Confirm in wallet...';
-    if (isDepositConfirming) return 'Depositing...';
+    if (isRedeeming) return 'Confirm in wallet...';
+    if (isRedeemConfirming) return 'Withdrawing...';
     if (parseError) return 'Invalid amount';
-    if (depositAmount === 0n) return 'Enter amount';
-    if (!hasEnoughBalance) return 'Insufficient balance';
-    if (needsApproval) return `Approve ${symbol}`;
-    return 'Deposit';
+    if (withdrawAmount === 0n) return 'Enter amount';
+    if (!hasEnoughPosition) return 'Exceeds position';
+    return 'Withdraw';
   })();
 
   const buttonDisabled =
     !userAddress ||
-    depositAmount === 0n ||
+    withdrawAmount === 0n ||
     parseError ||
-    !hasEnoughBalance ||
+    !hasEnoughPosition ||
+    !sharesReady ||
     isBusy;
-
-  const handleClick = needsApproval ? handleApprove : handleDeposit;
 
   // ─── Render ───
 
@@ -246,7 +208,7 @@ export function DepositForm({ chainId, vaultAddress }: Props) {
     <Card className="p-4 space-y-3">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">Deposit {symbol}</span>
+        <span className="text-sm font-medium">Withdraw {symbol}</span>
         {assetAddress && (
           <TokenIcon chainId={chainId} address={assetAddress} className="w-5 h-5" />
         )}
@@ -261,27 +223,30 @@ export function DepositForm({ chainId, vaultAddress }: Props) {
           value={inputValue}
           onChange={(e) => {
             const v = e.target.value;
-            if (v === '' || /^\d*\.?\d*$/.test(v)) setInputValue(v);
+            if (v === '' || /^\d*\.?\d*$/.test(v)) {
+              setInputValue(v);
+              setIsMax(false);
+            }
           }}
           disabled={isBusy}
           className="w-full bg-transparent text-lg font-mono outline-none placeholder:text-muted-foreground"
         />
-        <div className="text-xs text-muted-foreground">{depositUsd}</div>
+        <div className="text-xs text-muted-foreground">{withdrawUsd}</div>
       </div>
 
-      {/* Wallet balance */}
+      {/* Vault position */}
       {userAddress && (
         <div className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground">
-            Balance: {walletFormatted !== undefined
-              ? `${Number(walletFormatted).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${symbol}`
+            Position: {positionFormatted !== undefined
+              ? `${Number(positionFormatted).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${symbol}`
               : '...'
             }
           </span>
           <button
             type="button"
             onClick={handleMax}
-            disabled={isBusy || !walletBalance}
+            disabled={isBusy || !positionAssets || positionAssets === 0n}
             className="text-primary font-medium hover:underline disabled:opacity-50"
           >
             Max
@@ -291,11 +256,11 @@ export function DepositForm({ chainId, vaultAddress }: Props) {
 
       {/* Summary */}
       <div className="border-t pt-3 space-y-1.5 text-xs">
-        {depositAmount > 0n && (
+        {withdrawAmount > 0n && (
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Deposit ({symbol})</span>
+            <span className="text-muted-foreground">Withdraw ({symbol})</span>
             <span className="font-mono">
-              {Number(formatUnits(depositAmount, decimals)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              {Number(formatUnits(withdrawAmount, decimals)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
             </span>
           </div>
         )}
@@ -314,19 +279,19 @@ export function DepositForm({ chainId, vaultAddress }: Props) {
       {showSuccess && (
         <div className="flex items-center gap-2 text-green-500 text-xs">
           <CheckCircle2 className="w-4 h-4" />
-          <span>Deposit successful!</span>
+          <span>Withdrawal successful!</span>
         </div>
       )}
 
       {/* Error */}
-      {error && !isBusy && (
+      {redeemError && !isBusy && (
         <div className="space-y-1">
           <p className="text-xs text-destructive">
-            {error.message.slice(0, 150)}
+            {redeemError.message.slice(0, 150)}
           </p>
           <button
             type="button"
-            onClick={() => { resetApprove(); resetDeposit(); }}
+            onClick={() => resetRedeem()}
             className="text-xs text-muted-foreground hover:underline"
           >
             Try again
@@ -347,7 +312,7 @@ export function DepositForm({ chainId, vaultAddress }: Props) {
         </Button>
       ) : (
         <Button
-          onClick={handleClick}
+          onClick={handleRedeem}
           disabled={buttonDisabled}
           size="sm"
           className="w-full"
