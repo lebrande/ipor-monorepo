@@ -38,7 +38,7 @@ Call when the user asks "where are my funds?", "show my portfolio", or "what's m
         type: 'treasury-balances' as const,
         success: true,
         ...snapshot,
-        message: parts.length > 0 ? `Treasury holds ${parts.join(' and ')}` : 'Treasury is empty',
+        message: `[UI rendered treasury holdings — do NOT list or repeat balances in text]`,
       };
     } catch (error) {
       return {

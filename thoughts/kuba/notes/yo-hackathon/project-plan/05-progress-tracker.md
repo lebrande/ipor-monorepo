@@ -55,9 +55,10 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [x] Register agent in mastra/index.ts
 - [x] Extend `readVaultBalances` for ERC4626 markets (shared improvement for alpha + yo agents)
 - [x] Test in Mastra Studio: "What are my yield options?" → returns 4 YO vaults ✓
-- [ ] Test in Mastra Studio: "Show my allocation" (demo vault: `0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D`)
-- [ ] Test in Mastra Studio: "Allocate 100 USDC to yoUSD" (demo vault: `0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D`)
-- [ ] Test in Mastra Studio: "Swap 50 USDC to WETH" (Odos integration — demo vault available)
+- [x] E2E test in browser: "What are my yield options?" → table with 5 vaults (Base + Ethereum), user positions, brief text ✓
+- [ ] Test: "Show my allocation" (demo vault: `0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D`)
+- [ ] Test: "Allocate 100 USDC to yoUSD" (demo vault)
+- [ ] Test: "Swap 50 USDC to WETH" (Odos integration)
 - [ ] Verify agent does NOT handle deposit/withdraw from treasury
 
 ### Phase 2 Implementation Notes:
@@ -99,12 +100,13 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - **Added to** `plasma-vaults.json` as "YO Treasury"
 - All roles granted, all fuses installed, all substrates configured, dependency graphs updated
 
-### YO Treasury Tab (scaffolded, NOT tested):
+### YO Treasury Tab (working):
 - [x] Added `yo` tab to `vault-tabs.config.ts`
 - [x] Created `yo-treasury-tab.tsx` client wrapper
 - [x] Created `/vaults/[chainId]/[address]/yo/page.tsx`
-- [ ] Manual testing with demo vault
+- [x] Manual testing with demo vault — chat + table rendering verified via Playwright
 
+### Phase 3 remaining (dashboard, deposit/withdraw forms):
 - [ ] Create data hooks: useVaultBalances, useYoVaultData
 - [ ] Build PortfolioSummary component (total value, unallocated balance)
 - [ ] Build AllocationBreakdown component (per-YO-vault positions with APR)
@@ -113,12 +115,7 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [ ] Build WithdrawForm component (standard USDC withdraw — web UI, NOT chat)
 - [ ] Build TreasuryDashboard layout (compose above components)
 - [ ] Build ChainSelector component (Base/Ethereum/Arbitrum)
-- [ ] Build CreateVaultFlow with transaction stepper (NO convertToPublicVault step, include YoRedeemFuse registration)
-- [ ] Implement WHITELIST_ROLE grant step in vault creation
 - [ ] Build FirstDepositPrompt (shown after creation or when balance is zero)
-- [ ] Create /yo-treasury page route with state-based rendering
-- [ ] Store vault address in localStorage after creation
-- [ ] Detect existing vault on page load
 - [ ] Test with Playwright MCP: full vault creation flow on Base
 - [ ] Test with Playwright MCP: first deposit flow
 - [ ] Test with Playwright MCP: dashboard shows correct data
@@ -126,17 +123,20 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [ ] Test: withdraw form works (unallocated USDC)
 
 ## Phase 4: Frontend — Chat UI & Tool Renderers (Alpha Actions)
-- [ ] Create API route: POST /api/yo/treasury/chat
-- [ ] Build TreasuryChat component (reuse useChat pattern)
-- [ ] Build YoToolRenderer switch component
-- [ ] Build YoVaultsList renderer (vault cards)
+- [x] Create API route: POST /api/yo/treasury/chat
+- [x] Build TreasuryChat component (reuse useChat pattern from vault-alpha)
+- [x] Build YoToolRenderer switch component (discriminated union on `type` field)
+- [x] Build YoVaultsList renderer — table layout with Vault, TVL, APR, Balance, Value columns
+- [x] Wire up existing ActionWithSimulation renderer (reused from alpha)
+- [x] Wire up existing PendingActionsList renderer (reused from alpha)
+- [x] Wire up existing ExecuteActions 5-step flow (reused from alpha)
+- [x] Integrate chat as YO Treasury tab on vault detail page (`/vaults/[chainId]/[address]/yo`)
+- [x] Enhanced getYoVaultsTool to include user positions (Balance + Value columns)
+- [x] Agent system prompt tuned — brief plain text, no markdown, no data duplication
+- [x] Tool output messages include "[UI rendered...]" directive to prevent LLM from repeating data
+- [x] E2E browser test: "What are my yield options?" — table renders, agent responds with 1 sentence
 - [ ] Build TreasuryAllocation renderer (allocation breakdown — chat inline)
 - [ ] Build SwapPreview renderer
-- [ ] Wire up existing ActionWithSimulation renderer
-- [ ] Wire up existing PendingActionsList renderer
-- [ ] Wire up existing ExecuteActions 5-step flow
-- [ ] Integrate chat as secondary tab/view alongside dashboard
-- [ ] Test: "What are my yield options?" → vault cards render
 - [ ] Test: "Show my allocation" → allocation breakdown renders
 - [ ] Test: "Put 100 USDC into yoUSD" → full flow works
 - [ ] Test: "Swap 50 USDC to WETH and allocate to yoETH" → batched tx

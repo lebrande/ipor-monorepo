@@ -1,5 +1,13 @@
 import type { TreasuryAsset, YoPosition } from './read-yo-treasury-balances';
 
+/** Per-vault user position (optional, included when vaultAddress is provided) */
+export type YoVaultUserPosition = {
+  shares: string;
+  underlyingAmount: string;
+  underlyingFormatted: string;
+  valueUsd: string;
+};
+
 /** YO vault info returned by getYoVaultsTool */
 export type YoVaultsOutput = {
   type: 'yo-vaults';
@@ -15,6 +23,7 @@ export type YoVaultsOutput = {
     apy7d: string | null;
     tvl: string | null;
     chainId: number;
+    userPosition?: YoVaultUserPosition;
   }>;
   message: string;
   error?: string;

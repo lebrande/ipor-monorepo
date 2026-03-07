@@ -34,12 +34,32 @@
 - **Impact**: None.
 - **Action**: Keep — will likely be used by agent tools in Phase 2 (`@yo-protocol/core` may need it).
 
+## Agent (Mastra)
+
+### YoRedeemFuse deployed — issue resolved
+- **Previous**: "YoRedeemFuse not deployed to Base"
+- **Status**: RESOLVED. 4 instances deployed. See progress tracker for addresses.
+
+### Haiku model ignores system prompt for response verbosity
+- **Issue**: Claude Haiku 4.5 via OpenRouter duplicates tool output data in text responses (full markdown tables, bullet lists) despite system prompt saying "NEVER repeat data" and "NEVER use markdown".
+- **Root cause**: Smaller models weight tool result content higher than system prompt instructions.
+- **Fix applied**: Added `[UI rendered... — do NOT list or repeat]` directive in tool `message` fields. This works because the guidance is right next to the data the model would otherwise repeat.
+- **Pattern**: For Haiku-class models, put behavioral directives in tool output, not just system prompt.
+- **Files**: `get-yo-vaults.ts:82`, `get-treasury-allocation.ts:41`
+
+### `@yo-protocol/core` v0.0.3 Zod validation bug
+- **Issue**: `getVaultSnapshot()` throws because `idleBalances.raw` comes back as JS `number`, Zod expects `string`.
+- **Impact**: APY/TVL still work via `getVaults()` which uses a different API path. Snapshot-specific data (idle balances breakdown) unavailable.
+- **Action**: Wait for SDK fix. Tool gracefully returns null for snapshot-only fields.
+
+### Demo vault has 0 balance
+- **Issue**: Demo vault `0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D` on Base has no deposited USDC. Allocation/swap/withdraw flows can't be tested E2E until real funds are deposited.
+- **Action**: Deposit USDC before testing action flows. Requires WHITELIST_ROLE (already granted to deployer wallet).
+
 ## Smart Contracts
 
-### YoRedeemFuse not deployed to Base
-- **Issue**: Only exists as a Hardhat-compiled artifact deployed dynamically in fork tests. Needs on-chain deployment for Phase 3 web app.
-- **Complexity**: Need 4 separate instances (one per YO vault market) because `MARKET_ID` is immutable in the constructor: yoUSD (100001), yoETH (100002), yoBTC (100003), yoEUR (100004).
-- **Action**: Deploy before Phase 3. Add addresses to `yo.addresses.ts` and wire into `addFuses()`.
+### ~~YoRedeemFuse not deployed to Base~~ RESOLVED
+- 4 instances deployed to Base mainnet. Addresses in `yo.addresses.ts` and wired into `addFuses()`.
 
 ### YoRedeemFuse skips substrate validation
 - **Location**: `packages/hardhat-tests/contracts/YoRedeemFuse.sol`
