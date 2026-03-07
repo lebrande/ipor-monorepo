@@ -55,9 +55,9 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [x] Register agent in mastra/index.ts
 - [x] Extend `readVaultBalances` for ERC4626 markets (shared improvement for alpha + yo agents)
 - [x] Test in Mastra Studio: "What are my yield options?" → returns 4 YO vaults ✓
-- [ ] Test in Mastra Studio: "Show my allocation" (needs a real treasury vault on Base)
-- [ ] Test in Mastra Studio: "Allocate 100 USDC to yoUSD" (needs a real treasury vault on Base)
-- [ ] Test in Mastra Studio: "Swap 50 USDC to WETH" (Odos integration — needs real vault)
+- [ ] Test in Mastra Studio: "Show my allocation" (demo vault: `0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D`)
+- [ ] Test in Mastra Studio: "Allocate 100 USDC to yoUSD" (demo vault: `0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D`)
+- [ ] Test in Mastra Studio: "Swap 50 USDC to WETH" (Odos integration — demo vault available)
 - [ ] Verify agent does NOT handle deposit/withdraw from treasury
 
 ### Phase 2 Implementation Notes:
@@ -73,19 +73,37 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [x] ~~Deploy ZeroBalanceFuse(12) to Base (FSN-0046b)~~ → Done. Address: `0x706ca1cA4EcE9CF23301D6AB35ce6fb7Cf25DA15`
 - [x] Add deployed YoRedeemFuse addresses to `yo.addresses.ts` and vault creation flow — Done.
 
-### Vault Creation Page (FSN-0054, session 2026-03-07):
+### Vault Creation Page (FSN-0054 → FSN-0055):
 - [x] Create vault creation page at `/yo-treasury/create` (calls `createAndConfigureVault()`)
 - [x] Add `@ipor/fusion-sdk` as web package dependency
 - [x] Add "Create YO Treasury" sidebar nav entry
 - [x] Create Storybook story with WalletDecorator
 - [x] Verify renders in Storybook (Playwright MCP screenshot)
-- [ ] **UX refinement** — see ticket `fsn_0055-vault-creation-ux.md`
+- [x] **UX refinement (FSN-0055)** — decomposed monolithic `createAndConfigureVault()` into 6 per-step wagmi components
+  - [x] `CloneVaultStep` — `useSimulateContract` + `useWriteContract` (1 tx)
+  - [x] `GrantRolesStep` — reads `hasRole`, grants missing roles sequentially (4 txs)
+  - [x] `AddFusesStep` — single `addFuses([...9 addresses])` tx, checks `getFuses()` for skip
+  - [x] `AddBalanceFusesStep` — 5 sequential `addBalanceFuse()` txs, auto-advances
+  - [x] `ConfigureSubstratesStep` — 5 sequential `grantMarketSubstrates()` txs, reads existing substrates to skip
+  - [x] `UpdateDepsStep` — single `updateDependencyBalanceGraphs()` tx
+  - [x] Chain switching — detects wrong chain, prompts "Switch to Base" via `useSwitchChain`
+  - [x] localStorage persistence — only vault address stored, all other state read from chain
+  - [x] Success card with copy, "View Vault Dashboard" link, "Create Another" button
+  - [x] **17 total transactions across 6 steps** — all tested end-to-end on Base mainnet
+
+### Demo Vault (deployed on Base, 2026-03-07):
+- **Address**: `0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D`
+- **Chain**: Base (8453)
+- **Start block**: 43046896
+- **Dashboard**: http://localhost:3000/vaults/8453/0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D
+- **Added to** `plasma-vaults.json` as "YO Treasury"
+- All roles granted, all fuses installed, all substrates configured, dependency graphs updated
 
 ### YO Treasury Tab (scaffolded, NOT tested):
 - [x] Added `yo` tab to `vault-tabs.config.ts`
 - [x] Created `yo-treasury-tab.tsx` client wrapper
 - [x] Created `/vaults/[chainId]/[address]/yo/page.tsx`
-- [ ] Manual testing with real vault
+- [ ] Manual testing with demo vault
 
 - [ ] Create data hooks: useVaultBalances, useYoVaultData
 - [ ] Build PortfolioSummary component (total value, unallocated balance)

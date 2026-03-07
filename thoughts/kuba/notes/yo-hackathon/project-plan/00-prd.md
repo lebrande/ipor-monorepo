@@ -104,6 +104,16 @@ The **AI chat interface is secondary** but still significant. It handles alpha-o
 All screenshots go to: `thoughts/kuba/notes/yo-hackathon/screenshots/`
 Do NOT create screenshots at repository root level.
 
+## Demo Vault (Live on Base)
+
+A fully configured demo vault is deployed and registered:
+- **Address**: `0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D`
+- **Chain**: Base (8453), start block 43046896
+- **Dashboard**: http://localhost:3000/vaults/8453/0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D
+- **Vault creation page**: http://localhost:3000/yo-treasury/create
+- **Registered in**: `plasma-vaults.json` as "YO Treasury"
+- **Config**: All roles granted, 9 fuses installed (4 supply + 4 redeem + 1 swap), 5 substrate groups, 4 dependency graphs
+
 ## Adaptive Approach
 
 This plan is a high-level overview that **will evolve during implementation**. We start with basics and adjust as we learn. Detailed tickets are created only for the very next step — not for far-future work. If initial assumptions prove wrong, the plan changes. The `project-plan/` directory holds the overview; implementation tickets are created incrementally.

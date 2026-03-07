@@ -392,6 +392,13 @@ Add `yoTreasuryAgent` to the Mastra instance agents map.
 
 ## Phase 3: Frontend — Onboarding & Dashboard
 
+> **STATUS: PARTIALLY DONE** (Vault creation page fully working, demo vault deployed)
+> - Vault creation page at `/yo-treasury/create` — decomposed into 6 per-step wagmi components (FSN-0055)
+> - Demo vault deployed on Base: `0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D` (block 43046896)
+> - All pre-requisite deployments complete (YoRedeemFuse x4, ZeroBalanceFuse)
+> - Added to `plasma-vaults.json` as "YO Treasury"
+> - Dashboard, deposit/withdraw forms, and first-deposit prompt still TODO
+
 ### Overview
 Build the onboarding flow (vault creation + first deposit) and the always-visible portfolio dashboard. Dashboard is the primary user experience. Implementation order: data hooks → dashboard components → onboarding flow → then UI integration.
 
@@ -460,7 +467,7 @@ Multi-step stepper:
 
 **No `convertToPublicVault` step.**
 
-**Pre-requisite: Deploy YoRedeemFuse to Base** — The custom fuse must be deployed once on Base before any vault creation flow can register it. This is a one-time deployment step. Delay until Phase 3 begins (not needed during agent development in Phase 2). Also deploy ZeroBalanceFuse if not yet done (FSN-0046b).
+**Pre-requisite: DONE** — YoRedeemFuse (4 instances) and ZeroBalanceFuse deployed to Base. Vault creation page fully functional with per-step UX (FSN-0055).
 
 #### 6. First Deposit Prompt
 

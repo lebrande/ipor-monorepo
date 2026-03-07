@@ -116,8 +116,11 @@ User's PlasmaVault (ERC4626)
 | **Velora/Paraswap Router (Base)** | TBD — research during implementation |
 | **Uniswap V3 SwapRouter02** | `0x2626664c2603336E57B271c5C0b26F421741e481` |
 | **SwapExecutor** | `0x591435c065fce9713c8B112fcBf5Af98b8975cB3` |
-| **YoRedeemFuse** | TBD — deploy to Base in Phase 3 (not needed until real txs) |
-| **ZeroBalanceFuse(12)** | TBD — see FSN-0046b |
+| **YoRedeemFuse (slot 1, yoUSD)** | `0x6f7248f6d057e5f775a2608a71e1b0050b1adb95` |
+| **YoRedeemFuse (slot 2, yoETH)** | `0xaebd1bab51368b0382a3f963468cab3edc524e5d` |
+| **YoRedeemFuse (slot 3, yoBTC)** | `0x5760089c08a2b805760f0f86e867bffa9543aa41` |
+| **YoRedeemFuse (slot 4, yoEUR)** | `0x7CB5E0e8083392EdEB4AaF68838215A3dD1831e5` |
+| **ZeroBalanceFuse(12)** | `0x706ca1cA4EcE9CF23301D6AB35ce6fb7Cf25DA15` |
 | **YoGateway** | `0xF1EeE0957267b1A474323Ff9CfF7719E964969FA` |
 
 ### YO Vault Addresses (Base)
@@ -177,6 +180,16 @@ TX 16: PlasmaVault.updateDependencyBalanceGraphs(
 
 **Note**: No `convertToPublicVault()` — vault remains non-public. Only the user (with WHITELIST_ROLE) can deposit. This is by design and is irreversible if public.
 
+### Demo Vault (Deployed)
+
+A fully configured demo vault exists on Base:
+- **Address**: `0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D`
+- **Chain**: Base (8453)
+- **Start block**: 43046896
+- **Dashboard**: http://localhost:3000/vaults/8453/0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D
+- **Status**: All 17 transactions completed — clone, roles, fuses, balance fuses, substrates, dependency graphs
+- **Registered in**: `plasma-vaults.json` as "YO Treasury"
+
 ### Known Limitations (Discovered During Implementation)
 
 1. **YoVault.withdraw() is disabled** — Permanently reverts with `Errors.UseRequestRedeem()`.
@@ -186,8 +199,7 @@ TX 16: PlasmaVault.updateDependencyBalanceGraphs(
    reverts with `AsyncRedemptionNotSupported()` if redemption returns 0.
    - Source: `packages/hardhat-tests/contracts/YoRedeemFuse.sol`
    - ABI: `packages/sdk/src/markets/yo/abi/yo-redeem-fuse.abi.ts` (exported as `yoRedeemFuseAbi`)
-   - Fork test deploys + registers it dynamically — no on-chain deployment yet.
-   - **Deploy to Base only when real transactions are needed** (Phase 3 web integration).
+   - **Deployed to Base** — 4 instances (one per market slot), addresses in `yo.addresses.ts`.
 
 2. **YoVault.redeem() requires msg.sender == owner** — The PlasmaVault can only redeem
    if it's the share owner (which it is after allocating via Erc4626SupplyFuse.enter).

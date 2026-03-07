@@ -550,6 +550,15 @@
       "tags": [],
       "startBlock": 41688947,
       "url": "https://app.ipor.io/fusion/base/0xa13f7342a1db4c32f8dc0539e3b6d1cf101e7d04"
+    },
+    {
+      "name": "YO Treasury",
+      "address": "0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D",
+      "chainId": 8453,
+      "protocol": "IPOR Fusion",
+      "tags": ["YO Treasury"],
+      "startBlock": 43046896,
+      "url": "https://app.ipor.io/fusion/base/0x09d1c2e03f73853916ee86b4e1a729f9fbaa960d"
     }
   ]
 }
