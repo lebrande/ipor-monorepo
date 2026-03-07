@@ -26,12 +26,20 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [x] ~~Update obsolete project plans (FSN-0046c)~~ → Done
 - [x] ~~Code review cleanup (FSN-0047)~~ → Done. Removed unused `VaultCreationResult` import, added `SWAP_EXECUTOR_ADDRESS` to SDK, deduplicated executor address in test.
 
-### YoRedeemFuse (completed, deployment deferred):
+### YoRedeemFuse (completed, deployed):
 - [x] Create `YoRedeemFuse.sol` standalone Solidity fuse (Hardhat 0.8.28)
 - [x] Create `yoRedeemFuseAbi` TypeScript ABI + export from `@ipor/fusion-sdk`
 - [x] Replace impersonation-based withdraw test with fuse-based test
 - [x] All 5 fork tests pass with YoRedeemFuse
-- [ ] Deploy YoRedeemFuse to Base — **deferred to Phase 3** (not needed until real web app transactions)
+- [x] Deploy 4 YoRedeemFuse instances to Base mainnet (one per market slot)
+  - Slot1 (yoUSD): `0x6f7248f6d057e5f775a2608a71e1b0050b1adb95`
+  - Slot2 (yoETH): `0xaebd1bab51368b0382a3f963468cab3edc524e5d`
+  - Slot3 (yoBTC): `0x5760089c08a2b805760f0f86e867bffa9543aa41`
+  - Slot4 (yoEUR): `0x7CB5E0e8083392EdEB4AaF68838215A3dD1831e5`
+- [x] Added deployed addresses to `packages/sdk/src/markets/yo/yo.addresses.ts`
+- [x] Updated `addFuses()` to include all 9 fuses (4 supply + 4 redeem + 1 swap)
+- [x] Fixed SDK re-exports in `packages/sdk/src/index.ts`
+- [x] Fork tests updated to use real deployed fuses (block 42988200)
 
 ## Phase 2: AI Agent (Mastra)
 - [x] Create tool output type definitions (`packages/mastra/src/tools/yo-treasury/types.ts` — `YoVaultsOutput`, `YoActionWithSimulationOutput`)
@@ -60,10 +68,24 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 
 ## Phase 3: Frontend — Onboarding & Dashboard (Primary UI)
 
-### Pre-requisite: On-chain deployments (do this first, once, before any real tx flow)
-- [ ] Deploy YoRedeemFuse to Base (one instance per market — MARKET_ID is immutable, need 4 instances for yoUSD/yoETH/yoBTC/yoEUR)
+### Pre-requisite: On-chain deployments — ALL DONE
+- [x] Deploy YoRedeemFuse to Base (4 instances) — Done. See YoRedeemFuse section above.
 - [x] ~~Deploy ZeroBalanceFuse(12) to Base (FSN-0046b)~~ → Done. Address: `0x706ca1cA4EcE9CF23301D6AB35ce6fb7Cf25DA15`
-- [ ] Add deployed YoRedeemFuse addresses to `yo.addresses.ts` and vault creation flow
+- [x] Add deployed YoRedeemFuse addresses to `yo.addresses.ts` and vault creation flow — Done.
+
+### Vault Creation Page (FSN-0054, session 2026-03-07):
+- [x] Create vault creation page at `/yo-treasury/create` (calls `createAndConfigureVault()`)
+- [x] Add `@ipor/fusion-sdk` as web package dependency
+- [x] Add "Create YO Treasury" sidebar nav entry
+- [x] Create Storybook story with WalletDecorator
+- [x] Verify renders in Storybook (Playwright MCP screenshot)
+- [ ] **UX refinement** — see ticket `fsn_0055-vault-creation-ux.md`
+
+### YO Treasury Tab (scaffolded, NOT tested):
+- [x] Added `yo` tab to `vault-tabs.config.ts`
+- [x] Created `yo-treasury-tab.tsx` client wrapper
+- [x] Created `/vaults/[chainId]/[address]/yo/page.tsx`
+- [ ] Manual testing with real vault
 
 - [ ] Create data hooks: useVaultBalances, useYoVaultData
 - [ ] Build PortfolioSummary component (total value, unallocated balance)

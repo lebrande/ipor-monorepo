@@ -27,6 +27,11 @@ export const TABS = [
     label: 'Alpha',
     description: 'Chat with AI about this vault',
   },
+  {
+    id: 'yo',
+    label: 'YO Treasury',
+    description: 'AI-managed yield allocations via YO Protocol',
+  },
 ] as const satisfies TabConfig[];
 
 export type TabId = (typeof TABS)[number]['id'];

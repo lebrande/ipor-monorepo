@@ -23,6 +23,7 @@
     "@ai-sdk/openai": "1.3.24",
     "@ai-sdk/react": "3.0.86",
     "@ipor/fusion-mastra": "workspace:*",
+    "@ipor/fusion-sdk": "workspace:*",
     "@ipor/fusion-supabase-ponder": "workspace:*",
     "@mastra/ai-sdk": "^1.0.4",
     "@mastra/core": "1.2.0",
