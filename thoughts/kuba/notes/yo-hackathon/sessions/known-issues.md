@@ -52,9 +52,9 @@
 - **Impact**: APY/TVL still work via `getVaults()` which uses a different API path. Snapshot-specific data (idle balances breakdown) unavailable.
 - **Action**: Wait for SDK fix. Tool gracefully returns null for snapshot-only fields.
 
-### Demo vault has 0 balance
-- **Issue**: Demo vault `0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D` on Base has no deposited USDC. Allocation/swap/withdraw flows can't be tested E2E until real funds are deposited.
-- **Action**: Deposit USDC before testing action flows. Requires WHITELIST_ROLE (already granted to deployer wallet).
+### ~~Demo vault has 0 balance~~ RESOLVED
+- **Previous**: Demo vault had no deposited USDC.
+- **Status**: RESOLVED. 1 USDC deposited via Storybook E2E test (2026-03-07). Deposit form (approve + deposit) tested end-to-end.
 
 ## Smart Contracts
 

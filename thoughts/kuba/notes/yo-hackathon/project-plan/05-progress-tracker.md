@@ -106,21 +106,30 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [x] Created `/vaults/[chainId]/[address]/yo/page.tsx`
 - [x] Manual testing with demo vault — chat + table rendering verified via Playwright
 
-### Phase 3 remaining (dashboard, deposit/withdraw forms):
+### Deposit Form (FSN-0058, completed 2026-03-07):
+- [x] Build DepositForm component (`deposit-form.tsx`) — ERC20 approve + ERC4626 deposit flow
+  - Reads asset address, decimals, symbol, wallet balance, allowance, share balance, convertToAssets
+  - Two-step tx: approve (if needed) → deposit, with refetch after confirmation
+  - States: connect wallet, enter amount, insufficient balance, approve, deposit, success, error
+  - Max button, USD conversion ($1 hardcoded for USDC), position display in asset + USD
+- [x] Build WithdrawPlaceholder component (`withdraw-placeholder.tsx`) — "Coming soon"
+- [x] Restructure `yo-treasury-tab.tsx` to two-column layout: chat left (flex-1), deposit card right (w-80 sticky)
+- [x] Create Storybook story with WalletDecorator + auto chain switch to Base
+- [x] TypeScript compiles clean
+- [x] Playwright MCP: verified layout renders correctly (two-column, deposit card, withdraw placeholder)
+- [x] E2E test in Storybook: deposited 1 USDC into demo vault — approve → deposit → balance updated, position shows 1 USDC ($1.00)
+
+### Phase 3 remaining (dashboard, withdraw, polish):
+- [ ] Build WithdrawForm component (standard USDC withdraw — web UI, NOT chat) — **FSN-0059**
 - [ ] Create data hooks: useVaultBalances, useYoVaultData
 - [ ] Build PortfolioSummary component (total value, unallocated balance)
 - [ ] Build AllocationBreakdown component (per-YO-vault positions with APR)
 - [ ] Build YoVaultsOverview component (available vaults with APR/TVL)
-- [ ] Build DepositForm component (standard USDC deposit — web UI, NOT chat)
-- [ ] Build WithdrawForm component (standard USDC withdraw — web UI, NOT chat)
 - [ ] Build TreasuryDashboard layout (compose above components)
 - [ ] Build ChainSelector component (Base/Ethereum/Arbitrum)
 - [ ] Build FirstDepositPrompt (shown after creation or when balance is zero)
 - [ ] Test with Playwright MCP: full vault creation flow on Base
-- [ ] Test with Playwright MCP: first deposit flow
 - [ ] Test with Playwright MCP: dashboard shows correct data
-- [ ] Test: deposit form works (approve + deposit with WHITELIST_ROLE)
-- [ ] Test: withdraw form works (unallocated USDC)
 
 ## Phase 4: Frontend — Chat UI & Tool Renderers (Alpha Actions)
 - [x] Create API route: POST /api/yo/treasury/chat
