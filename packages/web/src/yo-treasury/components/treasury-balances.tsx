@@ -5,7 +5,7 @@ import { TokenIcon } from '@/components/token-icon';
 import { BlockExplorerAddress } from '@/components/ui/block-explorer-address';
 import type { TreasuryBalancesOutput } from '@ipor/fusion-mastra/yo-treasury-types';
 import type { Address } from 'viem';
-import type { ChainId } from '@/app/wagmi-provider';
+import type { ChainId } from '@/app/chains.config';
 
 interface Props {
   output: TreasuryBalancesOutput;

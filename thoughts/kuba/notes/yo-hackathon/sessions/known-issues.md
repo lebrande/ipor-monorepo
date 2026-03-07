@@ -79,3 +79,21 @@
 - **Issue**: Fork test only deploys YoRedeemFuse for market ERC4626_0001 (yoUSD) and tests withdrawal from yoUSD. yoETH/yoBTC/yoEUR redemption is untested.
 - **Impact**: Low — the fuse contract is market-agnostic (same code, different `MARKET_ID` constructor arg). If yoUSD works, others should too.
 - **Action**: Not adding more redeem tests now. Will be implicitly tested when building multi-vault agent flows.
+
+### ~~createYoWithdrawActionTool required LLM to provide YoRedeemFuse address~~ RESOLVED
+- **Previous**: `inputSchema` included `yoRedeemFuseAddress` as required LLM input. Agent system prompt didn't list these addresses, so the LLM fabricated wrong addresses → `UnsupportedFuse()` revert on simulation.
+- **Fix**: Removed `yoRedeemFuseAddress` from `inputSchema`. Tool now resolves the correct fuse address internally using `YO_VAULT_SLOTS[yoVaultId].slot` → `REDEEM_FUSE_BY_SLOT[slot][chainId]`. Same pattern as `createYoAllocationActionTool`.
+- **File**: `packages/mastra/src/tools/yo-treasury/create-yo-withdraw-action.ts`
+- **Status**: RESOLVED. Withdraw flow tested e2e in Storybook — simulation + execution confirmed on Base.
+
+### Treasury overview doesn't show non-underlying tokens (e.g., WETH after swap)
+- **Issue**: `readYoTreasuryBalances` discovers the vault's primary underlying (via `asset()`) and any `ERC20_VAULT_BALANCE` substrates. Tokens acquired via swap (e.g., USDC→WETH) are not discovered because they aren't configured as substrates and aren't the vault's underlying.
+- **Impact**: After swapping USDC to WETH, the WETH balance is invisible in the treasury overview.
+- **Workaround**: The YO vaults table (FSN-0062) will add an "Unallocated" column by checking `balanceOf` for each YO vault's underlying asset on the treasury address — this covers the common case.
+- **Action**: FSN-0062 ticket created. For the treasury overview card, a more complete fix would require reading balances of all known tokens (all YO vault underlyings + any configured substrates).
+
+### ~~readYoTreasuryBalances returned empty for ERC20 + ERC4626~~ RESOLVED
+- **Previous**: `readYoTreasuryBalances` relied on `ERC20_VAULT_BALANCE` substrates (market ID 7n) which `configureSubstrates()` never configures for YO Treasury vaults. Also `getMarketIds({ include: ['balanceFuses'] })` returned empty.
+- **Fix**: Rewrote to read underlying asset directly via ERC4626 `asset()`, merge with `ERC20_VAULT_BALANCE` substrates if available. Falls back to known ERC4626 market IDs (100001-100004) if `getMarketIds` returns empty.
+- **File**: `packages/mastra/src/tools/yo-treasury/read-yo-treasury-balances.ts`
+- **Status**: RESOLVED. Treasury balances now show both unallocated tokens and YO positions.

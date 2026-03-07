@@ -56,10 +56,11 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [x] Extend `readVaultBalances` for ERC4626 markets (shared improvement for alpha + yo agents)
 - [x] Test in Mastra Studio: "What are my yield options?" → returns 4 YO vaults ✓
 - [x] E2E test in browser: "What are my yield options?" → table with 5 vaults (Base + Ethereum), user positions, brief text ✓
-- [ ] Test: "Show my allocation" (demo vault: `0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D`)
-- [ ] Test: "Allocate 100 USDC to yoUSD" (demo vault)
-- [ ] Test: "Swap 50 USDC to WETH" (Odos integration)
-- [ ] Verify agent does NOT handle deposit/withdraw from treasury
+- [x] Test: "Show my allocation" (demo vault: `0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D`) — reads balances, renders treasury overview
+- [x] Test: "Allocate USDC to yoUSD" (demo vault) — full e2e: tool → simulation → execute → on-chain confirmed
+- [x] Test: "Withdraw from yoUSD" — fixed `createYoWithdrawActionTool` to resolve YoRedeemFuse address internally (was LLM input → fabricated wrong address → UnsupportedFuse). Full e2e confirmed.
+- [x] Test: "Swap 0.1 USDC to WETH" (Odos integration) — Odos quote+assemble → simulation → execute → on-chain confirmed
+- [x] Verify agent does NOT handle deposit/withdraw from treasury — agent correctly refuses both, directs to web UI forms
 
 ### Phase 2 Implementation Notes:
 - **`@yo-protocol/core` v0.0.3 bug**: `getVaultSnapshot()` throws Zod validation error (`idleBalances.raw` comes back as number, expects string). APY/TVL fields return null until SDK is fixed. Tool handles this gracefully.
@@ -158,12 +159,14 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [x] Agent system prompt tuned — brief plain text, no markdown, no data duplication
 - [x] Tool output messages include "[UI rendered...]" directive to prevent LLM from repeating data
 - [x] E2E browser test: "What are my yield options?" — table renders, agent responds with 1 sentence
+- [ ] Add "Unallocated" column to YO vaults table (FSN-0062) — show treasury's unallocated balance of each vault's underlying asset
 - [ ] Build TreasuryAllocation renderer (allocation breakdown — chat inline)
 - [ ] Build SwapPreview renderer
-- [ ] Test: "Show my allocation" → allocation breakdown renders
-- [ ] Test: "Put 100 USDC into yoUSD" → full flow works
+- [x] Test: "Show my allocation" → treasury overview renders with assets + YO positions
+- [x] Test: "Allocate USDC to yoUSD" → full flow works (tool → sim → execute → confirmed)
 - [ ] Test: "Swap 50 USDC to WETH and allocate to yoETH" → batched tx
-- [ ] Test: "Withdraw from yoUSD" → exit flow works
+- [x] Test: "Swap 0.1 USDC to WETH" → Odos swap works (tool → sim → execute → confirmed)
+- [x] Test: "Withdraw from yoUSD" → exit flow works (YoRedeemFuse address resolved internally)
 - [ ] Test: dashboard updates after chat-initiated transactions
 
 ## Phase 5: Polish, Demo & Submission

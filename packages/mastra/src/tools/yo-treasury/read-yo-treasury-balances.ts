@@ -71,9 +71,18 @@ function isErc4626MarketId(marketId: bigint): boolean {
   return marketId >= 100_001n && marketId <= 100_999n;
 }
 
+/** Known ERC4626 market IDs used by YO Treasury vaults */
+const KNOWN_ERC4626_MARKET_IDS = [100_001n, 100_002n, 100_003n, 100_004n];
+
 /**
  * Read a PlasmaVault's unallocated ERC20 tokens and ERC4626 (YO) positions.
- * Self-contained — does not depend on alpha's readVaultBalances.
+ *
+ * For unallocated tokens: reads the vault's ERC4626 asset() directly, then checks
+ * its balance. Does NOT depend on ERC20_VAULT_BALANCE substrates being configured.
+ *
+ * For YO positions: reads known ERC4626 market substrates (100001-100004) directly,
+ * falling back from getMarketIds which may return empty if balance fuses aren't
+ * queryable through that method.
  */
 export async function readYoTreasuryBalances(
   publicClient: PublicClient,
@@ -83,76 +92,95 @@ export async function readYoTreasuryBalances(
   let totalValueUsdFloat = 0;
 
   // ─── ERC20 unallocated tokens ───
-
-  const substrates = await plasmaVault.getMarketSubstrates(
-    MARKET_ID.ERC20_VAULT_BALANCE,
-  );
+  // Read the vault's underlying asset directly via ERC4626 asset()
 
   let assets: TreasuryAsset[] = [];
 
-  if (substrates.length > 0) {
-    const tokenAddresses = substrates
-      .map((s) => substrateToAddress(s))
-      .filter((addr): addr is Address => addr !== undefined);
+  try {
+    const underlyingAddress = await publicClient.readContract({
+      address: vaultAddress,
+      abi: erc4626Abi,
+      functionName: 'asset',
+    }) as Address;
 
-    if (tokenAddresses.length > 0) {
-      const metadataResults = await publicClient.multicall({
-        contracts: tokenAddresses.flatMap((addr) => [
-          { address: addr, abi: erc20Abi, functionName: 'name' as const },
-          { address: addr, abi: erc20Abi, functionName: 'symbol' as const },
-          { address: addr, abi: erc20Abi, functionName: 'decimals' as const },
-          { address: addr, abi: erc20Abi, functionName: 'balanceOf' as const, args: [plasmaVault.address] },
-        ]),
-        allowFailure: true,
-      });
-
-      const priceResults = await publicClient.multicall({
-        contracts: tokenAddresses.map((addr) => ({
-          address: plasmaVault.priceOracle,
-          abi: getAssetPriceAbi,
-          functionName: 'getAssetPrice' as const,
-          args: [addr],
-        })),
-        allowFailure: true,
-      });
-
-      assets = tokenAddresses.map((addr, i) => {
-        const nameResult = metadataResults[i * 4 + 0];
-        const symbolResult = metadataResults[i * 4 + 1];
-        const decimalsResult = metadataResults[i * 4 + 2];
-        const balanceResult = metadataResults[i * 4 + 3];
-        const priceResult = priceResults[i];
-
-        const name = nameResult.status === 'success' ? (nameResult.result as string) : addr;
-        const symbol = symbolResult.status === 'success' ? (symbolResult.result as string) : '???';
-        const decimals = decimalsResult.status === 'success' ? Number(decimalsResult.result) : 18;
-        const balance = balanceResult.status === 'success' ? (balanceResult.result as bigint) : 0n;
-        const balanceFormatted = formatUnits(balance, decimals);
-
-        let priceUsd = '0.00';
-        let valueUsd = '0.00';
-
-        if (priceResult.status === 'success') {
-          const [rawPrice, rawPriceDecimals] = priceResult.result as [bigint, bigint];
-          const pDecimals = Number(rawPriceDecimals);
-          const priceFloat = Number(rawPrice) / 10 ** pDecimals;
-          priceUsd = priceFloat.toFixed(2);
-          if (balance > 0n && rawPrice > 0n) {
-            const valueFloat = Number(balance * rawPrice) / 10 ** (decimals + pDecimals);
-            valueUsd = valueFloat.toFixed(2);
-            totalValueUsdFloat += valueFloat;
-          }
+    // First try ERC20_VAULT_BALANCE substrates for additional tokens
+    let tokenAddresses: Address[] = [underlyingAddress];
+    try {
+      const substrates = await plasmaVault.getMarketSubstrates(MARKET_ID.ERC20_VAULT_BALANCE);
+      const substrateAddrs = substrates
+        .map((s) => substrateToAddress(s))
+        .filter((addr): addr is Address => addr !== undefined);
+      // Merge with underlying, deduplicate
+      const addrSet = new Set(tokenAddresses.map(a => a.toLowerCase()));
+      for (const addr of substrateAddrs) {
+        if (!addrSet.has(addr.toLowerCase())) {
+          tokenAddresses.push(addr);
+          addrSet.add(addr.toLowerCase());
         }
-
-        return { address: addr, name, symbol, decimals, balance: balance.toString(), balanceFormatted, priceUsd, valueUsd };
-      });
+      }
+    } catch {
+      // ERC20_VAULT_BALANCE substrates not configured — just use underlying
     }
+
+    const metadataResults = await publicClient.multicall({
+      contracts: tokenAddresses.flatMap((addr) => [
+        { address: addr, abi: erc20Abi, functionName: 'name' as const },
+        { address: addr, abi: erc20Abi, functionName: 'symbol' as const },
+        { address: addr, abi: erc20Abi, functionName: 'decimals' as const },
+        { address: addr, abi: erc20Abi, functionName: 'balanceOf' as const, args: [vaultAddress] },
+      ]),
+      allowFailure: true,
+    });
+
+    const priceResults = await publicClient.multicall({
+      contracts: tokenAddresses.map((addr) => ({
+        address: plasmaVault.priceOracle,
+        abi: getAssetPriceAbi,
+        functionName: 'getAssetPrice' as const,
+        args: [addr],
+      })),
+      allowFailure: true,
+    });
+
+    assets = tokenAddresses.map((addr, i) => {
+      const nameResult = metadataResults[i * 4 + 0];
+      const symbolResult = metadataResults[i * 4 + 1];
+      const decimalsResult = metadataResults[i * 4 + 2];
+      const balanceResult = metadataResults[i * 4 + 3];
+      const priceResult = priceResults[i];
+
+      const name = nameResult.status === 'success' ? (nameResult.result as string) : addr;
+      const symbol = symbolResult.status === 'success' ? (symbolResult.result as string) : '???';
+      const decimals = decimalsResult.status === 'success' ? Number(decimalsResult.result) : 18;
+      const balance = balanceResult.status === 'success' ? (balanceResult.result as bigint) : 0n;
+      const balanceFormatted = formatUnits(balance, decimals);
+
+      let priceUsd = '0.00';
+      let valueUsd = '0.00';
+
+      if (priceResult.status === 'success') {
+        const [rawPrice, rawPriceDecimals] = priceResult.result as [bigint, bigint];
+        const pDecimals = Number(rawPriceDecimals);
+        const priceFloat = Number(rawPrice) / 10 ** pDecimals;
+        priceUsd = priceFloat.toFixed(2);
+        if (balance > 0n && rawPrice > 0n) {
+          const valueFloat = Number(balance * rawPrice) / 10 ** (decimals + pDecimals);
+          valueUsd = valueFloat.toFixed(2);
+          totalValueUsdFloat += valueFloat;
+        }
+      }
+
+      return { address: addr, name, symbol, decimals, balance: balance.toString(), balanceFormatted, priceUsd, valueUsd };
+    }).filter(a => BigInt(a.balance) > 0n);
+  } catch {
+    // If reading underlying fails, fall back to empty
   }
 
   // ─── ERC4626 (YO vault) positions ───
 
   const yoPositions: YoPosition[] = [];
 
+  // Try getMarketIds first, fall back to known ERC4626 market IDs
   let activeMarketIds: bigint[] = [];
   try {
     const allMarketIds = await plasmaVault.getMarketIds({ include: ['balanceFuses'] });
@@ -160,7 +188,10 @@ export async function readYoTreasuryBalances(
       (id) => id !== MARKET_ID.ERC20_VAULT_BALANCE && isErc4626MarketId(id),
     );
   } catch {
-    // If getMarketIds fails, skip
+    // getMarketIds failed
+  }
+  if (activeMarketIds.length === 0) {
+    activeMarketIds = KNOWN_ERC4626_MARKET_IDS;
   }
 
   for (const marketId of activeMarketIds) {
@@ -176,7 +207,7 @@ export async function readYoTreasuryBalances(
       // Multicall: balanceOf, symbol, asset for each ERC4626 vault
       const shareResults = await publicClient.multicall({
         contracts: vaultAddresses.flatMap((addr) => [
-          { address: addr, abi: erc20Abi, functionName: 'balanceOf' as const, args: [plasmaVault.address] },
+          { address: addr, abi: erc20Abi, functionName: 'balanceOf' as const, args: [vaultAddress] },
           { address: addr, abi: erc20Abi, functionName: 'symbol' as const },
           { address: addr, abi: erc4626Abi, functionName: 'asset' as const },
         ]),
