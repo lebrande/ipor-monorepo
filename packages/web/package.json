@@ -17,6 +17,7 @@
     "test:run": "vitest run",
     "storybook": "storybook dev -p 6007",
     "sb": "storybook dev -p 6007",
+    "sb:anvil": "STORYBOOK_ANVIL=true storybook dev -p 6007",
     "build-storybook": "storybook build"
   },
   "dependencies": {

@@ -64,6 +64,24 @@
 - **Additional fix**: Display logic now checks `shareBalance === 0n` before `positionAssets !== undefined` — prevents showing stale cached `convertToAssets` value when shares are fully redeemed (query disabled but data retained).
 - **Pattern**: For wagmi post-tx refetches, always add a delayed retry and avoid cleanup functions that race with state resets.
 
+## Storybook Anvil Fork
+
+### External APIs don't reflect fork state
+- **Issue**: Anvil forks only simulate EVM state. Any feature depending on external APIs will show real chain data, not fork state:
+  - **Swap aggregators** (Odos, KyberSwap, 1inch) — Quote routes against real chain liquidity, not the fork. Quotes may fail or be stale after fork-side transactions.
+  - **Yo Protocol REST API** (`useVaultSnapshot`, `useVaultYieldHistory`, `useUserPerformance`, `useMerklRewards`, etc.) — These hooks fetch from the Yo API server, which reads real chain state. Deposits/withdrawals on the fork won't appear in API responses.
+  - **Indexers / subgraphs** (Ponder, The Graph) — Index real chain events, not fork events.
+  - **Oracle APIs** (Chainlink off-chain, Pyth) — Won't reflect fork-side state changes.
+- **What works**: Pure on-chain interactions — deposits, withdrawals, approvals, vault creation, fuse execution, role grants — anything using `eth_call` / `eth_sendTransaction`.
+- **Impact**: Stories that only do on-chain transactions (deposit form, withdraw form, create vault) work perfectly. Features that also call external APIs show a mix of fork state and real state.
+- **Action**: Acceptable limitation. Document in testing guide. If external API mocking is needed in the future, that's a separate effort.
+
+### Anvil fork testing is limited to USDC/yoUSD flow
+- **Issue**: The testable E2E flow on Anvil fork is: deposit USDC into treasury vault → allocate to yoUSD → withdraw from yoUSD → withdraw from treasury. Other YO vaults (yoETH, yoBTC, yoEUR) require their respective underlying assets (WETH, cbBTC, EURC) which the test wallet doesn't have.
+- **Workaround**: Could swap USDC → WETH/cbBTC/EURC via Uniswap V3 smart contracts directly (as done in the POC test at `packages/hardhat-tests/test/yo-treasury/create-vault.ts`), but there's no swap UI in the treasury app — swaps are only possible via agent `execute()` actions.
+- **Impact**: Only yoUSD allocation/withdrawal is testable through the UI on Anvil fork. Other vault flows would need either a swap UI or a script to fund the wallet with non-USDC assets before testing.
+- **Action**: Acceptable for hackathon. The yoUSD flow covers the full deposit → allocate → withdraw lifecycle. Other vaults use identical fuse contracts (different `MARKET_ID`), so if yoUSD works, others should too.
+
 ## Smart Contracts
 
 ### ~~YoRedeemFuse not deployed to Base~~ RESOLVED
