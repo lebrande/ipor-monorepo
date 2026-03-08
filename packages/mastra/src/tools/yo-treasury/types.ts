@@ -24,6 +24,7 @@ export type YoVaultsOutput = {
     tvl: string | null;
     chainId: number;
     userPosition?: YoVaultUserPosition;
+    unallocatedBalance?: string;
   }>;
   message: string;
   error?: string;

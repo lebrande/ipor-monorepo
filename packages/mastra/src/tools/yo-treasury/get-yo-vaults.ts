@@ -1,6 +1,6 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
-import { type Address } from 'viem';
+import { type Address, erc20Abi, formatUnits } from 'viem';
 import { createYoClient } from '@yo-protocol/core';
 import { getPublicClient } from '../plasma-vault/utils/viem-clients';
 import { readYoTreasuryBalances } from './read-yo-treasury-balances';
@@ -35,6 +35,7 @@ If a vaultAddress is provided, includes the user's current position in each vaul
         underlyingFormatted: z.string(),
         valueUsd: z.string(),
       }).optional(),
+      unallocatedBalance: z.string().optional(),
     })),
     message: z.string(),
     error: z.string().optional(),
@@ -44,11 +45,14 @@ If a vaultAddress is provided, includes the user's current position in each vaul
       const client = createYoClient({ chainId: chainId as 1 | 8453 | 42161 });
       const vaults = await client.getVaults();
 
-      // Optionally read user positions
+      // Optionally read user positions and unallocated balances
       let positionsByVault: Map<string, YoVaultUserPosition> | undefined;
+      let unallocatedByUnderlying: Map<string, string> | undefined;
       if (vaultAddress) {
+        const publicClient = getPublicClient(chainId);
+
+        // Read YO positions
         try {
-          const publicClient = getPublicClient(chainId);
           const snapshot = await readYoTreasuryBalances(publicClient, vaultAddress as Address);
           positionsByVault = new Map();
           for (const pos of snapshot.yoPositions) {
@@ -61,6 +65,32 @@ If a vaultAddress is provided, includes the user's current position in each vaul
           }
         } catch {
           // Positions read failed — continue without them
+        }
+
+        // Read unallocated balances of each vault's underlying asset
+        try {
+          const underlyingAddresses = [...new Set(vaults.map(v => v.asset.address.toLowerCase()))];
+          const balanceResults = await publicClient.multicall({
+            contracts: underlyingAddresses.map((addr) => ({
+              address: addr as Address,
+              abi: erc20Abi,
+              functionName: 'balanceOf' as const,
+              args: [vaultAddress as Address],
+            })),
+            allowFailure: true,
+          });
+          unallocatedByUnderlying = new Map();
+          for (let i = 0; i < underlyingAddresses.length; i++) {
+            const result = balanceResults[i];
+            if (result.status === 'success') {
+              const balance = result.result as bigint;
+              const vault = vaults.find(v => v.asset.address.toLowerCase() === underlyingAddresses[i]);
+              const decimals = vault?.asset.decimals ?? 18;
+              unallocatedByUnderlying.set(underlyingAddresses[i], formatUnits(balance, decimals));
+            }
+          }
+        } catch {
+          // Unallocated reads failed — continue without them
         }
       }
 
@@ -75,6 +105,7 @@ If a vaultAddress is provided, includes the user's current position in each vaul
         tvl: vault.tvl.formatted,
         chainId: vault.chain.id,
         userPosition: positionsByVault?.get(vault.contracts.vaultAddress.toLowerCase()),
+        unallocatedBalance: unallocatedByUnderlying?.get(vault.asset.address.toLowerCase()),
       }));
 
       return {

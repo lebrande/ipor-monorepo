@@ -24,6 +24,14 @@ function formatTvl(tvl: string | null): string {
   return formatCurrency(num);
 }
 
+function formatUnallocated(vault: YoVaultsOutput['vaults'][number]): string {
+  if (!vault.unallocatedBalance) return `0 ${vault.underlying}`;
+  const val = parseFloat(vault.unallocatedBalance);
+  if (val === 0) return `0 ${vault.underlying}`;
+  const decimals = vault.underlyingDecimals <= 6 ? 2 : 6;
+  return `${val.toFixed(decimals)} ${vault.underlying}`;
+}
+
 function formatBalance(vault: YoVaultsOutput['vaults'][number]): string {
   if (!vault.userPosition) return `0 ${vault.underlying}`;
   const val = parseFloat(vault.userPosition.underlyingFormatted);
@@ -52,6 +60,7 @@ export function YoVaultsList({ output, chainId }: Props) {
           <th className="font-normal pb-1 pl-1">Vault</th>
           <th className="font-normal pb-1 text-right">TVL</th>
           <th className="font-normal pb-1 text-right">APR</th>
+          <th className="font-normal pb-1 text-right">Unallocated</th>
           <th className="font-normal pb-1 text-right">Balance</th>
           <th className="font-normal pb-1 text-right pr-1">Value</th>
         </tr>
@@ -72,6 +81,7 @@ export function YoVaultsList({ output, chainId }: Props) {
             </td>
             <td className="py-1 text-right text-muted-foreground">{formatTvl(vault.tvl)}</td>
             <td className="py-1 text-right text-green-500 font-mono font-medium">{formatApy(vault.apy7d)}</td>
+            <td className="py-1 text-right font-mono">{formatUnallocated(vault)}</td>
             <td className="py-1 text-right font-mono">{formatBalance(vault)}</td>
             <td className="py-1 text-right font-mono text-muted-foreground pr-1">{formatBalanceUsd(vault)}</td>
           </tr>

@@ -104,11 +104,17 @@
 - **File**: `packages/mastra/src/tools/yo-treasury/create-yo-withdraw-action.ts`
 - **Status**: RESOLVED. Withdraw flow tested e2e in Storybook — simulation + execution confirmed on Base.
 
-### Treasury overview doesn't show non-underlying tokens (e.g., WETH after swap)
-- **Issue**: `readYoTreasuryBalances` discovers the vault's primary underlying (via `asset()`) and any `ERC20_VAULT_BALANCE` substrates. Tokens acquired via swap (e.g., USDC→WETH) are not discovered because they aren't configured as substrates and aren't the vault's underlying.
-- **Impact**: After swapping USDC to WETH, the WETH balance is invisible in the treasury overview.
-- **Workaround**: The YO vaults table (FSN-0062) will add an "Unallocated" column by checking `balanceOf` for each YO vault's underlying asset on the treasury address — this covers the common case.
-- **Action**: FSN-0062 ticket created. For the treasury overview card, a more complete fix would require reading balances of all known tokens (all YO vault underlyings + any configured substrates).
+### ~~Treasury overview doesn't show non-underlying tokens (e.g., WETH after swap)~~ PARTIALLY RESOLVED
+- **Previous**: `readYoTreasuryBalances` discovers the vault's primary underlying (via `asset()`) and any `ERC20_VAULT_BALANCE` substrates. Tokens acquired via swap (e.g., USDC→WETH) are not discovered.
+- **Fix (FSN-0062)**: Added "Unallocated" column to YO vaults table. `getYoVaultsTool` now multicalls `balanceOf(treasuryAddress)` for each YO vault's underlying asset — covers the common case of seeing unallocated tokens that match YO vault underlyings.
+- **Remaining**: Treasury overview card still doesn't show non-YO-vault tokens. Would require reading balances of all known tokens.
+
+### Mastra agent tools use real chain RPC, not Anvil fork
+- **Issue**: `getPublicClient()` in `packages/mastra/src/tools/plasma-vault/utils/viem-clients.ts` uses `BASE_RPC_URL` (from mastra env), which points to real Base mainnet. Storybook's wagmi uses `NEXT_PUBLIC_RPC_URL_BASE`, which can point to an Anvil fork.
+- **Impact**: When testing in Storybook with an Anvil fork, the deposit/withdraw forms (wagmi) see fork state (e.g., 5,243 USDC position), but agent tools (mastra) read real chain state (0 balances). The YO vaults table shows 0 for Unallocated/Balance even though the deposit form shows a position.
+- **Root cause**: Two separate RPC configurations — mastra reads `BASE_RPC_URL`, wagmi reads `NEXT_PUBLIC_RPC_URL_BASE`. When Storybook points wagmi to Anvil but mastra still points to real chain, the data is inconsistent.
+- **Workaround**: Set `BASE_RPC_URL` in mastra's env to the same Anvil fork URL used by Storybook.
+- **Action**: Document in testing guide. Could be fixed by having the chat API route pass the RPC URL from the frontend context, but that's a larger change.
 
 ### ~~readYoTreasuryBalances returned empty for ERC20 + ERC4626~~ RESOLVED
 - **Previous**: `readYoTreasuryBalances` relied on `ERC20_VAULT_BALANCE` substrates (market ID 7n) which `configureSubstrates()` never configures for YO Treasury vaults. Also `getMarketIds({ include: ['balanceFuses'] })` returned empty.

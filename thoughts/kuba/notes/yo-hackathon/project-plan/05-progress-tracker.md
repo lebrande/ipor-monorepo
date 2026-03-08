@@ -159,7 +159,7 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [x] Agent system prompt tuned — brief plain text, no markdown, no data duplication
 - [x] Tool output messages include "[UI rendered...]" directive to prevent LLM from repeating data
 - [x] E2E browser test: "What are my yield options?" — table renders, agent responds with 1 sentence
-- [ ] Add "Unallocated" column to YO vaults table (FSN-0062) — show treasury's unallocated balance of each vault's underlying asset
+- [x] Add "Unallocated" column to YO vaults table (FSN-0062) — `getYoVaultsTool` multicalls `balanceOf(treasuryAddress)` for each underlying, frontend shows column between APR and Balance. **Note**: Can't verify in Storybook because mastra uses real chain RPC while wagmi uses Anvil fork — see known issues.
 - [ ] Build TreasuryAllocation renderer (allocation breakdown — chat inline)
 - [ ] Build SwapPreview renderer
 - [x] Test: "Show my allocation" → treasury overview renders with assets + YO positions
