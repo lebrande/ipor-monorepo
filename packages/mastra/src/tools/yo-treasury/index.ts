@@ -9,6 +9,7 @@ export type {
   YoPosition,
   TreasuryBalanceSnapshot,
 } from './read-yo-treasury-balances';
+export { existingActionSchema } from './types';
 export type {
   YoTreasuryToolOutput,
   YoVaultsOutput,

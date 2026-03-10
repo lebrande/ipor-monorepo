@@ -10,11 +10,7 @@ import {
   ERC4626_SUPPLY_FUSE_SLOT4_ADDRESS,
 } from '@ipor/fusion-sdk';
 import { simulateOnFork } from '../alpha/simulate-on-fork';
-
-const existingActionSchema = z.object({
-  id: z.string(),
-  fuseActions: z.array(z.object({ fuse: z.string(), data: z.string() })),
-});
+import { existingActionSchema } from './types';
 
 const SUPPLY_FUSE_BY_SLOT: Record<number, Record<number, Address | undefined>> = {
   1: ERC4626_SUPPLY_FUSE_SLOT1_ADDRESS,

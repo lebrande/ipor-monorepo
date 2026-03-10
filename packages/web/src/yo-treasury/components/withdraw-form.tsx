@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { TokenIcon } from '@/components/token-icon';
 import { Loader2, CheckCircle2 } from 'lucide-react';
+import { useVaultReads, formatAmountUsd } from '../hooks/use-vault-reads';
 
 interface Props {
   chainId: number;
@@ -27,48 +28,22 @@ export function WithdrawForm({ chainId, vaultAddress }: Props) {
   const [showSuccess, setShowSuccess] = useState(false);
   const isWrongChain = !!userAddress && chain?.id !== chainId;
 
-  // ─── On-chain reads ───
+  // ─── Shared on-chain reads ───
 
-  const { data: assetAddress } = useReadContract({
-    chainId,
-    address: vaultAddress,
-    abi: erc4626Abi,
-    functionName: 'asset',
-  });
+  const {
+    assetAddress,
+    decimals,
+    symbol,
+    shareBalance,
+    positionAssets,
+    positionFormatted,
+    positionUsd,
+    tokenPriceUsd,
+    refetchShares,
+    refetchPosition,
+  } = useVaultReads({ chainId, vaultAddress, userAddress });
 
-  const { data: assetDecimals } = useReadContract({
-    chainId,
-    address: assetAddress!,
-    abi: erc20Abi,
-    functionName: 'decimals',
-    query: { enabled: !!assetAddress },
-  });
-
-  const { data: assetSymbol } = useReadContract({
-    chainId,
-    address: assetAddress!,
-    abi: erc20Abi,
-    functionName: 'symbol',
-    query: { enabled: !!assetAddress },
-  });
-
-  const { data: shareBalance, refetch: refetchShares } = useReadContract({
-    chainId,
-    address: vaultAddress,
-    abi: erc20Abi,
-    functionName: 'balanceOf',
-    args: [userAddress!],
-    query: { enabled: !!userAddress },
-  });
-
-  const { data: positionAssets, refetch: refetchPosition } = useReadContract({
-    chainId,
-    address: vaultAddress,
-    abi: erc4626Abi,
-    functionName: 'convertToAssets',
-    args: [shareBalance!],
-    query: { enabled: shareBalance !== undefined && shareBalance > 0n },
-  });
+  // ─── Withdraw-specific reads ───
 
   const { data: walletBalance, refetch: refetchWalletBalance } = useReadContract({
     chainId,
@@ -81,9 +56,6 @@ export function WithdrawForm({ chainId, vaultAddress }: Props) {
 
   // ─── Derived values ───
 
-  const decimals = assetDecimals ?? 6;
-  const symbol = assetSymbol ?? 'USDC';
-
   let withdrawAmount = 0n;
   let parseError = false;
   if (inputValue && inputValue !== '0') {
@@ -94,26 +66,12 @@ export function WithdrawForm({ chainId, vaultAddress }: Props) {
     }
   }
 
-  const positionFormatted = shareBalance === 0n
-    ? '0'
-    : positionAssets !== undefined
-      ? formatUnits(positionAssets, decimals)
-      : undefined;
-
-  const withdrawUsd = withdrawAmount > 0n
-    ? `$${Number(formatUnits(withdrawAmount, decimals)).toFixed(2)}`
-    : '$0';
-
-  const positionUsd = shareBalance === 0n
-    ? '$0.00'
-    : positionAssets !== undefined
-      ? `$${Number(formatUnits(positionAssets, decimals)).toFixed(2)}`
-      : '-';
+  const withdrawUsd = formatAmountUsd(withdrawAmount, decimals, tokenPriceUsd);
 
   const hasEnoughPosition =
     positionAssets !== undefined && withdrawAmount > 0n && withdrawAmount <= positionAssets;
 
-  // Convert input USDC → shares for partial redeem
+  // Convert input amount → shares for partial redeem
   const { data: sharesToRedeem } = useReadContract({
     chainId,
     address: vaultAddress,

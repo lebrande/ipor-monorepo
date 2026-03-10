@@ -11,11 +11,7 @@ import {
 } from '@ipor/fusion-sdk';
 import { getPublicClient } from '../plasma-vault/utils/viem-clients';
 import { simulateOnFork } from '../alpha/simulate-on-fork';
-
-const existingActionSchema = z.object({
-  id: z.string(),
-  fuseActions: z.array(z.object({ fuse: z.string(), data: z.string() })),
-});
+import { existingActionSchema } from './types';
 
 const REDEEM_FUSE_BY_SLOT: Record<number, Record<number, Address | undefined>> = {
   1: YO_REDEEM_FUSE_SLOT1_ADDRESS,

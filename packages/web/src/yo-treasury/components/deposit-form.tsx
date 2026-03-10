@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { TokenIcon } from '@/components/token-icon';
 import { Loader2, CheckCircle2 } from 'lucide-react';
+import { useVaultReads, formatAmountUsd } from '../hooks/use-vault-reads';
 
 interface Props {
   chainId: number;
@@ -26,30 +27,21 @@ export function DepositForm({ chainId, vaultAddress }: Props) {
   const [showSuccess, setShowSuccess] = useState(false);
   const isWrongChain = !!userAddress && chain?.id !== chainId;
 
-  // ─── On-chain reads ───
+  // ─── Shared on-chain reads ───
 
-  const { data: assetAddress } = useReadContract({
-    chainId,
-    address: vaultAddress,
-    abi: erc4626Abi,
-    functionName: 'asset',
-  });
+  const {
+    assetAddress,
+    decimals,
+    symbol,
+    shareBalance,
+    positionFormatted,
+    positionUsd,
+    tokenPriceUsd,
+    refetchShares,
+    refetchPosition,
+  } = useVaultReads({ chainId, vaultAddress, userAddress });
 
-  const { data: assetDecimals } = useReadContract({
-    chainId,
-    address: assetAddress!,
-    abi: erc20Abi,
-    functionName: 'decimals',
-    query: { enabled: !!assetAddress },
-  });
-
-  const { data: assetSymbol } = useReadContract({
-    chainId,
-    address: assetAddress!,
-    abi: erc20Abi,
-    functionName: 'symbol',
-    query: { enabled: !!assetAddress },
-  });
+  // ─── Deposit-specific reads ───
 
   const { data: walletBalance, refetch: refetchBalance } = useReadContract({
     chainId,
@@ -69,28 +61,7 @@ export function DepositForm({ chainId, vaultAddress }: Props) {
     query: { enabled: !!userAddress && !!assetAddress },
   });
 
-  const { data: shareBalance, refetch: refetchShares } = useReadContract({
-    chainId,
-    address: vaultAddress,
-    abi: erc20Abi,
-    functionName: 'balanceOf',
-    args: [userAddress!],
-    query: { enabled: !!userAddress },
-  });
-
-  const { data: positionAssets, refetch: refetchPosition } = useReadContract({
-    chainId,
-    address: vaultAddress,
-    abi: erc4626Abi,
-    functionName: 'convertToAssets',
-    args: [shareBalance!],
-    query: { enabled: shareBalance !== undefined && shareBalance > 0n },
-  });
-
   // ─── Derived values ───
-
-  const decimals = assetDecimals ?? 6;
-  const symbol = assetSymbol ?? 'USDC';
 
   let depositAmount = 0n;
   let parseError = false;
@@ -106,21 +77,7 @@ export function DepositForm({ chainId, vaultAddress }: Props) {
     ? formatUnits(walletBalance, decimals)
     : undefined;
 
-  const positionFormatted = shareBalance === 0n
-    ? '0'
-    : positionAssets !== undefined
-      ? formatUnits(positionAssets, decimals)
-      : undefined;
-
-  const depositUsd = depositAmount > 0n
-    ? `$${Number(formatUnits(depositAmount, decimals)).toFixed(2)}`
-    : '$0';
-
-  const positionUsd = shareBalance === 0n
-    ? '$0.00'
-    : positionAssets !== undefined
-      ? `$${Number(formatUnits(positionAssets, decimals)).toFixed(2)}`
-      : '-';
+  const depositUsd = formatAmountUsd(depositAmount, decimals, tokenPriceUsd);
 
   const needsApproval =
     currentAllowance !== undefined &&

@@ -6,11 +6,7 @@ import {
   UNIVERSAL_TOKEN_SWAPPER_FUSE_ADDRESS,
 } from '@ipor/fusion-sdk';
 import { simulateOnFork } from '../alpha/simulate-on-fork';
-
-const existingActionSchema = z.object({
-  id: z.string(),
-  fuseActions: z.array(z.object({ fuse: z.string(), data: z.string() })),
-});
+import { existingActionSchema } from './types';
 
 /** Call Odos quote + assemble APIs to get swap calldata */
 async function getOdosSwapCalldata(params: {

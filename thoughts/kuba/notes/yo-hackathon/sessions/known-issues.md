@@ -34,11 +34,34 @@
 - **Impact**: None.
 - **Action**: Keep — will likely be used by agent tools in Phase 2 (`@yo-protocol/core` may need it).
 
+## Web Components
+
+### ~~USD = $1/token assumption in deposit/withdraw forms~~ RESOLVED
+- **Previous**: `deposit-form.tsx:115-117` and `withdraw-form.tsx:103-105` converted token amounts to USD as `$${Number(formatUnits(...)).toFixed(2)}` — assumes $1/token. Correct for USDC but wrong for WETH (~$2500), cbBTC (~$60k), EURC (~$1.10).
+- **Fix (FSN-0063)**: Extracted `useVaultReads` hook that reads the on-chain price oracle (`PlasmaVault.getPriceOracleMiddleware()` → `getAssetPrice(underlying)`). `formatAmountUsd()` helper multiplies token amount by oracle price. Falls back to showing raw token amount (no `$`) while price is loading.
+- **Files**: `hooks/use-vault-reads.ts`, `deposit-form.tsx`, `withdraw-form.tsx`
+- **Status**: RESOLVED. Verified in Storybook via Playwright — position shows `$0.08` for 0.08 USDC, deposit input shows `$0.50` for 0.5 USDC.
+
+### ~~Hardcoded fallback symbol `?? 'USDC'`~~ RESOLVED
+- **Previous**: `deposit-form.tsx:92` and `withdraw-form.tsx:84` used `assetSymbol ?? 'USDC'`. If contract reads were slow/failed, forms would display "USDC" for non-USDC vaults.
+- **Fix (FSN-0063)**: Changed to `assetSymbol ?? '...'` in `useVaultReads` hook.
+- **Status**: RESOLVED.
+
 ## Agent (Mastra)
 
 ### YoRedeemFuse deployed — issue resolved
 - **Previous**: "YoRedeemFuse not deployed to Base"
 - **Status**: RESOLVED. 4 instances deployed. See progress tracker for addresses.
+
+### ~~`existingActionSchema` duplicated 3x~~ RESOLVED
+- **Previous**: Identical Zod schema defined independently in `create-yo-allocation-action.ts`, `create-yo-swap-action.ts`, `create-yo-withdraw-action.ts`.
+- **Fix (FSN-0063)**: Moved to shared `types.ts`, imported by all three.
+- **Status**: RESOLVED.
+
+### ~~`z.any()` in getTreasuryAllocationTool output schema~~ RESOLVED
+- **Previous**: `get-treasury-allocation.ts:20-21` used `z.array(z.any())` for `assets` and `yoPositions`. Mastra tool validation wouldn't catch malformed data.
+- **Fix (FSN-0063)**: Replaced with fully typed Zod schemas (address, name, symbol, decimals, balance, priceUsd, valueUsd, etc.).
+- **Status**: RESOLVED.
 
 ### Haiku model ignores system prompt for response verbosity
 - **Issue**: Claude Haiku 4.5 via OpenRouter duplicates tool output data in text responses (full markdown tables, bullet lists) despite system prompt saying "NEVER repeat data" and "NEVER use markdown".

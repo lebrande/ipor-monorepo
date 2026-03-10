@@ -16,9 +16,9 @@ export function YoTreasuryTab({ chainId, vaultAddress }: Props) {
   const { address } = useAccount();
 
   return (
-    <div className="flex gap-4">
-      {/* Left column: Chat */}
-      <div className="flex-1 min-w-0">
+    <div className="flex flex-col lg:flex-row gap-4">
+      {/* Chat */}
+      <div className="flex-1 min-w-0 order-2 lg:order-1">
         <TreasuryChat
           chainId={chainId}
           vaultAddress={vaultAddress}
@@ -26,8 +26,8 @@ export function YoTreasuryTab({ chainId, vaultAddress }: Props) {
         />
       </div>
 
-      {/* Right column: Deposit + Withdraw */}
-      <div className="w-80 shrink-0 sticky top-0 self-start space-y-3">
+      {/* Deposit + Withdraw */}
+      <div className="w-full lg:w-80 shrink-0 lg:sticky lg:top-0 lg:self-start space-y-3 order-1 lg:order-2">
         <DepositForm chainId={chainId} vaultAddress={vaultAddress} />
         <WithdrawForm chainId={chainId} vaultAddress={vaultAddress} />
       </div>

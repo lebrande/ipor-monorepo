@@ -1,4 +1,11 @@
+import { z } from 'zod';
 import type { TreasuryAsset, YoPosition } from './read-yo-treasury-balances';
+
+/** Shared schema for existing pending actions passed to action tools */
+export const existingActionSchema = z.object({
+  id: z.string(),
+  fuseActions: z.array(z.object({ fuse: z.string(), data: z.string() })),
+});
 
 /** Per-vault user position (optional, included when vaultAddress is provided) */
 export type YoVaultUserPosition = {

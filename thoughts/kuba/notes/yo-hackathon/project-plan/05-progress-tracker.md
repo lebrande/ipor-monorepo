@@ -112,12 +112,12 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
   - Reads asset address, decimals, symbol, wallet balance, allowance, share balance, convertToAssets
   - Two-step tx: approve (if needed) → deposit, with refetch after confirmation
   - States: connect wallet, enter amount, insufficient balance, approve, deposit, success, error
-  - Max button, USD conversion ($1 hardcoded for USDC), position display in asset + USD
-- [x] Build WithdrawPlaceholder component (`withdraw-placeholder.tsx`) — "Coming soon"
-- [x] Restructure `yo-treasury-tab.tsx` to two-column layout: chat left (flex-1), deposit card right (w-80 sticky)
+  - Max button, USD conversion via on-chain price oracle, position display in asset + USD
+- [x] ~~Build WithdrawPlaceholder component~~ → Deleted (dead code, replaced by WithdrawForm)
+- [x] Restructure `yo-treasury-tab.tsx` to responsive layout: mobile stacked (forms first), desktop side-by-side
 - [x] Create Storybook story with WalletDecorator + auto chain switch to Base
 - [x] TypeScript compiles clean
-- [x] Playwright MCP: verified layout renders correctly (two-column, deposit card, withdraw placeholder)
+- [x] Playwright MCP: verified layout renders correctly (responsive two-column, deposit card, withdraw form)
 - [x] E2E test in Storybook: deposited 1 USDC into demo vault — approve → deposit → balance updated, position shows 1 USDC ($1.00)
 
 ### Withdraw Form (FSN-0059, completed 2026-03-07):
@@ -134,6 +134,18 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [x] Create Storybook story with WalletDecorator + auto chain switch to Base
 - [x] TypeScript compiles clean
 - [x] E2E test in Storybook: withdrew 0.5 USDC (partial), then 0.5 USDC (max) — position updates to 0 USDC
+
+### Code Review Fixes (FSN-0063, completed 2026-03-11):
+- [x] Extracted `useVaultReads` shared hook — deduplicates 5 `useReadContract` calls across deposit/withdraw forms
+- [x] On-chain USD pricing via `getPriceOracleMiddleware()` + `getAssetPrice()` — replaces $1/token assumption
+- [x] `formatAmountUsd()` helper — formats token amounts with oracle price, falls back to raw amount
+- [x] Changed fallback symbol from `'USDC'` to `'...'`
+- [x] Deleted dead `withdraw-placeholder.tsx`
+- [x] Mobile responsive layout — `flex-col lg:flex-row`, forms-first on mobile
+- [x] Deduplicated `existingActionSchema` → shared `types.ts` (was copy-pasted in 3 tool files)
+- [x] Replaced `z.any()` with proper Zod schemas in `get-treasury-allocation.ts` output
+- [x] Removed unused `parts` variable in `get-treasury-allocation.ts`
+- [x] Verified in Storybook via Playwright (headed): desktop + mobile layouts, USD pricing, form inputs
 
 ### Phase 3 remaining (dashboard, polish):
 - [ ] Create data hooks: useVaultBalances, useYoVaultData
@@ -173,7 +185,7 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [ ] Branding and color scheme (differentiate from YO's black/neon green)
 - [ ] Loading states and transitions
 - [ ] Error handling and user-friendly messages
-- [ ] Mobile responsive layout check
+- [x] Mobile responsive layout check — `yo-treasury-tab.tsx` uses `flex-col lg:flex-row` (verified via Playwright)
 - [ ] Rehearse demo script (dashboard-first narrative)
 - [ ] Record 3-minute demo video
 - [ ] Write README.md for submission
