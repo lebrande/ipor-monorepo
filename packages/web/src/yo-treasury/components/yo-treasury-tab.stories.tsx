@@ -8,6 +8,7 @@ const meta: Meta<typeof YoTreasuryTab> = {
   decorators: [WalletDecorator],
   parameters: {
     layout: 'fullscreen',
+    themes: { themeOverride: 'dark' },
   },
 };
 

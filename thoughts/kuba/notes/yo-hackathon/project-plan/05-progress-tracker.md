@@ -148,15 +148,15 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [x] Verified in Storybook via Playwright (headed): desktop + mobile layouts, USD pricing, form inputs
 
 ### Phase 3 remaining (dashboard, polish):
-- [ ] Create data hooks: useVaultBalances, useYoVaultData
-- [ ] Build PortfolioSummary component (total value, unallocated balance)
-- [ ] Build AllocationBreakdown component (per-YO-vault positions with APR)
-- [ ] Build YoVaultsOverview component (available vaults with APR/TVL)
-- [ ] Build TreasuryDashboard layout (compose above components)
-- [ ] Build ChainSelector component (Base/Ethereum/Arbitrum)
-- [ ] Build FirstDepositPrompt (shown after creation or when balance is zero)
-- [ ] Test with Playwright MCP: full vault creation flow on Base
-- [ ] Test with Playwright MCP: dashboard shows correct data
+- [x] Create data hooks: `useTreasuryPositions` (wagmi multicall for PlasmaVault's YO vault share balances + convertToAssets) + `useYoVaultsData` (uses `@yo-protocol/core` `createYoClient().getVaults()` for APR/TVL) + `useYoPrices` (token prices via `getPrices()`)
+- [x] Build PortfolioSummary component — 4 stat cards (Total Value, Allocated, Unallocated, Active Vaults) with YO brand aesthetic (neon green accent, #2B2C2A cards, Space Grotesk font)
+- [x] Build AllocationTable component — combined view showing all YO vaults with APR/TVL from API + user positions from on-chain reads, vault color dots, logo images, active/inactive status badges
+- [x] Build TreasuryDashboard layout — composes PortfolioSummary + AllocationTable, uses `useVaultReads` + `useTreasuryPositions` + `useYoVaultsData`
+- [x] Restructured `yo-treasury-tab.tsx` — dashboard-first layout: TreasuryDashboard (full width top) → Chat + Forms below
+- [x] Added YO theme tokens to `global.css`: Space Grotesk font import, `--color-yo-neon`, `--color-yo-dark`, `--color-yo-muted`, vault colors (`yo-usd`, `yo-btc`, `yo-eur`, `yo-gold`), `--font-yo`
+- [x] Verified in Storybook: live APR/TVL data from @yo-protocol/core, portfolio summary with real $0.08 USDC position, all 4 Base YO vaults rendered
+- [ ] Build ChainSelector component (Base/Ethereum/Arbitrum) — stretch
+- [ ] Build FirstDepositPrompt (shown after creation or when balance is zero) — stretch
 
 ## Phase 4: Frontend — Chat UI & Tool Renderers (Alpha Actions)
 - [x] Create API route: POST /api/yo/treasury/chat

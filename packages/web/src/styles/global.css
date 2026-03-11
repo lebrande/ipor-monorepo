@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
@@ -77,6 +78,17 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* YO Protocol brand tokens */
+  --color-yo-neon: #D6FF34;
+  --color-yo-black: #000000;
+  --color-yo-dark: #2B2C2A;
+  --color-yo-muted: #A0A0A0;
+  --color-yo-usd: #00FF8B;
+  --color-yo-btc: #FFAF4F;
+  --color-yo-eur: #4E6FFF;
+  --color-yo-gold: #FFBF00;
+  --font-yo: 'Space Grotesk', system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
