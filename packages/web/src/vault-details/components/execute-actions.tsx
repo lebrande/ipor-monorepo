@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, XCircle, Wallet, Loader2, Play, Zap } from 'lucide-react';
@@ -15,6 +15,7 @@ import {
 } from 'wagmi';
 import type { Address, Hex } from 'viem';
 import { mainnet, arbitrum, base } from 'viem/chains';
+import { useQueryClient } from '@tanstack/react-query';
 import type { ExecuteActionsOutput } from '@ipor/fusion-mastra/alpha-types';
 import { TxHashLink } from '@/activity/components/tx-hash-link';
 
@@ -143,6 +144,20 @@ export function ExecuteActions({
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
     useWaitForTransactionReceipt({ hash: txHash });
 
+  // Invalidate all wagmi/React Query caches after tx confirmation
+  // so dashboard hooks refetch fresh on-chain data.
+  // Immediate invalidation + delayed retry because RPC nodes may
+  // return stale data right after tx confirmation.
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (isConfirmed) {
+      queryClient.invalidateQueries();
+      // Do NOT return cleanup — resetWrite() clears txHash which flips
+      // isConfirmed to false, re-runs effect, and cancels the timer.
+      setTimeout(() => queryClient.invalidateQueries(), 2000);
+    }
+  }, [isConfirmed, queryClient]);
+
   const handleConnect = useCallback(() => {
     const connector = connectors[0];
     if (connector) {
@@ -175,6 +190,15 @@ export function ExecuteActions({
       );
     }
   }, [publicClient, address, vaultAddress, flatFuseActions]);
+
+  // Skip client-side simulation — agent already simulated on Anvil fork.
+  // Auto-advance to 'success' so Execute button appears immediately.
+  // This avoids Odos swap calldata expiring during the simulation step.
+  useEffect(() => {
+    if (isCorrectChain && hasAlphaRole && simulationState === 'idle') {
+      setSimulationState('success');
+    }
+  }, [isCorrectChain, hasAlphaRole, simulationState]);
 
   const handleExecute = useCallback(() => {
     writeContract({

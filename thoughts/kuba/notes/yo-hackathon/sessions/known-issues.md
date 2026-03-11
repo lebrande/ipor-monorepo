@@ -139,6 +139,27 @@
 - **Fix (FSN-0062)**: Added "Unallocated" column to YO vaults table. `getYoVaultsTool` now multicalls `balanceOf(treasuryAddress)` for each YO vault's underlying asset — covers the common case of seeing unallocated tokens that match YO vault underlyings.
 - **Remaining**: Treasury overview card still doesn't show non-YO-vault tokens. Would require reading balances of all known tokens.
 
+### Odos swap calldata expires during batched multi-vault allocation
+- **Location**: `packages/mastra/src/tools/yo-treasury/create-yo-swap-action.ts`, `packages/web/src/vault-details/components/execute-actions.tsx`
+- **Issue**: When the agent creates 7+ actions (multiple swaps + allocations), the sequential Odos API calls take ~90 seconds total. The first Odos swap calldata expires (~2 min validity) before the user can execute on-chain.
+- **Error**: `UniversalTokenSwapperFuseSlippageFail()` (selector `0xda648573`) — the on-chain fuse checks actual swap output against expected amounts encoded in the calldata.
+- **Workaround**: Execute one vault at a time (2-3 actions per chat message) instead of batching all 4 vaults in a single request. The swap+allocate flow for a single vault takes ~30s agent processing + immediate execution, well within the Odos expiry window.
+- **Mitigation applied**: (1) Auto-skip client-side simulation in `ExecuteActions` — agent already simulates on Anvil fork, so the manual "Simulate" button was an unnecessary delay. (2) Increased default Odos slippage from 0.5% to 1.0%.
+- **Root cause**: Odos `/sor/assemble` returns calldata with baked-in routing paths and minimum outputs that become stale as on-chain liquidity pool states change.
+- **Future fix**: Could parallelize agent tool calls (create all swaps simultaneously), or implement a "refresh quotes before execution" step, or use a longer-lived swap protocol.
+
+### Small amounts cause `UniversalTokenSwapperFuseSlippageFail` on cbBTC
+- **Issue**: Swapping $0.009 USDC to cbBTC yields ~12 satoshis (0.00000012 BTC). At 8 decimal precision, rounding of even 1 satoshi represents >8% error, which exceeds any reasonable slippage tolerance.
+- **Impact**: Low — only affects extremely small demo amounts. Production amounts ($100+) would produce enough satoshis for sub-1% rounding.
+- **Workaround**: Use larger amounts for cbBTC swaps, or accept that tiny demo amounts may fail on cbBTC specifically (6-decimal tokens like USDC/EURC are fine at small amounts).
+
+### Client-side simulation skipped in ExecuteActions
+- **Location**: `packages/web/src/vault-details/components/execute-actions.tsx:194-199`
+- **Issue**: Auto-advances simulation step to `success` without actually calling `simulateContract()`. This removes a safety check that could catch issues before spending gas.
+- **Root cause**: Added to prevent Odos swap calldata expiration during the simulation step. The agent already simulates on an Anvil fork, so the client-side simulation was redundant but provided defense-in-depth.
+- **Impact**: Medium — for non-swap actions (pure allocations, withdrawals), the agent's fork simulation is sufficient. For swap actions, executing without client-side simulation means a failed tx costs gas.
+- **Action**: Acceptable for hackathon. In production, could restore client-side simulation for non-swap-containing action batches, or implement a "refresh and re-simulate" flow.
+
 ### Mastra agent tools use real chain RPC, not Anvil fork
 - **Issue**: `getPublicClient()` in `packages/mastra/src/tools/plasma-vault/utils/viem-clients.ts` uses `BASE_RPC_URL` (from mastra env), which points to real Base mainnet. Storybook's wagmi uses `NEXT_PUBLIC_RPC_URL_BASE`, which can point to an Anvil fork.
 - **Impact**: When testing in Storybook with an Anvil fork, the deposit/withdraw forms (wagmi) see fork state (e.g., 5,243 USDC position), but agent tools (mastra) read real chain state (0 balances). The YO vaults table shows 0 for Unallocated/Balance even though the deposit form shows a position.

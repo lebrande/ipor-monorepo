@@ -29,7 +29,7 @@ async function getOdosSwapCalldata(params: {
       chainId: params.chainId,
       inputTokens: [{ tokenAddress: params.tokenIn, amount: params.amountIn }],
       outputTokens: [{ tokenAddress: params.tokenOut, proportion: 1 }],
-      slippageLimitPercent: params.slippageLimitPercent ?? 0.5,
+      slippageLimitPercent: params.slippageLimitPercent ?? 1.0,
       userAddr: params.userAddr,
     }),
   });

@@ -174,14 +174,22 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [x] Tool output messages include "[UI rendered...]" directive to prevent LLM from repeating data
 - [x] E2E browser test: "What are my yield options?" — table renders, agent responds with 1 sentence
 - [x] Add "Unallocated" column to YO vaults table (FSN-0062) — `getYoVaultsTool` multicalls `balanceOf(treasuryAddress)` for each underlying, frontend shows column between APR and Balance. **Note**: Can't verify in Storybook because mastra uses real chain RPC while wagmi uses Anvil fork — see known issues.
-- [ ] Build TreasuryAllocation renderer (allocation breakdown — chat inline)
-- [ ] Build SwapPreview renderer
+- [x] ~~Build TreasuryAllocation renderer~~ → Implemented as `TreasuryBalances` (type `treasury-balances`) — shows unallocated tokens + YO allocations with token icons and USD values
+- [x] ~~Build SwapPreview renderer~~ → Swap tool returns `action-with-simulation` type, rendered by existing `ActionWithSimulation` component (shows simulation balance diffs). No separate preview type needed.
 - [x] Test: "Show my allocation" → treasury overview renders with assets + YO positions
 - [x] Test: "Allocate USDC to yoUSD" → full flow works (tool → sim → execute → confirmed)
-- [ ] Test: "Swap 50 USDC to WETH and allocate to yoETH" → batched tx
+- [x] Test: "Swap 0.04 USDC to WETH and allocate to yoETH" → batched tx. Agent chains swap (Odos quote+assemble) + allocation (Erc4626SupplyFuse.enter) as 2 pending actions. Anvil fork simulation passes with both fuse actions. ExecuteActions renders with 2 actions / 2 fuse calls summary. Screenshot: `screenshots/swap-allocate-batched-test.png`
 - [x] Test: "Swap 0.1 USDC to WETH" → Odos swap works (tool → sim → execute → confirmed)
 - [x] Test: "Withdraw from yoUSD" → exit flow works (YoRedeemFuse address resolved internally)
-- [ ] Test: dashboard updates after chat-initiated transactions
+- [x] Dashboard refresh after chat txs — `ExecuteActions` calls `queryClient.invalidateQueries()` immediately + 2s delayed retry (RPC may return stale data right after tx). Verified: after page reload, dashboard shows updated positions (Total Value ~$0.04, Active Vaults 1/4, yoETH 0.000020 WETH Active).
+- [x] Auto-skip client-side simulation — agent already simulates on Anvil fork. `ExecuteActions` auto-advances simulation step to `success` when preconditions met (wallet + chain + ALPHA_ROLE). Prevents Odos swap calldata expiration during manual simulation click.
+- [x] Odos slippage increased from 0.5% to 1.0% — small amounts cause rounding-based slippage failures
+- [x] **All 4 YO vaults allocated on Base mainnet** via chat copilot:
+  - yoUSD: 0.009 USDC direct allocation — tx `0x2ec994eb...465471de`
+  - yoETH: 0.04 USDC → WETH swap+allocate — tx `0xa823be7f...6e7b6062`
+  - yoBTC: 0.01 USDC → cbBTC swap+allocate — tx `0x78f6dd70...65ba01f3`
+  - yoEUR: 0.01 USDC → EURC swap+allocate — tx `0xab289cb9...71e5505a`
+  - Dashboard shows 4/4 Active Vaults generating yield
 
 ## Phase 5: Polish, Demo & Submission
 - [ ] Branding and color scheme (differentiate from YO's black/neon green)
