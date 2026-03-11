@@ -4,6 +4,7 @@ interface TabConfig {
   label: string;
   description: string;
   id: string;
+  requiredTag?: string;
 }
 
 export const TABS = [
@@ -26,15 +27,24 @@ export const TABS = [
     id: 'alpha',
     label: 'Alpha',
     description: 'Chat with AI about this vault',
+    requiredTag: 'ipor-fusion',
   },
   {
     id: 'yo',
     label: 'YO Treasury',
     description: 'AI-managed yield allocations via YO Protocol',
+    requiredTag: 'yo-treasury',
   },
 ] as const satisfies TabConfig[];
 
 export type TabId = (typeof TABS)[number]['id'];
+
+export function getVisibleTabs(tags: string[]) {
+  return TABS.filter((tab) => {
+    if (!('requiredTag' in tab)) return true;
+    return tags.includes(tab.requiredTag);
+  });
+}
 
 export const getTabConfig = (id: TabId) => {
   return TABS.find((tab) => tab.id === id);

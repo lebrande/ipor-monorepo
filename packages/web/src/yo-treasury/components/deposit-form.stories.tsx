@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { WalletDecorator } from '@/app/wallet.decorator';
-import { DepositForm } from './deposit-form';
+import { DepositForm } from '@/vault-actions/components/deposit-form';
 
 const meta: Meta<typeof DepositForm> = {
   title: 'YO Treasury / Deposit Form',

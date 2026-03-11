@@ -4,7 +4,7 @@ import { useAccount } from 'wagmi';
 import type { ChainId } from '@/app/chains.config';
 import type { Address } from 'viem';
 
-import { useVaultReads } from '../hooks/use-vault-reads';
+import { useVaultReads } from '@/vault-actions/hooks/use-vault-reads';
 import { useTreasuryPositions } from '../hooks/use-treasury-positions';
 import { useYoVaultsData } from '../hooks/use-yo-vaults-data';
 import { PortfolioSummary } from './portfolio-summary';

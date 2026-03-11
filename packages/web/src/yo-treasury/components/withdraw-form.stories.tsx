@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { WalletDecorator } from '@/app/wallet.decorator';
-import { WithdrawForm } from './withdraw-form';
+import { WithdrawForm } from '@/vault-actions/components/withdraw-form';
 
 const meta: Meta<typeof WithdrawForm> = {
   title: 'YO Treasury / Withdraw Form',

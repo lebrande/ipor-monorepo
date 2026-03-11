@@ -67,3 +67,16 @@ const CHAIN_NAMES: Record<number, string> = {
 export const getChainName = (chainId: number): string => {
   return CHAIN_NAMES[chainId] || `Chain ${chainId}`;
 };
+
+// Tag constants
+export const VAULT_TAG = {
+  IPOR_FUSION: 'ipor-fusion',
+  YO_TREASURY: 'yo-treasury',
+  YO_VAULT: 'yo-vault',
+} as const;
+
+export type VaultTag = (typeof VAULT_TAG)[keyof typeof VAULT_TAG];
+
+export function hasTag(vault: ParsedVault | undefined, tag: VaultTag): boolean {
+  return vault?.tags.includes(tag) ?? false;
+}

@@ -33,6 +33,7 @@ export default async function VaultLayout({ children, params }: LayoutProps) {
       vaultAddress={vaultAddress}
       vaultName={vault?.name}
       protocol={vault?.protocol}
+      tags={vault?.tags ?? []}
     >
       {children}
     </VaultDetailLayout>
