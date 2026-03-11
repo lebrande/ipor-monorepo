@@ -290,41 +290,52 @@ User: "Swap 500 USDC to WETH and put it in yoETH"
 
 ## Frontend Architecture
 
-### Component Tree
+### Component Tree (Actual Implementation)
 
 ```
-YoTreasuryApp (new page at packages/web/src/app/yo-treasury/)
-├── OnboardingFlow (if no vault detected)
-│   ├── ChainSelector (Base/Ethereum/Arbitrum)
-│   ├── CreateVaultStepper
-│   │   ├── Step 1: FusionFactory.clone()
-│   │   ├── Step 2: Grant roles (incl. WHITELIST_ROLE)
-│   │   ├── Step 3: Add fuses
-│   │   ├── Step 4: Configure substrates
-│   │   └── Step 5: Ready!
-│   └── FirstDepositPrompt (USDC deposit form)
-│
-├── TreasuryDashboard (primary view, if vault exists with balance)
-│   ├── PortfolioSummary
-│   │   ├── TotalValue (USD)
-│   │   ├── UnallocatedBalance (USDC in vault)
-│   │   └── AllocationBreakdown (per YO vault: shares, value, APR, %)
-│   ├── YoVaultsOverview (available vaults with APR, TVL)
-│   ├── DepositForm (USDC deposit into treasury — web UI)
-│   └── WithdrawForm (USDC withdraw from treasury — web UI)
-│
-├── TreasuryChat (secondary view, alpha actions)
-│   ├── ChatInterface (reuse vault-alpha.tsx useChat pattern)
-│   └── ToolRenderers (switch on output type)
-│       ├── YoVaultsList → renders vault cards with APY/TVL
-│       ├── YoVaultDetail → deep dive card
-│       ├── TreasuryAllocation → allocation pie/table
-│       ├── SwapPreview → swap route visualization
-│       ├── ActionWithSimulation → balance diff
-│       ├── PendingActionsList → action queue
-│       └── ExecuteActions → 5-step tx executor
-│
-└── WalletProvider (existing wagmi from packages/web — already configured for multi-chain)
+/vaults/[chainId]/[address]/yo (Next.js page)
+└── YoTreasuryTab (yo-treasury-tab.tsx) — entry point, font-yo container
+    ├── TreasuryDashboard (treasury-dashboard.tsx) — full width, primary view
+    │   ├── Hooks:
+    │   │   ├── useVaultReads(chainId, vaultAddress, userAddress) — shared on-chain reads + oracle pricing
+    │   │   ├── useTreasuryPositions(chainId, treasuryAddress, assetAddress) — wagmi multicall for YO vault shares + convertToAssets
+    │   │   └── useYoVaultsData(chainId) — @yo-protocol/core getVaults() → APR/TVL
+    │   ├── PortfolioSummary (portfolio-summary.tsx) — 4 stat cards
+    │   │   ├── Total Value (USD, neon green accent)
+    │   │   ├── Allocated (sum of positions)
+    │   │   ├── Unallocated (USDC balance)
+    │   │   └── Active Vaults (X/4 count)
+    │   └── AllocationTable (allocation-table.tsx) — merged on-chain + API data
+    │       ├── Vault column (color dot + logo + name + underlying)
+    │       ├── APR column (text-yo-neon)
+    │       ├── TVL column
+    │       ├── Position column
+    │       └── Status column (Active/Inactive badges)
+    │
+    ├── TreasuryChat (treasury-chat.tsx) — flex-1, secondary view
+    │   ├── useChat → POST /api/yo/treasury/chat
+    │   └── YoToolRenderer (yo-tool-renderer.tsx) — switch on type
+    │       ├── 'yo-vaults' → YoVaultsList (yo-vaults-list.tsx)
+    │       ├── 'treasury-allocation' → TreasuryAllocation (TODO)
+    │       ├── 'swap-preview' → SwapPreview (TODO)
+    │       ├── 'action-with-simulation' → ActionWithSimulation (reused from alpha)
+    │       ├── 'pending-actions' → PendingActionsList (reused from alpha)
+    │       └── 'execute-actions' → ExecuteActions 5-step flow (reused from alpha)
+    │
+    └── Forms (w-full lg:w-80, sticky sidebar on desktop)
+        ├── DepositForm (deposit-form.tsx) — approve + deposit, uses useVaultReads
+        └── WithdrawForm (withdraw-form.tsx) — redeem, isMax flag, uses useVaultReads
+
+/yo-treasury/create (standalone page)
+└── CreateVaultFlow — 6-step wagmi decomposition (FSN-0055)
+    ├── CloneVaultStep — FusionFactory.clone()
+    ├── GrantRolesStep — 4 grantRole txs (reads hasRole, skips if granted)
+    ├── AddFusesStep — addFuses([9 fuses])
+    ├── AddBalanceFusesStep — 5 addBalanceFuse txs
+    ├── ConfigureSubstratesStep — 5 grantMarketSubstrates txs
+    └── UpdateDepsStep — updateDependencyBalanceGraphs
+
+WalletProvider (existing wagmi — already configured for multi-chain)
 ```
 
 ### API Routes
@@ -351,24 +362,25 @@ YoTreasuryApp (new page at packages/web/src/app/yo-treasury/)
 | `ACCESS_MANAGER_ROLE` | `@ipor/fusion-sdk` | Reuse for WHITELIST_ROLE (800n) etc. |
 | `FuseAction` type | `@ipor/fusion-sdk` | Reuse as-is |
 
-### New Files Needed (all in `packages/web/src/yo-treasury/`)
+### Files Created (all in `packages/web/src/yo-treasury/`)
 
-| File | Purpose |
-|------|---------|
-| `constants/addresses.ts` | All contract addresses per chain (factory, fuses, YO vaults, tokens, routers) |
-| `constants/abis.ts` | ABIs not already in `@ipor/fusion-sdk` (fusionFactory, erc4626SupplyFuse, universalTokenSwapperFuse) |
-| `lib/create-vault.ts` | Vault creation tx config builders (used by CreateVaultFlow + fork tests) |
-| `components/create-vault-flow.tsx` | Multi-step vault creation with tx tracking |
-| `components/first-deposit-prompt.tsx` | USDC deposit form after vault creation |
-| `components/treasury-dashboard.tsx` | Primary view — portfolio dashboard |
-| `components/portfolio-summary.tsx` | Dashboard showing total value, allocations |
-| `components/allocation-breakdown.tsx` | Per-YO-vault positions with APR |
-| `components/yo-vaults-overview.tsx` | Available YO vaults with APR/TVL |
-| `components/deposit-form.tsx` | Standard USDC deposit into treasury |
-| `components/withdraw-form.tsx` | Standard USDC withdraw from treasury |
-| `components/treasury-chat.tsx` | Chat UI (copy vault-alpha.tsx pattern) |
-| `components/yo-tool-renderer.tsx` | Tool output switch (copy alpha-tool-renderer.tsx pattern) |
-| `components/yo-vaults-list.tsx` | YO vault cards (chat renderer) |
-| `components/treasury-allocation.tsx` | Allocation breakdown across YO vaults (chat renderer) |
-| `components/swap-preview.tsx` | Swap route, expected output, slippage (chat renderer) |
-| `components/chain-selector.tsx` | Pick chain for vault creation |
+| File | Status | Purpose |
+|------|--------|---------|
+| `hooks/use-vault-reads.ts` | DONE | Shared on-chain reads (asset, decimals, symbol, balance, oracle price) |
+| `hooks/use-treasury-positions.ts` | DONE | Wagmi multicall — YO vault share balances + convertToAssets |
+| `hooks/use-yo-vaults-data.ts` | DONE | `@yo-protocol/core` getVaults() → APR/TVL + getPrices() |
+| `components/treasury-dashboard.tsx` | DONE | Primary view — composes PortfolioSummary + AllocationTable |
+| `components/portfolio-summary.tsx` | DONE | 4 stat cards (Total Value, Allocated, Unallocated, Active Vaults) |
+| `components/allocation-table.tsx` | DONE | Merged on-chain positions + API data table |
+| `components/deposit-form.tsx` | DONE | ERC20 approve + ERC4626 deposit flow |
+| `components/withdraw-form.tsx` | DONE | ERC4626 redeem flow with isMax flag |
+| `components/treasury-chat.tsx` | DONE | Chat UI (useChat + YoToolRenderer) |
+| `components/yo-tool-renderer.tsx` | DONE | Tool output switch |
+| `components/yo-vaults-list.tsx` | DONE | YO vault cards (chat renderer) |
+| `components/yo-treasury-tab.tsx` | DONE | Entry point — dashboard-first layout |
+| `components/yo-treasury-tab.stories.tsx` | DONE | Storybook story with WalletDecorator |
+| `components/create-vault-flow.tsx` | DONE | 6-step vault creation (FSN-0055) |
+| `components/treasury-allocation.tsx` | TODO | Allocation breakdown (chat inline renderer) |
+| `components/swap-preview.tsx` | TODO | Swap route visualization (chat renderer) |
+| `components/first-deposit-prompt.tsx` | STRETCH | Post-creation deposit guide |
+| `components/chain-selector.tsx` | STRETCH | Chain selection for vault creation |

@@ -63,7 +63,7 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [x] Verify agent does NOT handle deposit/withdraw from treasury — agent correctly refuses both, directs to web UI forms
 
 ### Phase 2 Implementation Notes:
-- **`@yo-protocol/core` v0.0.3 bug**: `getVaultSnapshot()` throws Zod validation error (`idleBalances.raw` comes back as number, expects string). APY/TVL fields return null until SDK is fixed. Tool handles this gracefully.
+- **~~`@yo-protocol/core` v0.0.3 bug~~** RESOLVED: Upgraded to v1.0.7. Dashboard uses `getVaults()` → `VaultStatsItem[]` which includes yield, TVL, share price. `getVaultSnapshot()` no longer needed.
 - **No `getYoVaultDetailsTool`**: Merged into getYoVaultsTool — one tool returns all vault metadata + snapshot data.
 - **ERC4626 readVaultBalances**: Added branch detecting `MARKET_100xxx` / `ERC4626_xxxx` market names. Reads share balances via `erc4626Abi.convertToAssets`, gets USD prices from price oracle. Benefits both alpha and YO agents.
 - **Protocol enum relaxation**: Changed `PendingActionsOutput.protocol` and `ActionWithSimulationOutput.protocol` from narrow enum to `string` so `'yo-erc4626'` and `'yo-swap'` work alongside `'aave-v3'`/`'morpho'`/`'euler-v2'`.
@@ -155,6 +155,8 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [x] Restructured `yo-treasury-tab.tsx` — dashboard-first layout: TreasuryDashboard (full width top) → Chat + Forms below
 - [x] Added YO theme tokens to `global.css`: Space Grotesk font import, `--color-yo-neon`, `--color-yo-dark`, `--color-yo-muted`, vault colors (`yo-usd`, `yo-btc`, `yo-eur`, `yo-gold`), `--font-yo`
 - [x] Verified in Storybook: live APR/TVL data from @yo-protocol/core, portfolio summary with real $0.08 USDC position, all 4 Base YO vaults rendered
+- [x] Fixed CSS @import ordering — `@import url('...Space+Grotesk...')` must precede `@import 'tailwindcss'` in global.css (Next.js CSS parser requires this)
+- [x] Verified in Next.js app at `http://localhost:3000/vaults/8453/.../yo` — full dashboard with live APR/TVL, portfolio summary, allocation table, chat + forms all rendering correctly
 - [ ] Build ChainSelector component (Base/Ethereum/Arbitrum) — stretch
 - [ ] Build FirstDepositPrompt (shown after creation or when balance is zero) — stretch
 

@@ -70,10 +70,10 @@
 - **Pattern**: For Haiku-class models, put behavioral directives in tool output, not just system prompt.
 - **Files**: `get-yo-vaults.ts:82`, `get-treasury-allocation.ts:41`
 
-### `@yo-protocol/core` v0.0.3 Zod validation bug
-- **Issue**: `getVaultSnapshot()` throws because `idleBalances.raw` comes back as JS `number`, Zod expects `string`.
-- **Impact**: APY/TVL still work via `getVaults()` which uses a different API path. Snapshot-specific data (idle balances breakdown) unavailable.
-- **Action**: Wait for SDK fix. Tool gracefully returns null for snapshot-only fields.
+### ~~`@yo-protocol/core` v0.0.3 Zod validation bug~~ RESOLVED (upgraded to v1.0.7)
+- **Previous**: `getVaultSnapshot()` threw because `idleBalances.raw` came back as JS `number`, Zod expected `string`.
+- **Fix**: Upgraded to `@yo-protocol/core` v1.0.7. Dashboard uses `getVaults()` which returns `VaultStatsItem[]` with `yield['7d']`, `tvl.formatted`, `sharePrice.formatted`, and `chain.id`. `getVaultSnapshot()` is no longer needed for dashboard data.
+- **Status**: RESOLVED.
 
 ### ~~Demo vault has 0 balance~~ RESOLVED
 - **Previous**: Demo vault had no deposited USDC.
@@ -115,6 +115,13 @@
 - **Issue**: The fuse does not validate that the `vault` parameter is a whitelisted substrate (unlike `Erc4626SupplyFuse` which uses `PlasmaVaultConfigLib`). PlasmaVault's fuse registration check is the only guard.
 - **Impact**: Low for hackathon — the vault owner controls which fuses are registered and which substrates are whitelisted. In production, substrate validation would add defense-in-depth.
 - **Action**: Acceptable for hackathon. Document as a limitation.
+
+### ~~CSS @import ordering in Next.js~~ RESOLVED
+- **Issue**: Adding `@import url('...Space+Grotesk...')` AFTER `@import 'tailwindcss'` in `global.css` caused build error: "Parsing CSS source code failed — @import rules must precede all rules aside from @charset and @layer statements".
+- **Root cause**: Next.js's CSS parser (LightningCSS) requires all `@import url()` statements to come before any `@import` of Tailwind or other modules that generate rules.
+- **Fix**: Moved the Google Fonts `@import url()` to line 1 of `global.css`, before `@import 'tailwindcss'`.
+- **File**: `packages/web/src/styles/global.css`
+- **Status**: RESOLVED.
 
 ### Only yoUSD redeem is tested
 - **Issue**: Fork test only deploys YoRedeemFuse for market ERC4626_0001 (yoUSD) and tests withdrawal from yoUSD. yoETH/yoBTC/yoEUR redemption is untested.

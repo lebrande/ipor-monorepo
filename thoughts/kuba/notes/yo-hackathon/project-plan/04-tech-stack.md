@@ -7,7 +7,7 @@
 |---------|---------|---------|
 | `viem` | latest | Ethereum client library (encoding, multicall, contract reads/writes) |
 | `wagmi` | latest | React hooks for wallet connection, chain switching, contract interaction |
-| `@yo-protocol/core` | latest | YO Protocol SDK — vault reads, snapshots, yield data |
+| `@yo-protocol/core` | 1.0.7 | YO Protocol SDK — vault reads, `getVaults()` → APR/TVL/share price, `getPrices()` → token prices |
 | `@ipor/fusion-sdk` | workspace | IPOR Fusion SDK — PlasmaVault, market IDs, protocol adapters, FuseAction types, access manager roles |
 
 ### AI Agent
@@ -112,32 +112,34 @@ packages/
 │       └── mastra/
 │           └── index.ts             # Register new agent
 │
-├── web/                            # EXISTING — Extend with yo-treasury feature
+├── web/                            # EXISTING — Extended with yo-treasury feature
 │   └── src/
 │       ├── app/
 │       │   ├── yo-treasury/
-│       │   │   └── page.tsx         # NEW entry page
+│       │   │   └── create/page.tsx  # Vault creation page
+│       │   ├── vaults/[chainId]/[address]/yo/
+│       │   │   └── page.tsx         # YO Treasury tab on vault detail
 │       │   └── api/yo/treasury/
-│       │       └── chat/route.ts    # NEW API route
-│       └── yo-treasury/             # NEW feature directory
-│           ├── constants/
-│           │   ├── addresses.ts     # All contract addresses per chain
-│           │   └── abis.ts          # Collected ABIs (supplement fusion-sdk exports)
-│           ├── lib/
-│           │   └── create-vault.ts  # Vault creation tx builders (used by onboarding UI)
+│       │       └── chat/route.ts    # Chat API route
+│       ├── styles/
+│       │   └── global.css           # YO theme tokens (--color-yo-*, --font-yo)
+│       └── yo-treasury/             # Feature directory
+│           ├── hooks/
+│           │   ├── use-vault-reads.ts         # Shared on-chain reads + oracle pricing
+│           │   ├── use-treasury-positions.ts  # Wagmi multicall for YO vault positions
+│           │   └── use-yo-vaults-data.ts      # @yo-protocol/core getVaults() + getPrices()
 │           └── components/
-│               ├── treasury-dashboard.tsx   # Primary view — portfolio dashboard
-│               ├── portfolio-summary.tsx     # Total value, allocations
-│               ├── allocation-breakdown.tsx  # Per-YO-vault positions with APR
-│               ├── deposit-form.tsx          # Standard USDC deposit form
-│               ├── withdraw-form.tsx         # Standard USDC withdraw form
-│               ├── create-vault-flow.tsx     # Onboarding stepper
-│               ├── first-deposit-prompt.tsx  # Post-creation deposit guide
-│               ├── treasury-chat.tsx         # Chat UI (alpha actions)
-│               ├── yo-tool-renderer.tsx      # Tool output switch
-│               ├── yo-vaults-list.tsx        # YO vault cards (chat)
-│               ├── treasury-allocation.tsx   # Allocation view (chat)
-│               └── swap-preview.tsx          # Swap route viz (chat)
+│               ├── treasury-dashboard.tsx   # Primary view — PortfolioSummary + AllocationTable
+│               ├── portfolio-summary.tsx    # 4 stat cards (Total, Allocated, Unallocated, Active)
+│               ├── allocation-table.tsx     # Merged on-chain + API vault data table
+│               ├── deposit-form.tsx         # ERC20 approve + ERC4626 deposit
+│               ├── withdraw-form.tsx        # ERC4626 redeem with isMax flag
+│               ├── create-vault-flow.tsx    # 6-step vault creation (FSN-0055)
+│               ├── yo-treasury-tab.tsx      # Entry point — dashboard-first layout
+│               ├── yo-treasury-tab.stories.tsx # Storybook story
+│               ├── treasury-chat.tsx        # Chat UI (alpha actions)
+│               ├── yo-tool-renderer.tsx     # Tool output switch
+│               └── yo-vaults-list.tsx       # YO vault cards (chat renderer)
 │
 ├── sdk/                            # EXISTING — @ipor/fusion-sdk
 │   └── src/                        # Reuse: PlasmaVault, MARKET_ID, FuseAction,
@@ -226,5 +228,7 @@ Do NOT create screenshots at repository root level.
 | `web3-data-fetching` | Complex blockchain data fetching workflows |
 | `yo-protocol-cli` | Ad-hoc vault queries during development |
 | `yo-protocol-sdk` | YO SDK integration patterns |
+| `yo-design` | YO brand aesthetic (dark theme, neon green, Space Grotesk) |
+| `yo-protocol-react` | React hooks reference (used for pattern guidance) |
 | `test-driven-development` | TDD approach where possible |
 | `generate-fuse-abis` | Extracting ABIs from Solidity contracts |

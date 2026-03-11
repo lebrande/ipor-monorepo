@@ -392,12 +392,17 @@ Add `yoTreasuryAgent` to the Mastra instance agents map.
 
 ## Phase 3: Frontend — Onboarding & Dashboard
 
-> **STATUS: PARTIALLY DONE** (Vault creation page fully working, demo vault deployed)
+> **STATUS: DONE** (except ChainSelector + FirstDepositPrompt — stretch goals)
 > - Vault creation page at `/yo-treasury/create` — decomposed into 6 per-step wagmi components (FSN-0055)
 > - Demo vault deployed on Base: `0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D` (block 43046896)
 > - All pre-requisite deployments complete (YoRedeemFuse x4, ZeroBalanceFuse)
 > - Added to `plasma-vaults.json` as "YO Treasury"
-> - Dashboard, deposit/withdraw forms, and first-deposit prompt still TODO
+> - Deposit form (FSN-0058): approve + deposit, USD pricing via on-chain oracle
+> - Withdraw form (FSN-0059): redeem flow, isMax flag, delayed refetch for stale RPC
+> - Code review fixes (FSN-0063): extracted `useVaultReads`, oracle pricing, deduplication, mobile responsive
+> - Dashboard (FSN-0063): `useTreasuryPositions` (wagmi multicall), `useYoVaultsData` (`@yo-protocol/core` v1.0.7), PortfolioSummary, AllocationTable, TreasuryDashboard — dashboard-first layout
+> - YO brand theming: Space Grotesk font, neon green accent, vault colors, `--font-yo` in Tailwind v4 `@theme inline`
+> - Verified in both Storybook and Next.js app with live data
 
 ### Overview
 Build the onboarding flow (vault creation + first deposit) and the always-visible portfolio dashboard. Dashboard is the primary user experience. Implementation order: data hooks → dashboard components → onboarding flow → then UI integration.
@@ -487,20 +492,22 @@ Shown after vault creation or when returning user has zero balance:
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] Page renders at `/yo-treasury`
-- [ ] TypeScript compiles: `pnpm tsc --noEmit`
-- [ ] Build succeeds: `pnpm build`
+- [x] Page renders at `/vaults/[chainId]/[address]/yo` (integrated into existing vault detail page)
+- [x] TypeScript compiles: `pnpm tsc --noEmit`
+- [x] Build succeeds (Storybook + Next.js)
 
 #### Manual Verification:
-- [ ] Connect wallet on Base
-- [ ] Walk through vault creation — all transactions succeed (including WHITELIST_ROLE grant)
-- [ ] First deposit prompt appears after creation
-- [ ] After deposit, dashboard shows correct balances
-- [ ] Dashboard always visible — no need to chat to see holdings
-- [ ] Deposit form works (approve + deposit)
-- [ ] Withdraw form works (unallocated USDC)
+- [x] Connect wallet on Base
+- [x] Walk through vault creation — all 17 transactions succeed (FSN-0055)
+- [ ] First deposit prompt appears after creation — stretch goal
+- [x] After deposit, dashboard shows correct balances
+- [x] Dashboard always visible — no need to chat to see holdings
+- [x] Deposit form works (approve + deposit) — tested e2e in Storybook
+- [x] Withdraw form works (partial + max) — tested e2e in Storybook
+- [x] Dashboard shows live APR/TVL from `@yo-protocol/core` — verified in Next.js app
+- [x] Mobile responsive layout verified via Playwright
 
-**Implementation Note**: Pause here for manual testing of onboarding and dashboard.
+**Implementation Note**: Phase 3 complete. ChainSelector and FirstDepositPrompt deferred as stretch goals.
 
 ---
 
