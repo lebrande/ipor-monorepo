@@ -4,3 +4,6 @@
 [submodule "external/core"]
 	path = external/core
 	url = https://github.com/yoprotocol/core
+[submodule "external/yo-protocol-react-example"]
+	path = external/yo-protocol-react-example
+	url = git@github.com:AndonMitev/yo-protocol-react-example.git

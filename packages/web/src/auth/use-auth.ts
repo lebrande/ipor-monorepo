@@ -13,6 +13,11 @@ export function useAuth() {
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
 
+    if (!supabase) {
+      setIsLoading(false);
+      return;
+    }
+
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
       setIsLoading(false);
@@ -29,6 +34,7 @@ export function useAuth() {
 
   const signOut = useCallback(async () => {
     const supabase = createSupabaseBrowserClient();
+    if (!supabase) return;
     await supabase.auth.signOut();
     router.push('/login');
     router.refresh();
