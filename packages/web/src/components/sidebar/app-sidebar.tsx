@@ -1,14 +1,11 @@
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarRail,
 } from '@/components/ui/sidebar';
 import { NavMain } from './nav-main';
 import { navItems, getActiveNavItem } from './nav-config';
-import { SidebarUser } from './sidebar-user';
-
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   pathname: string;
 }
@@ -30,9 +27,6 @@ export function AppSidebar({ pathname, ...props }: AppSidebarProps) {
       <SidebarContent>
         <NavMain items={navItems} activeUrl={activeUrl} />
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarUser />
-      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );

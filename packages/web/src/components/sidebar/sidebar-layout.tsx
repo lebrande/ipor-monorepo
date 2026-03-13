@@ -8,6 +8,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { AppSidebar } from './app-sidebar';
 import { BottomNav } from './bottom-nav';
+import { SidebarUser } from './sidebar-user';
 
 interface SidebarLayoutProps {
   children: React.ReactNode;
@@ -30,6 +31,9 @@ export function SidebarLayout({ children, pathname }: SidebarLayoutProps) {
             alt="Fusion by IPOR"
             className="h-8 w-auto md:hidden"
           />
+          <div className="ml-auto">
+            <SidebarUser />
+          </div>
         </header>
         <div className="flex-1 pb-16 md:pb-0">{children}</div>
       </SidebarInset>
