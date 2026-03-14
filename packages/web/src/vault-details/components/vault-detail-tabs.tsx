@@ -10,13 +10,12 @@ import type { Address } from 'viem';
 interface Props {
   chainId: ChainId;
   vaultAddress: Address;
-  tags: string[];
 }
 
-export const VaultDetailTabs = ({ chainId, vaultAddress, tags }: Props) => {
+export const VaultDetailTabs = ({ chainId, vaultAddress }: Props) => {
   const pathname = usePathname();
   const basePath = `/vaults/${chainId}/${vaultAddress}`;
-  const visibleTabs = getVisibleTabs(tags);
+  const visibleTabs = getVisibleTabs();
 
   const getTabHref = (tabId: string) => {
     return tabId === 'overview' ? basePath : `${basePath}/${tabId}`;

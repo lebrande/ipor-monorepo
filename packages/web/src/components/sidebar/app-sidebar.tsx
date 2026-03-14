@@ -5,27 +5,30 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar';
 import { NavMain } from './nav-main';
-import { navItems, getActiveNavItem } from './nav-config';
+import { getNavItems, getActiveNavItem } from './nav-config';
+import { getAppConfig } from '@/lib/app-config';
+
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   pathname: string;
 }
 
 export function AppSidebar({ pathname, ...props }: AppSidebarProps) {
   const activeUrl = getActiveNavItem(pathname);
+  const config = getAppConfig();
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <div className="flex items-center px-2 py-3">
           <img
-            src="/assets/logo-fusion-by-ipor.svg"
-            alt="Fusion by IPOR"
+            src={config.logo}
+            alt={config.name}
             className="h-10 w-auto"
           />
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navItems} activeUrl={activeUrl} />
+        <NavMain items={getNavItems()} activeUrl={activeUrl} />
       </SidebarContent>
       <SidebarRail />
     </Sidebar>

@@ -1,6 +1,6 @@
 import { formatUnits, type Address } from 'viem';
 import { supabase } from '@ipor/fusion-supabase-ponder';
-import { ERC4626_VAULTS, getVaultFromRegistry } from '@/lib/vaults-registry';
+import { APP_VAULTS, getVaultFromRegistry } from '@/lib/vaults-registry';
 import { fetchAllVaultsRpcData } from '@/lib/rpc/vault-rpc-data';
 import { fetchAllAssetPrices } from '@/lib/rpc/asset-prices';
 import { getCacheKey } from '@/lib/rpc/cache';
@@ -80,7 +80,7 @@ function shareBalanceToDecimal(
 const MIN_USD_FOR_VAULT_COUNT = 10;
 
 export async function fetchDashboardRankings(): Promise<DashboardRankings> {
-  const vaults = ERC4626_VAULTS.map((v) => ({
+  const vaults = APP_VAULTS.map((v) => ({
     chainId: v.chainId,
     address: v.address as Address,
   }));
@@ -134,7 +134,7 @@ export async function fetchDashboardRankings(): Promise<DashboardRankings> {
     { chainId: number; vaultName: string; total: number }
   >();
 
-  for (const vault of ERC4626_VAULTS) {
+  for (const vault of APP_VAULTS) {
     const key = `${vault.chainId}:${vault.address.toLowerCase()}`;
     vaultDepositMap.set(key, {
       chainId: vault.chainId,

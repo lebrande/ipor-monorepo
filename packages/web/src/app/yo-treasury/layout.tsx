@@ -9,7 +9,7 @@ export default function YoTreasuryLayout({
 }) {
   return (
     <AppProviders>
-      <div className="min-h-screen bg-yo-black font-yo text-white">
+      <div className="min-h-screen">
         {children}
       </div>
     </AppProviders>

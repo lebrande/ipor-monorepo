@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { AppSidebar } from './app-sidebar';
 import { BottomNav } from './bottom-nav';
 import { SidebarUser } from './sidebar-user';
+import { getAppConfig } from '@/lib/app-config';
 
 interface SidebarLayoutProps {
   children: React.ReactNode;
@@ -16,6 +17,8 @@ interface SidebarLayoutProps {
 }
 
 export function SidebarLayout({ children, pathname }: SidebarLayoutProps) {
+  const config = getAppConfig();
+
   return (
     <SidebarProvider>
       <AppSidebar pathname={pathname} />
@@ -27,8 +30,8 @@ export function SidebarLayout({ children, pathname }: SidebarLayoutProps) {
             className="mr-2 hidden h-4 md:block"
           />
           <img
-            src="/assets/logo-fusion-by-ipor.svg"
-            alt="Fusion by IPOR"
+            src={config.logo}
+            alt={config.name}
             className="h-8 w-auto md:hidden"
           />
           <div className="ml-auto">

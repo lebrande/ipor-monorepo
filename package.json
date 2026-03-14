@@ -10,6 +10,8 @@
     "db:stop": "cd packages/supabase-ponder && supabase stop",
     "db:status": "cd packages/supabase-ponder && supabase status",
     "dev:web": "pnpm --filter @ipor/fusion-web dev",
+    "dev:web:fusion": "NEXT_PUBLIC_APP_CONFIG=fusion pnpm --filter @ipor/fusion-web dev",
+    "dev:web:yo": "NEXT_PUBLIC_APP_CONFIG=yo pnpm --filter @ipor/fusion-web dev",
     "dev:ponder": "pnpm --filter @ipor/fusion-ponder dev",
     "dev:mastra": "pnpm --filter @ipor/fusion-mastra dev",
     "build:sdk": "pnpm --filter @ipor/fusion-sdk build",

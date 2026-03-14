@@ -25,7 +25,6 @@ interface Props {
   vaultAddress: Address;
   vaultName?: string;
   protocol?: string;
-  tags: string[];
 }
 
 export const VaultDetailHeader = ({
@@ -33,7 +32,6 @@ export const VaultDetailHeader = ({
   vaultAddress,
   vaultName,
   protocol,
-  tags,
 }: Props) => {
   const { name: onChainName, asset } = useVaultContext();
 
@@ -120,7 +118,7 @@ export const VaultDetailHeader = ({
       </div>
 
       {/* Tab Navigation */}
-      <VaultDetailTabs chainId={chainId} vaultAddress={vaultAddress} tags={tags} />
+      <VaultDetailTabs chainId={chainId} vaultAddress={vaultAddress} />
     </div>
   );
 };

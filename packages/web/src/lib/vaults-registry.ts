@@ -2,6 +2,9 @@ import { type Address, isAddress } from 'viem';
 import { z } from 'zod';
 import plasmaVaultsJson from '../../../../plasma-vaults.json';
 
+const APP_IDS = ['fusion', 'yo'] as const;
+export type AppId = (typeof APP_IDS)[number];
+
 const addressSchema = z.custom<Address>(
   (address) => isAddress(address as string, { strict: false }),
   { message: 'Invalid address' },
@@ -12,6 +15,7 @@ const vaultSchema = z.object({
   address: addressSchema,
   chainId: z.number(),
   protocol: z.string(),
+  app: z.enum(APP_IDS),
   tags: z.array(z.string()),
   startBlock: z.number(),
   url: z.url(),
@@ -24,6 +28,7 @@ export interface ParsedVault {
   address: Address;
   chainId: number;
   protocol: string;
+  app: AppId;
   tags: string[];
   startBlock: number;
   url: string;
@@ -80,3 +85,9 @@ export type VaultTag = (typeof VAULT_TAG)[keyof typeof VAULT_TAG];
 export function hasTag(vault: ParsedVault | undefined, tag: VaultTag): boolean {
   return vault?.tags.includes(tag) ?? false;
 }
+
+// Filtered vaults for the current app config
+import { getAppConfig } from './app-config';
+export const APP_VAULTS = ERC4626_VAULTS.filter(
+  (v) => v.app === getAppConfig().id,
+);

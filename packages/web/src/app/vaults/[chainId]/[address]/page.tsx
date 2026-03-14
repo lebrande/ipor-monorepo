@@ -1,5 +1,5 @@
 import { VaultOverviewContent } from '@/vault-details/components/vault-overview-content';
-import { getVaultFromRegistry, hasTag, VAULT_TAG } from '@/lib/vaults-registry';
+import { getVaultFromRegistry } from '@/lib/vaults-registry';
 import { YoTreasuryOverview } from '@/yo-treasury/components/yo-treasury-overview';
 import type { ChainId } from '@/app/chains.config';
 import type { Address } from 'viem';
@@ -15,9 +15,8 @@ export default async function VaultOverviewPage({
 }) {
   const { chainId, address } = await params;
   const vault = getVaultFromRegistry(Number(chainId), address);
-  const isYoTreasury = hasTag(vault, VAULT_TAG.YO_TREASURY);
 
-  if (isYoTreasury) {
+  if (vault?.tags.includes('yo-treasury')) {
     return (
       <YoTreasuryOverview
         chainId={Number(chainId) as ChainId}

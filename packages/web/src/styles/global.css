@@ -73,6 +73,38 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+.yo {
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #1a1a1a;
+  --card-foreground: #ffffff;
+  --popover: #1a1a1a;
+  --popover-foreground: #ffffff;
+  --primary: #D6FF34;
+  --primary-foreground: #000000;
+  --secondary: #2B2C2A;
+  --secondary-foreground: #ffffff;
+  --muted: #2B2C2A;
+  --muted-foreground: #A0A0A0;
+  --accent: #2B2C2A;
+  --accent-foreground: #D6FF34;
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: #D6FF34;
+  --sidebar: #0a0a0a;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #D6FF34;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #2B2C2A;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: #D6FF34;
+}
+
+.yo body {
+  font-family: var(--font-yo);
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

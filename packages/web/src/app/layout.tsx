@@ -1,21 +1,27 @@
 import type { Metadata } from 'next';
 import '../styles/global.css';
+import { getAppConfig } from '@/lib/app-config';
 
-export const metadata: Metadata = {
-  title: 'Fusion by IPOR',
-  description: 'ERC4626 Vault Analytics Dashboard',
-  icons: {
-    icon: '/assets/logo-fusion-by-ipor.svg',
-  },
-};
+export function generateMetadata(): Metadata {
+  const config = getAppConfig();
+  return {
+    title: config.title,
+    description: config.description,
+    icons: {
+      icon: config.logo,
+    },
+  };
+}
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const config = getAppConfig();
+
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className={config.themeClass}>
       <body>{children}</body>
     </html>
   );

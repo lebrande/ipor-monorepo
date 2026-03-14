@@ -13,7 +13,6 @@ interface Props {
   vaultAddress: Address;
   vaultName?: string;
   protocol?: string;
-  tags: string[];
 }
 
 export function VaultDetailLayout({
@@ -22,7 +21,6 @@ export function VaultDetailLayout({
   vaultAddress,
   vaultName,
   protocol,
-  tags,
 }: Props) {
   return (
     <AppProviders>
@@ -36,7 +34,6 @@ export function VaultDetailLayout({
                 vaultAddress={vaultAddress}
                 vaultName={vaultName}
                 protocol={protocol}
-                tags={tags}
               />
               {children}
             </div>

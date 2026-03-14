@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { formatUnits, type Address } from 'viem';
 import { addressSchema } from '@/lib/schema';
 import { supabase } from '@ipor/fusion-supabase-ponder';
-import { ERC4626_VAULTS } from '@/lib/vaults-registry';
+import { APP_VAULTS } from '@/lib/vaults-registry';
 import { fetchAllVaultsRpcData } from '@/lib/rpc/vault-rpc-data';
 import { getCacheKey } from '@/lib/rpc/cache';
 
@@ -67,7 +67,7 @@ export async function fetchDepositors(
   params: DepositorSearchParams,
 ): Promise<DepositorsResponse> {
   // 1. Fetch all vault RPC data (cached 10 min)
-  const vaultsForRpc = ERC4626_VAULTS.map((v) => ({
+  const vaultsForRpc = APP_VAULTS.map((v) => ({
     chainId: v.chainId,
     address: v.address as Address,
   }));

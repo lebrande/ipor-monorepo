@@ -1,10 +1,11 @@
 import z from 'zod';
+import { getAppConfig, type AppConfig } from '@/lib/app-config';
 
 interface TabConfig {
   label: string;
   description: string;
   id: string;
-  requiredTag?: string;
+  featureFlag?: keyof AppConfig['features'];
 }
 
 export const TABS = [
@@ -27,16 +28,17 @@ export const TABS = [
     id: 'alpha',
     label: 'Alpha',
     description: 'Chat with AI about this vault',
-    requiredTag: 'ipor-fusion',
+    featureFlag: 'alphaTab' as const,
   },
 ] as const satisfies TabConfig[];
 
 export type TabId = (typeof TABS)[number]['id'];
 
-export function getVisibleTabs(tags: string[]) {
+export function getVisibleTabs() {
+  const config = getAppConfig();
   return TABS.filter((tab) => {
-    if (!('requiredTag' in tab)) return true;
-    return tags.includes(tab.requiredTag);
+    if (!('featureFlag' in tab) || !tab.featureFlag) return true;
+    return config.features[tab.featureFlag];
   });
 }
 

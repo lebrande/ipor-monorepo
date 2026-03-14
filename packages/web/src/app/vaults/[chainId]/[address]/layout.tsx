@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { isAddress, type Address } from 'viem';
 import { isValidChainId, type ChainId } from '@/app/chains.config';
 import { getVaultFromRegistry } from '@/lib/vaults-registry';
+import { getAppConfig } from '@/lib/app-config';
 import { VaultDetailLayout } from './vault-detail-layout';
 
 interface LayoutProps {
@@ -27,13 +28,16 @@ export default async function VaultLayout({ children, params }: LayoutProps) {
   const vaultAddress = addressParam as Address;
   const vault = getVaultFromRegistry(chainId, vaultAddress);
 
+  if (vault && vault.app !== getAppConfig().id) {
+    notFound();
+  }
+
   return (
     <VaultDetailLayout
       chainId={chainId as ChainId}
       vaultAddress={vaultAddress}
       vaultName={vault?.name}
       protocol={vault?.protocol}
-      tags={vault?.tags ?? []}
     >
       {children}
     </VaultDetailLayout>

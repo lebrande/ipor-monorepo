@@ -1,6 +1,6 @@
 import { formatUnits, type Address } from 'viem';
 import { supabase } from '@ipor/fusion-supabase-ponder';
-import { ERC4626_VAULTS } from '@/lib/vaults-registry';
+import { APP_VAULTS } from '@/lib/vaults-registry';
 import { fetchAllVaultsRpcData } from '@/lib/rpc/vault-rpc-data';
 import { fetchAllAssetPrices } from '@/lib/rpc/asset-prices';
 import { getCacheKey } from '@/lib/rpc/cache';
@@ -36,7 +36,7 @@ function bucketSumToUsd(
 }
 
 export async function fetchDashboardMetrics(): Promise<DashboardMetrics> {
-  const vaults = ERC4626_VAULTS.map((v) => ({
+  const vaults = APP_VAULTS.map((v) => ({
     chainId: v.chainId,
     address: v.address as Address,
   }));
@@ -74,7 +74,7 @@ export async function fetchDashboardMetrics(): Promise<DashboardMetrics> {
   }
 
   // 2. Total vaults
-  const totalVaults = ERC4626_VAULTS.length;
+  const totalVaults = APP_VAULTS.length;
 
   // 3. Unique active depositors (distinct addresses across all vaults)
   const uniqueAddresses = new Set(
