@@ -3,8 +3,7 @@
 import { AppProviders } from '@/app/app-providers';
 import { VaultProvider } from '@/vault/vault.context';
 import { VaultDetailHeader } from '@/vault-details/components/vault-detail-header';
-import { DepositForm } from '@/vault-actions/components/deposit-form';
-import { WithdrawForm } from '@/vault-actions/components/withdraw-form';
+import { VaultActionTabs } from '@/vault-actions/components/vault-action-tabs';
 import type { ChainId } from '@/app/chains.config';
 import type { Address } from 'viem';
 
@@ -44,9 +43,8 @@ export function VaultDetailLayout({
 
             {/* Right column: sticky deposit/withdraw */}
             <div className="w-full lg:w-[380px] shrink-0 order-first lg:order-last">
-              <div className="lg:sticky lg:top-6 space-y-3">
-                <DepositForm chainId={chainId} vaultAddress={vaultAddress} />
-                <WithdrawForm chainId={chainId} vaultAddress={vaultAddress} />
+              <div className="lg:sticky lg:top-6">
+                <VaultActionTabs chainId={chainId} vaultAddress={vaultAddress} />
               </div>
             </div>
           </div>

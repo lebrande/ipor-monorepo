@@ -29,7 +29,7 @@ export const navItems: NavItem[] = [
   },
   {
     title: 'YO Treasury',
-    url: '/yo-treasury',
+    url: '/vaults/8453/0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D',
     icon: Landmark,
   },
   {

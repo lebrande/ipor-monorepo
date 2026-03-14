@@ -29,12 +29,6 @@ export const TABS = [
     description: 'Chat with AI about this vault',
     requiredTag: 'ipor-fusion',
   },
-  {
-    id: 'yo',
-    label: 'YO Treasury',
-    description: 'AI-managed yield allocations via YO Protocol',
-    requiredTag: 'yo-treasury',
-  },
 ] as const satisfies TabConfig[];
 
 export type TabId = (typeof TABS)[number]['id'];

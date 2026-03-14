@@ -11,15 +11,12 @@ interface Props {
   vaultAddress: Address;
 }
 
-export function YoTreasuryTab({ chainId, vaultAddress }: Props) {
+export function YoTreasuryOverview({ chainId, vaultAddress }: Props) {
   const { address } = useAccount();
 
   return (
     <div className="space-y-4 font-yo">
-      {/* Dashboard — always visible, primary view */}
       <TreasuryDashboard chainId={chainId} vaultAddress={vaultAddress} />
-
-      {/* AI Copilot */}
       <TreasuryChat
         chainId={chainId}
         vaultAddress={vaultAddress}
