@@ -1,9 +1,11 @@
 'use client';
 
+import Link from 'next/link';
 import type { TreasuryPosition } from '../hooks/use-treasury-positions';
 import type { YoVaultData } from '../hooks/use-yo-vaults-data';
 
 interface Props {
+  chainId: number;
   positions: TreasuryPosition[];
   vaultsData: YoVaultData[] | undefined;
   isLoading: boolean;
@@ -45,7 +47,7 @@ function VaultDot({ color }: { color: string }) {
   );
 }
 
-export function AllocationTable({ positions, vaultsData, isLoading }: Props) {
+export function AllocationTable({ chainId, positions, vaultsData, isLoading }: Props) {
   if (isLoading) {
     return (
       <div className="bg-yo-dark rounded-lg border border-white/5 p-4">
@@ -103,7 +105,10 @@ export function AllocationTable({ positions, vaultsData, isLoading }: Props) {
               >
                 {/* Vault */}
                 <td className="py-3 pl-4">
-                  <div className="flex items-center gap-2">
+                  <Link
+                    href={`/vaults/${chainId}/${row.vaultAddress}`}
+                    className="group/vault flex items-center gap-2 hover:opacity-80 transition-opacity"
+                  >
                     <VaultDot color={row.color} />
                     <img
                       src={row.logo}
@@ -113,13 +118,13 @@ export function AllocationTable({ positions, vaultsData, isLoading }: Props) {
                         (e.target as HTMLImageElement).style.display = 'none';
                       }}
                     />
-                    <span className="font-medium text-white">
+                    <span className="font-medium text-white group-hover/vault:underline">
                       {row.vaultName}
                     </span>
                     <span className="text-yo-muted text-xs">
                       {row.underlying}
                     </span>
-                  </div>
+                  </Link>
                 </td>
 
                 {/* APR */}

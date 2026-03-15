@@ -1,4 +1,5 @@
 import { type Address, erc20Abi, formatUnits } from 'viem';
+import { createYoClient } from '@yo-protocol/core';
 import { getPublicClient } from './clients';
 import { getFromCache, setInCache, getCacheKey } from './cache';
 
@@ -51,6 +52,41 @@ const isContractRevert = (error: unknown): boolean =>
   error instanceof Error &&
   (error.name === 'ContractFunctionExecutionError' ||
     error.name === 'ContractFunctionRevertedError');
+
+// Fallback price source for vaults without getPriceOracleMiddleware (e.g. yo-vaults)
+const SYMBOL_TO_COINGECKO_ID: Record<string, string> = {
+  USDC: 'usd-coin',
+  WETH: 'ethereum',
+  cbBTC: 'coinbase-wrapped-btc',
+  EURC: 'euro-coin',
+  USDT: 'tether',
+};
+
+let _fallbackPrices: Record<string, number> | null = null;
+let _fallbackFetchedAt = 0;
+const FALLBACK_PRICE_TTL = 5 * 60 * 1000; // 5 minutes
+
+async function getFallbackPrice(symbol: string): Promise<number> {
+  const id = SYMBOL_TO_COINGECKO_ID[symbol];
+  if (!id) return 0;
+
+  const now = Date.now();
+  if (!_fallbackPrices || now - _fallbackFetchedAt > FALLBACK_PRICE_TTL) {
+    try {
+      const client = createYoClient({ chainId: 8453 });
+      const prices = await client.getPrices();
+      _fallbackPrices = {};
+      for (const [key, value] of Object.entries(prices)) {
+        _fallbackPrices[key.toLowerCase()] = value as number;
+      }
+      _fallbackFetchedAt = now;
+    } catch {
+      return 0;
+    }
+  }
+
+  return _fallbackPrices?.[id] ?? 0;
+}
 
 const fetchWithRetry = async <T>(
   fn: () => Promise<T>,
@@ -142,6 +178,12 @@ export const fetchVaultRpcData = async (
     } catch (error) {
       const msg = error instanceof Error ? (error as Error & { shortMessage?: string }).shortMessage ?? error.message : String(error);
       console.warn(`Failed to fetch price for ${chainId}:${vaultAddress}: ${msg}`);
+      // Fallback: try yo-protocol price API for known tokens
+      assetUsdPrice = await getFallbackPrice(assetSymbol);
+      if (assetUsdPrice > 0) {
+        tvlUsd =
+          Number(formatUnits(totalAssets, assetDecimals)) * assetUsdPrice;
+      }
     }
 
     const data: VaultRpcData = {

@@ -55,6 +55,7 @@ export function TreasuryDashboard({ chainId, vaultAddress }: Props) {
 
       {/* Allocation table with vault APR/TVL */}
       <AllocationTable
+        chainId={chainId}
         positions={positions}
         vaultsData={vaultsData}
         isLoading={isPositionsLoading || isVaultsLoading}
