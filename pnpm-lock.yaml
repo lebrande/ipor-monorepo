@@ -349,6 +349,9 @@ importers:
       '@yo-protocol/core':
         specifier: ^1.0.4
         version: 1.0.7(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.5)
+      '@yo-protocol/react':
+        specifier: ^1.0.6
+        version: 1.0.6(@tanstack/react-query@5.81.5(react@19.0.0))(bufferutil@4.1.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(viem@2.45.1(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.5))(wagmi@3.4.2(@safe-global/safe-apps-provider@0.18.6(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.5))(@safe-global/safe-apps-sdk@9.1.0(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.5))(@tanstack/query-core@5.81.5)(@tanstack/react-query@5.81.5(react@19.0.0))(@types/react@19.0.12)(@walletconnect/ethereum-provider@2.21.1(@types/react@19.0.12)(@upstash/redis@1.36.1)(bufferutil@4.1.0)(react@19.0.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.5))(immer@10.0.2)(ox@0.11.3(typescript@5.8.3)(zod@4.0.5))(react@19.0.0)(typescript@5.8.3)(viem@2.45.1(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.5)))(zod@4.0.5)
       ai:
         specifier: 6.0.84
         version: 6.0.84(zod@4.0.5)
@@ -3939,6 +3942,23 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
+
+  '@yo-protocol/core@1.0.9':
+    resolution: {integrity: sha512-6JO9Yz+hfFdwRPX3v+ndrS9lFRH0N7ZYk4SClFITwsmuqA2Sip+3JGHfIDA0MPe3c6QhDOSK3kIKm1uywPjFXQ==}
+    peerDependencies:
+      typescript: '>=5.0.0'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  '@yo-protocol/react@1.0.6':
+    resolution: {integrity: sha512-CTohZf9yBUd6OC4Btk4XmJbabwFeO3Gqd2gpaASv35qFSde1nwt0+TULhRiRc9ohCmzFYCEggUHV4RfTRYs9TQ==}
+    peerDependencies:
+      '@tanstack/react-query': '>=5.0.0'
+      react: '>=18.0.0'
+      react-dom: '>=18.0.0'
+      viem: 2.45.1
+      wagmi: '>=2.0.0'
 
   '@zeit/schemas@2.36.0':
     resolution: {integrity: sha512-7kjMwcChYEzMKjeex9ZFXkt1AyNov9R5HZtjBKVsmVpw7pa7ZtlCGvCBC2vnnXctaYN+aRI61HjIqeetZW5ROg==}
@@ -11945,11 +11965,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/browser@3.2.4(bufferutil@4.1.0)(playwright@1.57.0)(utf-8-validate@5.0.10)(vite@7.0.6(@types/node@24.0.4)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vitest@3.2.4)':
+  '@vitest/browser@3.2.4(bufferutil@4.1.0)(playwright@1.57.0)(utf-8-validate@5.0.10)(vite@5.4.21(@types/node@24.0.4)(lightningcss@1.30.2)(terser@5.46.0))(vitest@3.2.4)':
     dependencies:
       '@testing-library/dom': 10.4.1
       '@testing-library/user-event': 14.6.1(@testing-library/dom@10.4.1)
-      '@vitest/mocker': 3.2.4(vite@7.0.6(@types/node@24.0.4)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+      '@vitest/mocker': 3.2.4(vite@5.4.21(@types/node@24.0.4)(lightningcss@1.30.2)(terser@5.46.0))
       '@vitest/utils': 3.2.4
       magic-string: 0.30.21
       sirv: 3.0.2
@@ -12028,6 +12048,15 @@ snapshots:
     optionalDependencies:
       vite: 6.4.1(@types/node@25.2.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
+  '@vitest/mocker@3.2.4(vite@5.4.21(@types/node@24.0.4)(lightningcss@1.30.2)(terser@5.46.0))':
+    dependencies:
+      '@vitest/spy': 3.2.4
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+    optionalDependencies:
+      vite: 5.4.21(@types/node@24.0.4)(lightningcss@1.30.2)(terser@5.46.0)
+    optional: true
+
   '@vitest/mocker@3.2.4(vite@7.0.6(@types/node@24.0.4)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@vitest/spy': 3.2.4
@@ -12092,7 +12121,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.0.4)(@vitest/browser@3.2.4)(@vitest/ui@3.2.4)(jiti@2.6.1)(jsdom@26.1.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@25.2.1)(@vitest/browser@3.2.4)(@vitest/ui@3.2.4)(jiti@2.6.1)(jsdom@26.1.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   '@vitest/utils@3.0.5':
     dependencies:
@@ -12737,6 +12766,32 @@ snapshots:
       typescript: 5.8.3
     transitivePeerDependencies:
       - bufferutil
+      - utf-8-validate
+      - zod
+
+  '@yo-protocol/core@1.0.9(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.5)':
+    dependencies:
+      big.js: 7.0.1
+      viem: 2.45.1(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.5)
+    optionalDependencies:
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+      - zod
+
+  '@yo-protocol/react@1.0.6(@tanstack/react-query@5.81.5(react@19.0.0))(bufferutil@4.1.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(viem@2.45.1(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.5))(wagmi@3.4.2(@safe-global/safe-apps-provider@0.18.6(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.5))(@safe-global/safe-apps-sdk@9.1.0(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.5))(@tanstack/query-core@5.81.5)(@tanstack/react-query@5.81.5(react@19.0.0))(@types/react@19.0.12)(@walletconnect/ethereum-provider@2.21.1(@types/react@19.0.12)(@upstash/redis@1.36.1)(bufferutil@4.1.0)(react@19.0.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.5))(immer@10.0.2)(ox@0.11.3(typescript@5.8.3)(zod@4.0.5))(react@19.0.0)(typescript@5.8.3)(viem@2.45.1(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.5)))(zod@4.0.5)':
+    dependencies:
+      '@tanstack/react-query': 5.81.5(react@19.0.0)
+      '@yo-protocol/core': 1.0.9(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.5)
+      clsx: 2.1.1
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+      viem: 2.45.1(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.5)
+      wagmi: 3.4.2(@safe-global/safe-apps-provider@0.18.6(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.5))(@safe-global/safe-apps-sdk@9.1.0(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.5))(@tanstack/query-core@5.81.5)(@tanstack/react-query@5.81.5(react@19.0.0))(@types/react@19.0.12)(@walletconnect/ethereum-provider@2.21.1(@types/react@19.0.12)(@upstash/redis@1.36.1)(bufferutil@4.1.0)(react@19.0.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.5))(immer@10.0.2)(ox@0.11.3(typescript@5.8.3)(zod@4.0.5))(react@19.0.0)(typescript@5.8.3)(viem@2.45.1(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@4.0.5))
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
       - utf-8-validate
       - zod
 
@@ -17567,7 +17622,7 @@ snapshots:
     optionalDependencies:
       '@types/debug': 4.1.12
       '@types/node': 24.0.4
-      '@vitest/browser': 3.2.4(bufferutil@4.1.0)(playwright@1.57.0)(utf-8-validate@5.0.10)(vite@7.0.6(@types/node@24.0.4)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vitest@3.2.4)
+      '@vitest/browser': 3.2.4(bufferutil@4.1.0)(playwright@1.57.0)(utf-8-validate@5.0.10)(vite@5.4.21(@types/node@24.0.4)(lightningcss@1.30.2)(terser@5.46.0))(vitest@3.2.4)
       '@vitest/ui': 3.2.4(vitest@3.2.4)
       jsdom: 26.1.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:

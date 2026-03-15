@@ -3,7 +3,7 @@
 import { AppProviders } from '@/app/app-providers';
 import { VaultProvider } from '@/vault/vault.context';
 import { VaultDetailHeader } from '@/vault-details/components/vault-detail-header';
-import { VaultActionTabs } from '@/vault-actions/components/vault-action-tabs';
+import { DepositFeatures } from '@/vault-actions/components/deposit-features';
 import type { ChainId } from '@/app/chains.config';
 import type { Address } from 'viem';
 
@@ -38,7 +38,7 @@ export function VaultDetailLayout({
             </div>
             <div className="w-full lg:w-[380px] shrink-0 order-first lg:order-last">
               <div className="lg:sticky lg:top-6">
-                <VaultActionTabs chainId={chainId} vaultAddress={vaultAddress} />
+                <DepositFeatures chainId={chainId} vaultAddress={vaultAddress} />
               </div>
             </div>
           </div>
