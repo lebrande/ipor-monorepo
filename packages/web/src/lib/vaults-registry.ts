@@ -88,6 +88,7 @@ export function hasTag(vault: ParsedVault | undefined, tag: VaultTag): boolean {
 
 // Filtered vaults for the current app config
 import { getAppConfig } from './app-config';
-export const APP_VAULTS = ERC4626_VAULTS.filter(
-  (v) => v.app === getAppConfig().id,
-);
+export const APP_VAULTS =
+  getAppConfig().id === 'all'
+    ? ERC4626_VAULTS
+    : ERC4626_VAULTS.filter((v) => v.app === getAppConfig().id);

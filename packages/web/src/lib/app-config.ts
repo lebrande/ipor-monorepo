@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import type { AppId } from './vaults-registry';
 
+export type ConfigId = AppId | 'all';
+
 export interface NavItem {
   title: string;
   url: string;
@@ -16,7 +18,7 @@ export interface NavItem {
 }
 
 export interface AppConfig {
-  id: AppId;
+  id: ConfigId;
   name: string;
   title: string;
   description: string;
@@ -38,7 +40,7 @@ const fusionConfig: AppConfig = {
   title: 'Fusion by IPOR',
   description: 'ERC4626 Vault Analytics Dashboard',
   logo: '/assets/logo-fusion-by-ipor.svg',
-  themeClass: 'dark',
+  themeClass: '',
   navItems: [
     { title: 'Dashboard', url: '/', icon: Home },
     { title: 'Vaults List', url: '/vaults', icon: Vault },
@@ -59,7 +61,7 @@ const yoConfig: AppConfig = {
   title: 'YO Treasury',
   description: 'YO Protocol Treasury Management',
   logo: '/assets/logo-icon.svg',
-  themeClass: 'dark yo',
+  themeClass: 'yo',
   navItems: [
     { title: 'Dashboard', url: '/', icon: Home },
     { title: 'Vaults List', url: '/vaults', icon: Vault },
@@ -78,7 +80,29 @@ const yoConfig: AppConfig = {
   },
 };
 
-const configs: Record<AppId, AppConfig> = {
+const allConfig: AppConfig = {
+  id: 'all',
+  name: 'Vaults Panda',
+  title: 'Vaults Panda',
+  description: 'ERC4626 Vault Analytics Dashboard',
+  logo: '/assets/logo-fusion-by-ipor.svg',
+  themeClass: '',
+  navItems: [
+    { title: 'Dashboard', url: '/', icon: Home },
+    { title: 'Vaults List', url: '/vaults', icon: Vault },
+    { title: 'Depositors', url: '/depositors', icon: Users },
+    { title: 'Activity', url: '/activity', icon: Activity },
+  ],
+  features: {
+    alphaTab: true,
+    flowCharts: true,
+    depositorsList: true,
+    activityPage: true,
+  },
+};
+
+const configs: Record<ConfigId, AppConfig> = {
+  all: allConfig,
   fusion: fusionConfig,
   yo: yoConfig,
 };
@@ -87,7 +111,16 @@ let cachedConfig: AppConfig | null = null;
 
 export function getAppConfig(): AppConfig {
   if (cachedConfig) return cachedConfig;
-  const id = (process.env.NEXT_PUBLIC_APP_CONFIG || 'fusion') as AppId;
-  cachedConfig = configs[id] ?? fusionConfig;
+  const id = (process.env.NEXT_PUBLIC_APP_CONFIG || 'all') as ConfigId;
+  cachedConfig = configs[id] ?? allConfig;
   return cachedConfig;
+}
+
+const APP_THEME_CLASS: Record<AppId, string> = {
+  fusion: '',
+  yo: 'yo',
+};
+
+export function getThemeClassForVaultApp(app: AppId): string {
+  return APP_THEME_CLASS[app] ?? '';
 }

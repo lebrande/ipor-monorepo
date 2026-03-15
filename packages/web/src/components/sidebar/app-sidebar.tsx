@@ -1,12 +1,14 @@
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarRail,
 } from '@/components/ui/sidebar';
 import { NavMain } from './nav-main';
 import { getNavItems, getActiveNavItem } from './nav-config';
 import { getAppConfig } from '@/lib/app-config';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   pathname: string;
@@ -30,6 +32,9 @@ export function AppSidebar({ pathname, ...props }: AppSidebarProps) {
       <SidebarContent>
         <NavMain items={getNavItems()} activeUrl={activeUrl} />
       </SidebarContent>
+      <SidebarFooter>
+        <ThemeToggle />
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
