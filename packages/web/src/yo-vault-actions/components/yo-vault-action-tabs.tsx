@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useVaultState } from '@yo-protocol/react';
 import { cn } from '@/lib/utils';
+import { Card } from '@/components/ui/card';
 import { TokenIcon } from '@/components/token-icon';
 import { YoDepositForm } from './yo-deposit-form';
 import { YoWithdrawForm } from './yo-withdraw-form';
@@ -21,28 +22,28 @@ export function YoVaultActionTabs({ chainId, vaultAddress }: Props) {
   const { vaultState } = useVaultState(vaultAddress);
 
   return (
-    <div className="font-yo bg-black rounded-2xl border border-white/5 p-4 space-y-4">
+    <Card className="p-4 space-y-4">
       {/* Vault badge */}
       {vaultState && (
         <div className="flex items-center gap-2">
           {vaultState.asset && (
             <TokenIcon chainId={chainId} address={vaultState.asset} className="w-5 h-5" />
           )}
-          <span className="text-sm font-semibold text-white">{vaultState.name}</span>
+          <span className="text-sm font-semibold">{vaultState.name}</span>
         </div>
       )}
 
       {/* Tab bar */}
-      <div className="flex bg-yo-dark rounded-lg p-1">
+      <div className="flex border-b">
         {(['deposit', 'withdraw'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={cn(
-              'flex-1 py-1.5 text-sm font-medium capitalize rounded-md transition-all',
+              'flex-1 pb-2 text-sm font-medium capitalize transition-colors',
               activeTab === tab
-                ? 'bg-yo-neon text-black'
-                : 'text-yo-muted hover:text-white',
+                ? 'border-b-2 border-primary text-foreground'
+                : 'text-muted-foreground hover:text-foreground',
             )}
           >
             {tab}
@@ -56,6 +57,6 @@ export function YoVaultActionTabs({ chainId, vaultAddress }: Props) {
       ) : (
         <YoWithdrawForm chainId={chainId} vaultAddress={vaultAddress} />
       )}
-    </div>
+    </Card>
   );
 }

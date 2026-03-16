@@ -11,6 +11,7 @@ import {
 } from '@yo-protocol/react';
 import { formatUnits, parseUnits, type Address } from 'viem';
 import { Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { TokenIcon } from '@/components/token-icon';
 import { StepProgress } from './step-progress';
 
@@ -120,17 +121,15 @@ export function YoDepositForm({ chainId, vaultAddress }: Props) {
   // ─── Render ───
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Amount input */}
-      <div className="bg-yo-dark rounded-xl p-4 border border-white/5 space-y-2">
+      <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-medium tracking-wider uppercase text-yo-muted">
-            You deposit
-          </span>
+          <span className="text-xs text-muted-foreground">You deposit</span>
           {assetAddress && (
             <div className="flex items-center gap-1.5">
               <TokenIcon chainId={chainId} address={assetAddress} className="w-4 h-4" />
-              <span className="text-xs font-medium text-white">{symbol}</span>
+              <span className="text-xs font-medium">{symbol}</span>
             </div>
           )}
         </div>
@@ -144,10 +143,10 @@ export function YoDepositForm({ chainId, vaultAddress }: Props) {
             if (v === '' || /^\d*\.?\d*$/.test(v)) setInputValue(v);
           }}
           disabled={isActive}
-          className="w-full bg-transparent text-2xl font-semibold text-white outline-none placeholder:text-white/20"
+          className="w-full bg-transparent text-lg font-mono outline-none placeholder:text-muted-foreground"
         />
         <div className="flex items-center justify-between">
-          <span className="text-xs text-yo-muted">
+          <span className="text-xs text-muted-foreground">
             {walletFormatted !== undefined
               ? `Balance: ${formatNum(walletFormatted)}`
               : 'Balance: ...'}
@@ -156,7 +155,7 @@ export function YoDepositForm({ chainId, vaultAddress }: Props) {
             type="button"
             onClick={handleMax}
             disabled={isActive || !walletBalance}
-            className="text-[10px] font-semibold tracking-wider uppercase text-yo-neon hover:text-yo-neon/80 disabled:text-yo-muted disabled:cursor-not-allowed transition-colors"
+            className="text-xs text-primary font-medium hover:underline disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Max
           </button>
@@ -165,41 +164,39 @@ export function YoDepositForm({ chainId, vaultAddress }: Props) {
 
       {/* Preview */}
       {depositAmount > 0n && previewShares !== undefined && (
-        <div className="bg-yo-dark rounded-xl p-3 border border-white/5">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-yo-muted">You receive (est.)</span>
-            <span className="text-white font-mono">
-              {formatNum(formatUnits(previewShares, vaultState?.decimals ?? 18))}{' '}
-              <span className="text-yo-muted">{vaultState?.name ?? 'shares'}</span>
-            </span>
-          </div>
+        <div className="flex items-center justify-between text-xs px-1">
+          <span className="text-muted-foreground">You receive (est.)</span>
+          <span className="font-mono">
+            {formatNum(formatUnits(previewShares, vaultState?.decimals ?? 18))}{' '}
+            <span className="text-muted-foreground">{vaultState?.name ?? 'shares'}</span>
+          </span>
         </div>
       )}
 
       {/* Position */}
       <div className="flex items-center justify-between text-xs px-1">
-        <span className="text-yo-muted">Your position</span>
-        <span className="text-white font-mono">
+        <span className="text-muted-foreground">Your position</span>
+        <span className="font-mono">
           {positionFormatted !== undefined ? `${formatNum(positionFormatted)} ${symbol}` : '-'}
         </span>
       </div>
 
       {/* Step progress (visible during active flow) */}
       {isActive && (
-        <div className="bg-yo-dark rounded-xl p-3 border border-white/5">
+        <div className="rounded-lg border bg-muted/30 p-3">
           <StepProgress steps={DEPOSIT_STEPS} currentStep={step} />
         </div>
       )}
 
       {/* Success */}
       {isSuccess && (
-        <div className="bg-yo-neon/10 rounded-xl p-3 border border-yo-neon/20 flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-yo-neon shrink-0" />
-          <span className="text-xs text-yo-neon font-medium">Deposit successful!</span>
+        <div className="flex items-center gap-2 text-green-500 text-xs">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <span className="font-medium">Deposit successful!</span>
           <button
             type="button"
             onClick={reset}
-            className="ml-auto text-[10px] text-yo-neon/60 hover:text-yo-neon"
+            className="ml-auto text-muted-foreground hover:underline"
           >
             Dismiss
           </button>
@@ -208,12 +205,12 @@ export function YoDepositForm({ chainId, vaultAddress }: Props) {
 
       {/* Error */}
       {isError && error && (
-        <div className="bg-red-500/10 rounded-xl p-3 border border-red-500/20 space-y-1.5">
-          <p className="text-xs text-red-400">{error.message.slice(0, 150)}</p>
+        <div className="space-y-1">
+          <p className="text-xs text-destructive">{error.message.slice(0, 150)}</p>
           <button
             type="button"
             onClick={reset}
-            className="text-[10px] text-red-400/60 hover:text-red-400"
+            className="text-xs text-muted-foreground hover:underline"
           >
             Try again
           </button>
@@ -222,24 +219,26 @@ export function YoDepositForm({ chainId, vaultAddress }: Props) {
 
       {/* CTA */}
       {isWrongChain ? (
-        <button
+        <Button
           onClick={() => switchChain({ chainId })}
           disabled={isSwitching}
-          className="w-full py-3 rounded-xl font-medium text-sm bg-yo-dark text-white border border-white/10 hover:border-white/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          size="sm"
+          variant="outline"
+          className="w-full"
         >
-          {isSwitching && <Loader2 className="w-4 h-4 animate-spin" />}
+          {isSwitching && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
           {isSwitching ? 'Switching...' : 'Switch Network'}
-        </button>
+        </Button>
       ) : (
-        <button
+        <Button
           onClick={handleDeposit}
           disabled={buttonDisabled}
-          className="w-full py-3 rounded-xl font-semibold text-sm bg-yo-neon text-black hover:brightness-110 transition-all disabled:opacity-40 disabled:hover:brightness-100 flex items-center justify-center gap-2"
+          size="sm"
+          className="w-full"
         >
-          {isActive && <Loader2 className="w-4 h-4 animate-spin" />}
+          {isActive && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
           {buttonLabel}
-          {!buttonDisabled && !isActive && <ArrowRight className="w-4 h-4" />}
-        </button>
+        </Button>
       )}
     </div>
   );

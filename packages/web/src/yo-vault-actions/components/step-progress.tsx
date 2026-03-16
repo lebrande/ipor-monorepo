@@ -30,10 +30,10 @@ export function StepProgress({ steps, currentStep, isError }: Props) {
               <div
                 className={cn(
                   'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium transition-all duration-300',
-                  isCompleted && 'bg-yo-neon text-black',
-                  isActive && !isError && 'bg-yo-neon/20 text-yo-neon ring-1 ring-yo-neon',
-                  isActive && isError && 'bg-red-500/20 text-red-400 ring-1 ring-red-500',
-                  isPending && 'bg-white/5 text-yo-muted',
+                  isCompleted && 'bg-primary text-primary-foreground',
+                  isActive && !isError && 'bg-primary/20 text-primary ring-1 ring-primary',
+                  isActive && isError && 'bg-destructive/20 text-destructive ring-1 ring-destructive',
+                  isPending && 'bg-muted text-muted-foreground',
                 )}
               >
                 {isCompleted ? (
@@ -47,10 +47,10 @@ export function StepProgress({ steps, currentStep, isError }: Props) {
               <span
                 className={cn(
                   'text-[10px] leading-tight text-center',
-                  isCompleted && 'text-yo-neon',
-                  isActive && !isError && 'text-white',
-                  isActive && isError && 'text-red-400',
-                  isPending && 'text-yo-muted',
+                  isCompleted && 'text-primary',
+                  isActive && !isError && 'text-foreground',
+                  isActive && isError && 'text-destructive',
+                  isPending && 'text-muted-foreground',
                 )}
               >
                 {step.label}
@@ -60,7 +60,7 @@ export function StepProgress({ steps, currentStep, isError }: Props) {
               <div
                 className={cn(
                   'h-px flex-1 mt-[-14px]',
-                  isCompleted ? 'bg-yo-neon' : 'bg-white/10',
+                  isCompleted ? 'bg-primary' : 'bg-border',
                 )}
               />
             )}

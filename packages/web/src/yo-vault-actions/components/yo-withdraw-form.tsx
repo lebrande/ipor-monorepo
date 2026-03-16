@@ -10,6 +10,7 @@ import {
 } from '@yo-protocol/react';
 import { formatUnits, parseUnits, type Address } from 'viem';
 import { Loader2, CheckCircle2, Clock, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { TokenIcon } from '@/components/token-icon';
 import { StepProgress } from './step-progress';
 import { PendingRedemptionBanner } from './pending-redemption-banner';
@@ -127,20 +128,18 @@ export function YoWithdrawForm({ chainId, vaultAddress }: Props) {
   // ─── Render ───
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Pending redemption banner */}
       {userAddress && <PendingRedemptionBanner vaultAddress={vaultAddress} />}
 
       {/* Amount input */}
-      <div className="bg-yo-dark rounded-xl p-4 border border-white/5 space-y-2">
+      <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-medium tracking-wider uppercase text-yo-muted">
-            You withdraw
-          </span>
+          <span className="text-xs text-muted-foreground">You withdraw</span>
           {assetAddress && (
             <div className="flex items-center gap-1.5">
               <TokenIcon chainId={chainId} address={assetAddress} className="w-4 h-4" />
-              <span className="text-xs font-medium text-white">{symbol}</span>
+              <span className="text-xs font-medium">{symbol}</span>
             </div>
           )}
         </div>
@@ -157,10 +156,10 @@ export function YoWithdrawForm({ chainId, vaultAddress }: Props) {
             }
           }}
           disabled={isActive}
-          className="w-full bg-transparent text-2xl font-semibold text-white outline-none placeholder:text-white/20"
+          className="w-full bg-transparent text-lg font-mono outline-none placeholder:text-muted-foreground"
         />
         <div className="flex items-center justify-between">
-          <span className="text-xs text-yo-muted">
+          <span className="text-xs text-muted-foreground">
             {positionFormatted !== undefined
               ? `Position: ${formatNum(positionFormatted)}`
               : 'Position: ...'}
@@ -169,7 +168,7 @@ export function YoWithdrawForm({ chainId, vaultAddress }: Props) {
             type="button"
             onClick={handleMax}
             disabled={isActive || !positionAssets || positionAssets === 0n}
-            className="text-[10px] font-semibold tracking-wider uppercase text-yo-neon hover:text-yo-neon/80 disabled:text-yo-muted disabled:cursor-not-allowed transition-colors"
+            className="text-xs text-primary font-medium hover:underline disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Max
           </button>
@@ -179,8 +178,8 @@ export function YoWithdrawForm({ chainId, vaultAddress }: Props) {
       {/* Shares info */}
       {sharesToRedeem && sharesToRedeem > 0n && (
         <div className="flex items-center justify-between text-xs px-1">
-          <span className="text-yo-muted">Shares to redeem</span>
-          <span className="text-white font-mono">
+          <span className="text-muted-foreground">Shares to redeem</span>
+          <span className="font-mono">
             {formatNum(formatUnits(sharesToRedeem, vaultDecimals))}
           </span>
         </div>
@@ -188,53 +187,48 @@ export function YoWithdrawForm({ chainId, vaultAddress }: Props) {
 
       {/* Step progress */}
       {isActive && (
-        <div className="bg-yo-dark rounded-xl p-3 border border-white/5">
+        <div className="rounded-lg border bg-muted/30 p-3">
           <StepProgress steps={REDEEM_STEPS} currentStep={step} />
         </div>
       )}
 
       {/* Success — instant */}
       {isSuccess && instant === true && (
-        <div className="bg-yo-neon/10 rounded-xl p-3 border border-yo-neon/20 space-y-1">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-yo-neon shrink-0" />
-            <span className="text-xs text-yo-neon font-medium">Withdrawal complete!</span>
-            <button
-              type="button"
-              onClick={reset}
-              className="ml-auto text-[10px] text-yo-neon/60 hover:text-yo-neon"
-            >
-              Dismiss
-            </button>
-          </div>
-          {assetsOrRequestId && (
-            <p className="text-[11px] text-yo-neon/70 pl-6 font-mono">
-              Received: {assetsOrRequestId}
-            </p>
-          )}
+        <div className="flex items-center gap-2 text-green-500 text-xs">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <span className="font-medium">Withdrawal complete!</span>
+          <button
+            type="button"
+            onClick={reset}
+            className="ml-auto text-muted-foreground hover:underline"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
       {/* Success — queued */}
       {isSuccess && instant === false && (
-        <div className="bg-yellow-500/10 rounded-xl p-3 border border-yellow-500/20 space-y-1">
+        <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 space-y-1">
           <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-yellow-400 shrink-0" />
-            <span className="text-xs text-yellow-400 font-medium">Redemption queued</span>
+            <Clock className="w-4 h-4 text-yellow-600 dark:text-yellow-400 shrink-0" />
+            <span className="text-xs font-medium text-yellow-600 dark:text-yellow-400">
+              Redemption queued
+            </span>
             <button
               type="button"
               onClick={reset}
-              className="ml-auto text-[10px] text-yellow-400/60 hover:text-yellow-400"
+              className="ml-auto text-xs text-muted-foreground hover:underline"
             >
               Dismiss
             </button>
           </div>
           {assetsOrRequestId && (
-            <p className="text-[11px] text-yellow-400/70 pl-6 font-mono">
+            <p className="text-[11px] text-muted-foreground pl-6 font-mono">
               Request ID: {assetsOrRequestId}
             </p>
           )}
-          <p className="text-[11px] text-yellow-400/60 pl-6">
+          <p className="text-[11px] text-muted-foreground pl-6">
             Your withdrawal is being processed. Assets will be available once fulfilled.
           </p>
         </div>
@@ -242,12 +236,12 @@ export function YoWithdrawForm({ chainId, vaultAddress }: Props) {
 
       {/* Error */}
       {isError && error && (
-        <div className="bg-red-500/10 rounded-xl p-3 border border-red-500/20 space-y-1.5">
-          <p className="text-xs text-red-400">{error.message.slice(0, 150)}</p>
+        <div className="space-y-1">
+          <p className="text-xs text-destructive">{error.message.slice(0, 150)}</p>
           <button
             type="button"
             onClick={reset}
-            className="text-[10px] text-red-400/60 hover:text-red-400"
+            className="text-xs text-muted-foreground hover:underline"
           >
             Try again
           </button>
@@ -256,24 +250,26 @@ export function YoWithdrawForm({ chainId, vaultAddress }: Props) {
 
       {/* CTA */}
       {isWrongChain ? (
-        <button
+        <Button
           onClick={() => switchChain({ chainId })}
           disabled={isSwitching}
-          className="w-full py-3 rounded-xl font-medium text-sm bg-yo-dark text-white border border-white/10 hover:border-white/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          size="sm"
+          variant="outline"
+          className="w-full"
         >
-          {isSwitching && <Loader2 className="w-4 h-4 animate-spin" />}
+          {isSwitching && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
           {isSwitching ? 'Switching...' : 'Switch Network'}
-        </button>
+        </Button>
       ) : (
-        <button
+        <Button
           onClick={handleRedeem}
           disabled={buttonDisabled}
-          className="w-full py-3 rounded-xl font-semibold text-sm bg-yo-neon text-black hover:brightness-110 transition-all disabled:opacity-40 disabled:hover:brightness-100 flex items-center justify-center gap-2"
+          size="sm"
+          className="w-full"
         >
-          {isActive && <Loader2 className="w-4 h-4 animate-spin" />}
+          {isActive && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
           {buttonLabel}
-          {!buttonDisabled && !isActive && <ArrowRight className="w-4 h-4" />}
-        </button>
+        </Button>
       )}
     </div>
   );
