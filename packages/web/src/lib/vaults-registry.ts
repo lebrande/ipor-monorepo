@@ -2,7 +2,26 @@ import { type Address, isAddress } from 'viem';
 import { z } from 'zod';
 import plasmaVaultsJson from '../../../../plasma-vaults.json';
 
-const APP_IDS = ['fusion', 'yo'] as const;
+const APP_IDS = [
+  'fusion',
+  'yo',
+  'ipor-dao',
+  'clearstar',
+  'tesseract',
+  'xerberus',
+  'harvest',
+  'reservoir',
+  'tau-labs',
+  'tanken',
+  'alphaping',
+  'k3-capital',
+  'mev-capital',
+  'stake-dao',
+  'llama-risk',
+  'tid-capital',
+  'sentinel',
+  'hyperithm',
+] as const;
 export type AppId = (typeof APP_IDS)[number];
 
 const addressSchema = z.custom<Address>(
@@ -15,7 +34,7 @@ const vaultSchema = z.object({
   address: addressSchema,
   chainId: z.number(),
   protocol: z.string(),
-  app: z.enum(APP_IDS),
+  apps: z.array(z.enum(APP_IDS)),
   tags: z.array(z.string()),
   startBlock: z.number(),
   url: z.url(),
@@ -28,7 +47,7 @@ export interface ParsedVault {
   address: Address;
   chainId: number;
   protocol: string;
-  app: AppId;
+  apps: AppId[];
   tags: string[];
   startBlock: number;
   url: string;
@@ -91,4 +110,6 @@ import { getAppConfig } from './app-config';
 export const APP_VAULTS =
   getAppConfig().id === 'all'
     ? ERC4626_VAULTS
-    : ERC4626_VAULTS.filter((v) => v.app === getAppConfig().id);
+    : ERC4626_VAULTS.filter((v) =>
+        v.apps.includes(getAppConfig().id as AppId),
+      );

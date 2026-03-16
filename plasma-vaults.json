@@ -13,7 +13,10 @@
       ],
       "startBlock": 20855944,
       "url": "https://app.ipor.io/fusion/ethereum/0x20e934c725b6703f0ac696f1689008057db9ac44",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "ipor-dao"
+      ]
     },
     {
       "name": "IPOR USDC Prime",
@@ -26,7 +29,10 @@
       ],
       "startBlock": 249623036,
       "url": "https://app.ipor.io/fusion/arbitrum/0xa91267a25939b2b0f046013fbf9597008f7f014b",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "ipor-dao"
+      ]
     },
     {
       "name": "IPOR USDC Prime",
@@ -39,7 +45,10 @@
       ],
       "startBlock": 22140976,
       "url": "https://app.ipor.io/fusion/base/0x45aa96f0b3188d47a1dafdbefce1db6b37f58216",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "ipor-dao"
+      ]
     },
     {
       "name": "IPOR USDC Prime",
@@ -52,7 +61,10 @@
       ],
       "startBlock": 20855940,
       "url": "https://app.ipor.io/fusion/ethereum/0x43ee0243ea8cf02f7087d8b16c8d2007cc9c7ca2",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "ipor-dao"
+      ]
     },
     {
       "name": "IPOR USDC Prime",
@@ -64,7 +76,10 @@
       ],
       "startBlock": 0,
       "url": "https://app.ipor.io/fusion/arbitrum/0xd855296f9868ff659f3f359c90b7d005ec049228",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "ipor-dao"
+      ]
     },
     {
       "name": "IPOR USDT Prime",
@@ -77,7 +92,10 @@
       ],
       "startBlock": 20855937,
       "url": "https://app.ipor.io/fusion/ethereum/0xabab980f0ecb232d52f422c6b68d25c3d0c18e3e",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "ipor-dao"
+      ]
     },
     {
       "name": "IPOR wstETH Base",
@@ -90,7 +108,10 @@
       ],
       "startBlock": 30169251,
       "url": "https://app.ipor.io/fusion/base/0xc4c00d8b323f37527eeda27c87412378be9f68ec",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "ipor-dao"
+      ]
     },
     {
       "name": "IPOR wstETH Base (Deprecated)",
@@ -102,7 +123,10 @@
       ],
       "startBlock": 0,
       "url": "https://app.ipor.io/fusion/base/0xfe8b23b493579e5c3a0a3bc5bbf20662b3072de6",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "ipor-dao"
+      ]
     },
     {
       "name": "IPOR wstETH Arbitrum",
@@ -114,7 +138,10 @@
       ],
       "startBlock": 372168724,
       "url": "https://app.ipor.io/fusion/arbitrum/0x2c6f1e2bbd074822773fc142922cabdbf535696c",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "ipor-dao"
+      ]
     },
     {
       "name": "IPOR weETH Ethereum",
@@ -126,7 +153,10 @@
       ],
       "startBlock": 22231441,
       "url": "https://app.ipor.io/fusion/ethereum/0x981a6c7ca4496acc3ff7bcdcc3b834fe0c4db5bc",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "ipor-dao"
+      ]
     },
     {
       "name": "IPOR stETH Ethereum",
@@ -138,7 +168,10 @@
       ],
       "startBlock": 23617599,
       "url": "https://app.ipor.io/fusion/ethereum/0xb8a451107a9f87fde481d4d686247d6e43ed715e",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "ipor-dao"
+      ]
     },
     {
       "name": "Singularity Vault",
@@ -151,7 +184,10 @@
       ],
       "startBlock": 316667987,
       "url": "https://app.ipor.io/fusion/arbitrum/0xcafc0a559a9bf2fc77a7ecfaf04bd929a7d9c5cf",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "clearstar"
+      ]
     },
     {
       "name": "Clearstar Core",
@@ -164,7 +200,10 @@
       ],
       "startBlock": 31987604,
       "url": "https://app.ipor.io/fusion/base/0xf2f8386b88cb15c5ceade069c44f57fd2fd35e95",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "clearstar"
+      ]
     },
     {
       "name": "Clearstar Synchrotron",
@@ -176,7 +215,10 @@
       ],
       "startBlock": 33025005,
       "url": "https://app.ipor.io/fusion/base/0x6d6ca3a393a36ab94f25664ca94b10da117a111d",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "clearstar"
+      ]
     },
     {
       "name": "Clearstar Synchrotron (Deprecated)",
@@ -188,7 +230,10 @@
       ],
       "startBlock": 0,
       "url": "https://app.ipor.io/fusion/base/0xb02d87eb201f56ba6afa24c0969982bc4c4e8599",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "clearstar"
+      ]
     },
     {
       "name": "yoUSD Loooper",
@@ -200,7 +245,10 @@
       ],
       "startBlock": 35091747,
       "url": "https://app.ipor.io/fusion/base/0x1166250d1d6b5a1dbb73526257f6bb2bbe235295",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "clearstar"
+      ]
     },
     {
       "name": "yoETH Loooper",
@@ -212,7 +260,10 @@
       ],
       "startBlock": 35620213,
       "url": "https://app.ipor.io/fusion/base/0xfd843a3d9329c91ca22c5daa994bea762541f954",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "clearstar"
+      ]
     },
     {
       "name": "yoGOLD",
@@ -224,7 +275,10 @@
       ],
       "startBlock": 3600741,
       "url": "https://app.ipor.io/fusion/plasma/0x8f973733a422fecf0714f5c84e6c212c198bdda1",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "clearstar"
+      ]
     },
     {
       "name": "AlchemistCS",
@@ -236,7 +290,10 @@
       ],
       "startBlock": 23825452,
       "url": "https://app.ipor.io/fusion/ethereum/0x87428d886f43068a44d7bdeef106d3c42e1d6f23",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "clearstar"
+      ]
     },
     {
       "name": "Tesseract Managed BTC",
@@ -248,7 +305,10 @@
       ],
       "startBlock": 23314207,
       "url": "https://app.ipor.io/fusion/base/0xdab31950ddcc814c49e6bbd5153dd2062e44f368",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tesseract"
+      ]
     },
     {
       "name": "Tesseract Managed BTC",
@@ -260,7 +320,10 @@
       ],
       "startBlock": 22187989,
       "url": "https://app.ipor.io/fusion/ethereum/0x1fdf5dc3f915cb40e0ad5690de51e3cb464d1bad",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tesseract"
+      ]
     },
     {
       "name": "Tesseract Managed ETH",
@@ -272,7 +335,10 @@
       ],
       "startBlock": 22019437,
       "url": "https://app.ipor.io/fusion/ethereum/0x9824dcdac89f208bf8b5cb5c4dc41f04a0878607",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tesseract"
+      ]
     },
     {
       "name": "Tesseract AVAX Looping",
@@ -284,7 +350,10 @@
       ],
       "startBlock": 70309870,
       "url": "https://app.ipor.io/fusion/avalanche/0xbcbed2f9a037dc7e0b2bda17a0cd0e43e563bce9",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tesseract"
+      ]
     },
     {
       "name": "Tesseract USDC Lending Optimizer",
@@ -296,7 +365,10 @@
       ],
       "startBlock": 23189764,
       "url": "https://app.ipor.io/fusion/ethereum/0xc2a119ea6de75e4b1451330321cb2474eb8d82d4",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tau-labs"
+      ]
     },
     {
       "name": "Ethereum Xerberus Prime Index",
@@ -308,7 +380,10 @@
       ],
       "startBlock": 27839895,
       "url": "https://app.ipor.io/fusion/base/0xd7412a93db3d39aa7ab9c30c471f069a3f059ad5",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "xerberus"
+      ]
     },
     {
       "name": "Xerberus Evergreen",
@@ -320,7 +395,10 @@
       ],
       "startBlock": 30563636,
       "url": "https://app.ipor.io/fusion/base/0xe2996fe2d49b41e37b5c01df32cdfc125329e5d0",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "xerberus"
+      ]
     },
     {
       "name": "Xerberus BASE 10 - Risk Weighted",
@@ -332,7 +410,10 @@
       ],
       "startBlock": 30729154,
       "url": "https://app.ipor.io/fusion/base/0xa51787e262e53220bbeef297613ee28a9c011937",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "xerberus"
+      ]
     },
     {
       "name": "Autopilot USDC Arbitrum",
@@ -344,7 +425,10 @@
       ],
       "startBlock": 310817805,
       "url": "https://app.ipor.io/fusion/arbitrum/0xc015d83e24fdde23100ad1e9bad837878fbfab94",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "harvest"
+      ]
     },
     {
       "name": "Autopilot WETH Arbitrum",
@@ -356,7 +440,10 @@
       ],
       "startBlock": 391468536,
       "url": "https://app.ipor.io/fusion/arbitrum/0xce4d997a3b404f9eaa796f89deae40747d3647b7",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "harvest"
+      ]
     },
     {
       "name": "Autopilot WBTC Arbitrum",
@@ -368,7 +455,10 @@
       ],
       "startBlock": 391472856,
       "url": "https://app.ipor.io/fusion/arbitrum/0x49b2248f7a7a703731852db0b2217f40da75b8ab",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "harvest"
+      ]
     },
     {
       "name": "Autopilot USDC DRIP Arbitrum",
@@ -380,7 +470,10 @@
       ],
       "startBlock": 376957845,
       "url": "https://app.ipor.io/fusion/arbitrum/0x407d3d942d0911a2fea7e22417f81e27c02d6c6f",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "harvest"
+      ]
     },
     {
       "name": "Autopilot USDC Base",
@@ -394,7 +487,10 @@
       ],
       "startBlock": 26982214,
       "url": "https://app.ipor.io/fusion/base/0x0d877dc7c8fa3ad980dfdb18b48ec9f8768359c4",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "harvest"
+      ]
     },
     {
       "name": "Autopilot WETH Base",
@@ -408,7 +504,10 @@
       ],
       "startBlock": 26982314,
       "url": "https://app.ipor.io/fusion/base/0x7872893e528fe2c0829e405960db5b742112aa97",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "harvest"
+      ]
     },
     {
       "name": "Autopilot cbBTC Base",
@@ -422,7 +521,10 @@
       ],
       "startBlock": 26982399,
       "url": "https://app.ipor.io/fusion/base/0x31A421271414641cb5063B71594b642D2666dB6B",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "harvest"
+      ]
     },
     {
       "name": "USDC Morpho-Only Autopilot",
@@ -434,7 +536,10 @@
       ],
       "startBlock": 35270153,
       "url": "https://app.ipor.io/fusion/base/0xd6701905c59ee618dc36dc747506bce0a4ac760a",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "harvest"
+      ]
     },
     {
       "name": "Autopilot USDC Ethereum",
@@ -446,7 +551,10 @@
       ],
       "startBlock": 22495129,
       "url": "https://app.ipor.io/fusion/ethereum/0x3151cee0cdb517c0e7db2b55ff5085e7d1809d90",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "harvest"
+      ]
     },
     {
       "name": "Reservoir wsrUSD looping",
@@ -460,7 +568,10 @@
       ],
       "startBlock": 21967467,
       "url": "https://app.ipor.io/fusion/ethereum/0xe9385eff3f937fcb0f0085da9a3f53d6c2b4fb5f",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "reservoir"
+      ]
     },
     {
       "name": "Reservoir ETH Yield",
@@ -472,7 +583,10 @@
       ],
       "startBlock": 23175844,
       "url": "https://app.ipor.io/fusion/ethereum/0xf6cd9e8415162c8fb3c52676c7ca68812a34f76e",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "reservoir"
+      ]
     },
     {
       "name": "Reservoir BTC Yield",
@@ -484,7 +598,10 @@
       ],
       "startBlock": 23175891,
       "url": "https://app.ipor.io/fusion/ethereum/0xe47358eae04719f3cf7025e95d0ad202e68bd9b2",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "reservoir"
+      ]
     },
     {
       "name": "Reservoir High Yield USDC Lending",
@@ -496,7 +613,10 @@
       ],
       "startBlock": 23884370,
       "url": "https://app.ipor.io/fusion/ethereum/0xc197ad72936b7c558c96417f22041fe9e3c7043f",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "reservoir"
+      ]
     },
     {
       "name": "TAU Core",
@@ -508,7 +628,10 @@
       ],
       "startBlock": 22565660,
       "url": "https://app.ipor.io/fusion/ethereum/0x707d816272ed15174c72f92eccc4149d1dcb7a80",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tau-labs"
+      ]
     },
     {
       "name": "TAU Core (Deprecated)",
@@ -520,7 +643,10 @@
       ],
       "startBlock": 0,
       "url": "https://app.ipor.io/fusion/ethereum/0x9dc2819b49c3d39b11a5f4c8c0c17bd7e18126d9",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tau-labs"
+      ]
     },
     {
       "name": "TAU Reservoir Pointsmax",
@@ -535,7 +661,10 @@
       ],
       "startBlock": 22234609,
       "url": "https://app.ipor.io/fusion/ethereum/0x6f66b845604dad6e80b2a1472e6cacbbe66a8c40",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tau-labs"
+      ]
     },
     {
       "name": "TAU Yield Bond ETF",
@@ -550,7 +679,10 @@
       ],
       "startBlock": 22445035,
       "url": "https://app.ipor.io/fusion/ethereum/0x43a32d4f6c582f281c52393f8f9e5ace1d4a1e68",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tau-labs"
+      ]
     },
     {
       "name": "TAU Yield Bond ETF (Deprecated)",
@@ -562,7 +694,10 @@
       ],
       "startBlock": 0,
       "url": "https://app.ipor.io/fusion/ethereum/0x08dd57a51025a266cecc85154860aa4e71e48ee8",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tau-labs"
+      ]
     },
     {
       "name": "TAU infiniFi Pointsmax",
@@ -577,7 +712,10 @@
       ],
       "startBlock": 23120189,
       "url": "https://app.ipor.io/fusion/ethereum/0xb0f56bb0bf13ee05fef8cd2d8df5ffdfcac7a74f",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tau-labs"
+      ]
     },
     {
       "name": "TAU InfiniFi BTC Carry",
@@ -589,7 +727,10 @@
       ],
       "startBlock": 23619085,
       "url": "https://app.ipor.io/fusion/ethereum/0xe48cdd5ecec5aa53e630a7b4df12f79067b68dac",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tau-labs"
+      ]
     },
     {
       "name": "TAU InfiniFi ETH Carry",
@@ -601,7 +742,10 @@
       ],
       "startBlock": 23642188,
       "url": "https://app.ipor.io/fusion/ethereum/0xc50b2d51fd1e2ac67a9c09eaf63c24ea2465c64b",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tau-labs"
+      ]
     },
     {
       "name": "TAU Lending Optimizer",
@@ -613,7 +757,10 @@
       ],
       "startBlock": 23747913,
       "url": "https://app.ipor.io/fusion/ethereum/0x63103375659d0aa94e9f35df15be01a3dd1ae9c0",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tau-labs"
+      ]
     },
     {
       "name": "TAU InfiniFi cbBTC Carry",
@@ -625,7 +772,10 @@
       ],
       "startBlock": 0,
       "url": "https://app.ipor.io/fusion/ethereum/0x60e36a79c3d21120350e39b5ea59ae26b75ae74c",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tau-labs"
+      ]
     },
     {
       "name": "TAU InfiniFi Pointsmaxx - Silo",
@@ -637,7 +787,10 @@
       ],
       "startBlock": 0,
       "url": "https://app.ipor.io/fusion/ethereum/0xd36f53497507e948df9f277cf8c3ececb09a1c1d",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tau-labs"
+      ]
     },
     {
       "name": "Magnus Lending Optimizer",
@@ -649,7 +802,10 @@
       ],
       "startBlock": 0,
       "url": "https://app.ipor.io/fusion/ethereum/0xad685fec2066d7f5436f5804882998ba79725706",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tau-labs"
+      ]
     },
     {
       "name": "AavEthena Loop Mainnet",
@@ -661,7 +817,10 @@
       ],
       "startBlock": 0,
       "url": "https://app.ipor.io/fusion/ethereum/0x604117f0c94561231060f56cd2ddd16245d434c5",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tau-labs"
+      ]
     },
     {
       "name": "AavEthena Loop Plasma",
@@ -673,7 +832,10 @@
       ],
       "startBlock": 0,
       "url": "https://app.ipor.io/fusion/plasma/0x0a71624ab3e8101f78d95dfc81e0f1f31128ed7a",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tau-labs"
+      ]
     },
     {
       "name": "Tanken WETH Base",
@@ -685,7 +847,10 @@
       ],
       "startBlock": 34844070,
       "url": "https://app.ipor.io/fusion/base/0xebc6c7883ca32ef9484740ba32a816f5f88b7a41",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tanken"
+      ]
     },
     {
       "name": "Tanken WETH Base (Deprecated)",
@@ -697,7 +862,10 @@
       ],
       "startBlock": 0,
       "url": "https://app.ipor.io/fusion/base/0x496e39f0aa349c24032e5636e9180e7265c3fecd",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tanken"
+      ]
     },
     {
       "name": "Leveraged Falcon USDC Core",
@@ -709,7 +877,10 @@
       ],
       "startBlock": 22565613,
       "url": "https://app.ipor.io/fusion/ethereum/0xb4790cfdf1df71c2e4ac2f5c43dbcb975ad447ae",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "alphaping"
+      ]
     },
     {
       "name": "Leveraged sUSDf",
@@ -723,7 +894,10 @@
       ],
       "startBlock": 22441642,
       "url": "https://app.ipor.io/fusion/ethereum/0xb530a1b5259a71187f1d69acf0488f102637a3ed",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "alphaping"
+      ]
     },
     {
       "name": "Leveraged sUSDf (Deprecated)",
@@ -735,7 +909,10 @@
       ],
       "startBlock": 0,
       "url": "https://app.ipor.io/fusion/ethereum/0x29d322dd088e9b9d1416f43188954f08748fafbb",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "alphaping"
+      ]
     },
     {
       "name": "BC Vault One",
@@ -747,7 +924,9 @@
       ],
       "startBlock": 22545442,
       "url": "https://app.ipor.io/fusion/ethereum/0x64d47d8516034857c6fc040ecd405e03643a464f",
-      "app": "fusion"
+      "apps": [
+        "fusion"
+      ]
     },
     {
       "name": "BTC Valos",
@@ -759,7 +938,9 @@
       ],
       "startBlock": 22551772,
       "url": "https://app.ipor.io/fusion/ethereum/0xffb090cb1829c5977fbd070cebff7425c76b0472",
-      "app": "fusion"
+      "apps": [
+        "fusion"
+      ]
     },
     {
       "name": "F1 Champion Principle Protected Note",
@@ -771,7 +952,9 @@
       ],
       "startBlock": 22551806,
       "url": "https://app.ipor.io/fusion/ethereum/0xc1926c01ed88e93f5c266f3b43af57c1f6e63b5d",
-      "app": "fusion"
+      "apps": [
+        "fusion"
+      ]
     },
     {
       "name": "K3 Capital ETH Maxi",
@@ -785,7 +968,10 @@
       ],
       "startBlock": 19492026,
       "url": "https://app.ipor.io/fusion/unichain/0x2af2146e6722b80a0a455f405edff3993715e417",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "k3-capital"
+      ]
     },
     {
       "name": "K3 ALPHA EUR",
@@ -797,7 +983,10 @@
       ],
       "startBlock": 23188212,
       "url": "https://app.ipor.io/fusion/ethereum/0x7f0409e03c83f3b42d8ba4b83485fff72cc9d7ab",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "k3-capital"
+      ]
     },
     {
       "name": "K3 Leveraged syrupUSDT Strategy",
@@ -809,7 +998,10 @@
       ],
       "startBlock": 0,
       "url": "https://app.ipor.io/fusion/ethereum/0x3b3bdaa4462851621818d2cebc835e077587147a",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "k3-capital"
+      ]
     },
     {
       "name": "Strata srUSDe PT Looping",
@@ -824,7 +1016,10 @@
       ],
       "startBlock": 23030652,
       "url": "https://app.ipor.io/fusion/ethereum/0xd731f94c778f7c1090e2e0d797150a647de5188a",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "mev-capital"
+      ]
     },
     {
       "name": "Stake DAO Smart Save (USDC)",
@@ -836,7 +1031,10 @@
       ],
       "startBlock": 363152197,
       "url": "https://app.ipor.io/fusion/arbitrum/0xa4f39ec96b7a2178b381de9cdc9021fb2490b409",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "stake-dao"
+      ]
     },
     {
       "name": "LlamaRisk crvUSD Optimizer",
@@ -848,7 +1046,10 @@
       ],
       "startBlock": 374850746,
       "url": "https://app.ipor.io/fusion/arbitrum/0x4c4f752fa54dafb6d51b4a39018271c90ba1156f",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "llama-risk"
+      ]
     },
     {
       "name": "LlamaRisk crvUSD Optimizer",
@@ -860,7 +1061,10 @@
       ],
       "startBlock": 23926173,
       "url": "https://app.ipor.io/fusion/ethereum/0xbfa9d6ec0e04b6691fcae5f8b48838c3918ec117",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "llama-risk"
+      ]
     },
     {
       "name": "TiD Base ETH",
@@ -872,7 +1076,10 @@
       ],
       "startBlock": 34101484,
       "url": "https://app.ipor.io/fusion/base/0x2c4524f8d602260030185f8cebcc8cc4e1c70c17",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "tid-capital"
+      ]
     },
     {
       "name": "Auto-Compounding Liquity ETH Stability Pool",
@@ -884,7 +1091,10 @@
       ],
       "startBlock": 22838039,
       "url": "https://app.ipor.io/fusion/ethereum/0x4536d493292e53c5c11defa9e4c6826777502efa",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "sentinel"
+      ]
     },
     {
       "name": "Sentinel stcUSD Adaptive Looping",
@@ -896,7 +1106,10 @@
       ],
       "startBlock": 0,
       "url": "https://app.ipor.io/fusion/ethereum/0xef53663bb775a51181f04d590f88fc38d6bd5751",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "sentinel"
+      ]
     },
     {
       "name": "Hyperithm mHYPER Looping",
@@ -908,7 +1121,10 @@
       ],
       "startBlock": 0,
       "url": "https://app.ipor.io/fusion/ethereum/0x0b45a1e71a8a09f5d382fed27202d50ed983aaf3",
-      "app": "fusion"
+      "apps": [
+        "fusion",
+        "hyperithm"
+      ]
     },
     {
       "name": "YO Treasury",
@@ -920,7 +1136,9 @@
       ],
       "startBlock": 43046896,
       "url": "https://app.ipor.io/fusion/base/0x09d1c2e03f73853916ee86b4e1a729f9fbaa960d",
-      "app": "yo"
+      "apps": [
+        "yo"
+      ]
     },
     {
       "name": "yoUSD",
@@ -932,7 +1150,9 @@
       ],
       "startBlock": 29056193,
       "url": "https://yo.xyz",
-      "app": "yo"
+      "apps": [
+        "yo"
+      ]
     },
     {
       "name": "yoETH",
@@ -944,7 +1164,9 @@
       ],
       "startBlock": 29056193,
       "url": "https://yo.xyz",
-      "app": "yo"
+      "apps": [
+        "yo"
+      ]
     },
     {
       "name": "yoBTC",
@@ -956,7 +1178,9 @@
       ],
       "startBlock": 29056193,
       "url": "https://yo.xyz",
-      "app": "yo"
+      "apps": [
+        "yo"
+      ]
     },
     {
       "name": "yoEUR",
@@ -968,7 +1192,9 @@
       ],
       "startBlock": 29056193,
       "url": "https://yo.xyz",
-      "app": "yo"
+      "apps": [
+        "yo"
+      ]
     }
   ]
 }

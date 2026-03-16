@@ -101,10 +101,113 @@ const allConfig: AppConfig = {
   },
 };
 
+function atomistConfig(id: AppId, name: string, logo: string): AppConfig {
+  return {
+    id,
+    name,
+    title: name,
+    description: `${name} Vaults Dashboard`,
+    logo,
+    themeClass: '',
+    navItems: [
+      { title: 'Dashboard', url: '/', icon: Home },
+      { title: 'Vaults List', url: '/vaults', icon: Vault },
+      { title: 'Depositors', url: '/depositors', icon: Users },
+      { title: 'Activity', url: '/activity', icon: Activity },
+    ],
+    features: {
+      alphaTab: true,
+      flowCharts: true,
+      depositorsList: true,
+      activityPage: true,
+    },
+  };
+}
+
 const configs: Record<ConfigId, AppConfig> = {
   all: allConfig,
   fusion: fusionConfig,
   yo: yoConfig,
+  'ipor-dao': atomistConfig(
+    'ipor-dao',
+    'IPOR DAO',
+    '/assets/atomists/ipor-dao.svg',
+  ),
+  clearstar: atomistConfig(
+    'clearstar',
+    'Clearstar',
+    '/assets/atomists/clearstar.svg',
+  ),
+  tesseract: atomistConfig(
+    'tesseract',
+    'Tesseract',
+    '/assets/atomists/tesseract.svg',
+  ),
+  xerberus: atomistConfig(
+    'xerberus',
+    'Xerberus',
+    '/assets/atomists/xerberus.svg',
+  ),
+  harvest: atomistConfig(
+    'harvest',
+    'Harvest',
+    '/assets/atomists/harvest.svg',
+  ),
+  reservoir: atomistConfig(
+    'reservoir',
+    'Reservoir',
+    '/assets/atomists/reservoir.svg',
+  ),
+  'tau-labs': atomistConfig(
+    'tau-labs',
+    'TAU Labs',
+    '/assets/atomists/tau-labs.png',
+  ),
+  tanken: atomistConfig(
+    'tanken',
+    'Tanken',
+    '/assets/atomists/tanken.svg',
+  ),
+  alphaping: atomistConfig(
+    'alphaping',
+    'Alphaping',
+    '/assets/atomists/alphaping.svg',
+  ),
+  'k3-capital': atomistConfig(
+    'k3-capital',
+    'K3 Capital',
+    '/assets/atomists/k3.png',
+  ),
+  'mev-capital': atomistConfig(
+    'mev-capital',
+    'MEV Capital',
+    '/assets/atomists/mev-capital.png',
+  ),
+  'stake-dao': atomistConfig(
+    'stake-dao',
+    'Stake DAO',
+    '/assets/atomists/ipor-dao.svg',
+  ),
+  'llama-risk': atomistConfig(
+    'llama-risk',
+    'Llama Risk',
+    '/assets/atomists/llamarisk.svg',
+  ),
+  'tid-capital': atomistConfig(
+    'tid-capital',
+    'TiD Capital',
+    '/assets/atomists/tid-capital.png',
+  ),
+  sentinel: atomistConfig(
+    'sentinel',
+    'Sentinel',
+    '/assets/atomists/sentinel.png',
+  ),
+  hyperithm: atomistConfig(
+    'hyperithm',
+    'Hyperithm',
+    '/assets/atomists/hyperithm.png',
+  ),
 };
 
 let cachedConfig: AppConfig | null = null;
@@ -116,11 +219,15 @@ export function getAppConfig(): AppConfig {
   return cachedConfig;
 }
 
-const APP_THEME_CLASS: Record<AppId, string> = {
+const APP_THEME_CLASS: Partial<Record<AppId, string>> = {
   fusion: 'fusion',
   yo: 'yo',
 };
 
-export function getThemeClassForVaultApp(app: AppId): string {
-  return APP_THEME_CLASS[app] ?? '';
+export function getThemeClassForVaultApps(apps: AppId[]): string {
+  for (const app of apps) {
+    const theme = APP_THEME_CLASS[app];
+    if (theme) return theme;
+  }
+  return '';
 }
