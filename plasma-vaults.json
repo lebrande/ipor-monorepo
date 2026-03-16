@@ -55,6 +55,18 @@
       "app": "fusion"
     },
     {
+      "name": "IPOR USDC Prime",
+      "address": "0xD855296f9868fF659F3f359C90B7D005EC049228",
+      "chainId": 42161,
+      "protocol": "IPOR Fusion",
+      "tags": [
+        "ipor-fusion"
+      ],
+      "startBlock": 0,
+      "url": "https://app.ipor.io/fusion/arbitrum/0xd855296f9868ff659f3f359c90b7d005ec049228",
+      "app": "fusion"
+    },
+    {
       "name": "IPOR USDT Prime",
       "address": "0xabab980f0ecb232d52f422c6b68d25c3d0c18e3e",
       "chainId": 1,
@@ -78,6 +90,18 @@
       ],
       "startBlock": 30169251,
       "url": "https://app.ipor.io/fusion/base/0xc4c00d8b323f37527eeda27c87412378be9f68ec",
+      "app": "fusion"
+    },
+    {
+      "name": "IPOR wstETH Base (Deprecated)",
+      "address": "0xfe8b23b493579e5c3a0a3bc5bbf20662b3072de6",
+      "chainId": 8453,
+      "protocol": "IPOR Fusion",
+      "tags": [
+        "ipor-fusion"
+      ],
+      "startBlock": 0,
+      "url": "https://app.ipor.io/fusion/base/0xfe8b23b493579e5c3a0a3bc5bbf20662b3072de6",
       "app": "fusion"
     },
     {
@@ -155,15 +179,15 @@
       "app": "fusion"
     },
     {
-      "name": "yUSD Loooper",
-      "address": "0xa435f140114910c96343574dd67883f7538ba736",
-      "chainId": 1,
+      "name": "Clearstar Synchrotron (Deprecated)",
+      "address": "0xb02d87eb201f56ba6afa24c0969982bc4c4e8599",
+      "chainId": 8453,
       "protocol": "IPOR Fusion",
       "tags": [
         "ipor-fusion"
       ],
-      "startBlock": 23420151,
-      "url": "https://app.ipor.io/fusion/ethereum/0xa435f140114910c96343574dd67883f7538ba736",
+      "startBlock": 0,
+      "url": "https://app.ipor.io/fusion/base/0xb02d87eb201f56ba6afa24c0969982bc4c4e8599",
       "app": "fusion"
     },
     {
@@ -260,6 +284,18 @@
       ],
       "startBlock": 70309870,
       "url": "https://app.ipor.io/fusion/avalanche/0xbcbed2f9a037dc7e0b2bda17a0cd0e43e563bce9",
+      "app": "fusion"
+    },
+    {
+      "name": "Tesseract USDC Lending Optimizer",
+      "address": "0xc2A119EA6De75e4B1451330321CB2474Eb8D82d4",
+      "chainId": 1,
+      "protocol": "IPOR Fusion",
+      "tags": [
+        "ipor-fusion"
+      ],
+      "startBlock": 23189764,
+      "url": "https://app.ipor.io/fusion/ethereum/0xc2a119ea6de75e4b1451330321cb2474eb8d82d4",
       "app": "fusion"
     },
     {
@@ -389,7 +425,7 @@
       "app": "fusion"
     },
     {
-      "name": "Autopilot USDC Morpho Base",
+      "name": "USDC Morpho-Only Autopilot",
       "address": "0xd6701905c59ee618dc36dc747506bce0a4ac760a",
       "chainId": 8453,
       "protocol": "IPOR Fusion",
@@ -413,7 +449,7 @@
       "app": "fusion"
     },
     {
-      "name": "Reservoir srUSD Looping Ethereum",
+      "name": "Reservoir wsrUSD looping",
       "address": "0xe9385eff3f937fcb0f0085da9a3f53d6c2b4fb5f",
       "chainId": 1,
       "protocol": "IPOR Fusion",
@@ -475,6 +511,18 @@
       "app": "fusion"
     },
     {
+      "name": "TAU Core (Deprecated)",
+      "address": "0x9dC2819B49C3d39b11a5F4C8c0c17BD7e18126D9",
+      "chainId": 1,
+      "protocol": "IPOR Fusion",
+      "tags": [
+        "ipor-fusion"
+      ],
+      "startBlock": 0,
+      "url": "https://app.ipor.io/fusion/ethereum/0x9dc2819b49c3d39b11a5f4c8c0c17bd7e18126d9",
+      "app": "fusion"
+    },
+    {
       "name": "TAU Reservoir Pointsmax",
       "address": "0x6f66b845604dad6e80b2a1472e6cacbbe66a8c40",
       "chainId": 1,
@@ -505,6 +553,18 @@
       "app": "fusion"
     },
     {
+      "name": "TAU Yield Bond ETF (Deprecated)",
+      "address": "0x08Dd57A51025A266cECc85154860AA4e71e48EE8",
+      "chainId": 1,
+      "protocol": "IPOR Fusion",
+      "tags": [
+        "ipor-fusion"
+      ],
+      "startBlock": 0,
+      "url": "https://app.ipor.io/fusion/ethereum/0x08dd57a51025a266cecc85154860aa4e71e48ee8",
+      "app": "fusion"
+    },
+    {
       "name": "TAU infiniFi Pointsmax",
       "address": "0xB0f56BB0bf13ee05FeF8cD2d8DF5FfdFcAC7a74f",
       "chainId": 1,
@@ -517,18 +577,6 @@
       ],
       "startBlock": 23120189,
       "url": "https://app.ipor.io/fusion/ethereum/0xb0f56bb0bf13ee05fef8cd2d8df5ffdfcac7a74f",
-      "app": "fusion"
-    },
-    {
-      "name": "Tesseract USDC Lending Optimizer",
-      "address": "0xc2A119EA6De75e4B1451330321CB2474Eb8D82d4",
-      "chainId": 1,
-      "protocol": "IPOR Fusion",
-      "tags": [
-        "ipor-fusion"
-      ],
-      "startBlock": 23189764,
-      "url": "https://app.ipor.io/fusion/ethereum/0xc2a119ea6de75e4b1451330321cb2474eb8d82d4",
       "app": "fusion"
     },
     {
@@ -568,6 +616,66 @@
       "app": "fusion"
     },
     {
+      "name": "TAU InfiniFi cbBTC Carry",
+      "address": "0x60e36a79C3d21120350e39b5EA59AE26B75Ae74c",
+      "chainId": 1,
+      "protocol": "IPOR Fusion",
+      "tags": [
+        "ipor-fusion"
+      ],
+      "startBlock": 0,
+      "url": "https://app.ipor.io/fusion/ethereum/0x60e36a79c3d21120350e39b5ea59ae26b75ae74c",
+      "app": "fusion"
+    },
+    {
+      "name": "TAU InfiniFi Pointsmaxx - Silo",
+      "address": "0xd36f53497507e948df9f277cF8c3eCecB09a1c1D",
+      "chainId": 1,
+      "protocol": "IPOR Fusion",
+      "tags": [
+        "ipor-fusion"
+      ],
+      "startBlock": 0,
+      "url": "https://app.ipor.io/fusion/ethereum/0xd36f53497507e948df9f277cf8c3ececb09a1c1d",
+      "app": "fusion"
+    },
+    {
+      "name": "Magnus Lending Optimizer",
+      "address": "0xad685fec2066d7f5436f5804882998ba79725706",
+      "chainId": 1,
+      "protocol": "IPOR Fusion",
+      "tags": [
+        "ipor-fusion"
+      ],
+      "startBlock": 0,
+      "url": "https://app.ipor.io/fusion/ethereum/0xad685fec2066d7f5436f5804882998ba79725706",
+      "app": "fusion"
+    },
+    {
+      "name": "AavEthena Loop Mainnet",
+      "address": "0x604117F0C94561231060F56cD2dDD16245D434c5",
+      "chainId": 1,
+      "protocol": "IPOR Fusion",
+      "tags": [
+        "ipor-fusion"
+      ],
+      "startBlock": 0,
+      "url": "https://app.ipor.io/fusion/ethereum/0x604117f0c94561231060f56cd2ddd16245d434c5",
+      "app": "fusion"
+    },
+    {
+      "name": "AavEthena Loop Plasma",
+      "address": "0x0A71624ab3E8101f78D95DFc81E0F1f31128Ed7A",
+      "chainId": 9745,
+      "protocol": "IPOR Fusion",
+      "tags": [
+        "ipor-fusion"
+      ],
+      "startBlock": 0,
+      "url": "https://app.ipor.io/fusion/plasma/0x0a71624ab3e8101f78d95dfc81e0f1f31128ed7a",
+      "app": "fusion"
+    },
+    {
       "name": "Tanken WETH Base",
       "address": "0xebc6c7883ca32ef9484740ba32a816f5f88b7a41",
       "chainId": 8453,
@@ -577,6 +685,18 @@
       ],
       "startBlock": 34844070,
       "url": "https://app.ipor.io/fusion/base/0xebc6c7883ca32ef9484740ba32a816f5f88b7a41",
+      "app": "fusion"
+    },
+    {
+      "name": "Tanken WETH Base (Deprecated)",
+      "address": "0x496E39F0Aa349c24032E5636E9180e7265C3FeCD",
+      "chainId": 8453,
+      "protocol": "IPOR Fusion",
+      "tags": [
+        "ipor-fusion"
+      ],
+      "startBlock": 0,
+      "url": "https://app.ipor.io/fusion/base/0x496e39f0aa349c24032e5636e9180e7265c3fecd",
       "app": "fusion"
     },
     {
@@ -603,6 +723,18 @@
       ],
       "startBlock": 22441642,
       "url": "https://app.ipor.io/fusion/ethereum/0xb530a1b5259a71187f1d69acf0488f102637a3ed",
+      "app": "fusion"
+    },
+    {
+      "name": "Leveraged sUSDf (Deprecated)",
+      "address": "0x29d322DD088e9b9D1416F43188954F08748fafbb",
+      "chainId": 1,
+      "protocol": "IPOR Fusion",
+      "tags": [
+        "ipor-fusion"
+      ],
+      "startBlock": 0,
+      "url": "https://app.ipor.io/fusion/ethereum/0x29d322dd088e9b9d1416f43188954f08748fafbb",
       "app": "fusion"
     },
     {
@@ -668,6 +800,18 @@
       "app": "fusion"
     },
     {
+      "name": "K3 Leveraged syrupUSDT Strategy",
+      "address": "0x3b3bDAA4462851621818D2CEBC835E077587147A",
+      "chainId": 1,
+      "protocol": "IPOR Fusion",
+      "tags": [
+        "ipor-fusion"
+      ],
+      "startBlock": 0,
+      "url": "https://app.ipor.io/fusion/ethereum/0x3b3bdaa4462851621818d2cebc835e077587147a",
+      "app": "fusion"
+    },
+    {
       "name": "Strata srUSDe PT Looping",
       "address": "0xD731F94c778f7C1090e2E0D797150A647De5188A",
       "chainId": 1,
@@ -680,18 +824,6 @@
       ],
       "startBlock": 23030652,
       "url": "https://app.ipor.io/fusion/ethereum/0xd731f94c778f7c1090e2e0d797150a647de5188a",
-      "app": "fusion"
-    },
-    {
-      "name": "Leveraged syrupUSDC",
-      "address": "0x5705b2eB944e6043485390c313210e52Bc00E6cB",
-      "chainId": 1,
-      "protocol": "IPOR Fusion",
-      "tags": [
-        "ipor-fusion"
-      ],
-      "startBlock": 23242113,
-      "url": "https://app.ipor.io/fusion/ethereum/0x5705b2eb944e6043485390c313210e52bc00e6cb",
       "app": "fusion"
     },
     {
@@ -719,7 +851,7 @@
       "app": "fusion"
     },
     {
-      "name": "Llamarisk crvUSD Optimizer",
+      "name": "LlamaRisk crvUSD Optimizer",
       "address": "0xbfA9d6EC0E04B6691fCAE5F8b48838C3918eC117",
       "chainId": 1,
       "protocol": "IPOR Fusion",
@@ -755,15 +887,27 @@
       "app": "fusion"
     },
     {
-      "name": "Test Alpha Vault",
-      "address": "0xa13f7342a1db4c32f8dc0539e3b6d1cf101e7d04",
-      "chainId": 8453,
+      "name": "Sentinel stcUSD Adaptive Looping",
+      "address": "0xEf53663BB775a51181f04d590F88FC38d6bd5751",
+      "chainId": 1,
       "protocol": "IPOR Fusion",
       "tags": [
         "ipor-fusion"
       ],
-      "startBlock": 41688947,
-      "url": "https://app.ipor.io/fusion/base/0xa13f7342a1db4c32f8dc0539e3b6d1cf101e7d04",
+      "startBlock": 0,
+      "url": "https://app.ipor.io/fusion/ethereum/0xef53663bb775a51181f04d590f88fc38d6bd5751",
+      "app": "fusion"
+    },
+    {
+      "name": "Hyperithm mHYPER Looping",
+      "address": "0x0b45A1e71A8A09F5D382feD27202D50ed983AaF3",
+      "chainId": 1,
+      "protocol": "IPOR Fusion",
+      "tags": [
+        "ipor-fusion"
+      ],
+      "startBlock": 0,
+      "url": "https://app.ipor.io/fusion/ethereum/0x0b45a1e71a8a09f5d382fed27202d50ed983aaf3",
       "app": "fusion"
     },
     {
