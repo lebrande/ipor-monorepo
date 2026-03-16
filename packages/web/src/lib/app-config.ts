@@ -117,7 +117,7 @@ export function getAppConfig(): AppConfig {
 }
 
 const APP_THEME_CLASS: Record<AppId, string> = {
-  fusion: '',
+  fusion: 'fusion',
   yo: 'yo',
 };
 

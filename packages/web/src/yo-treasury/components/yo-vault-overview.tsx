@@ -16,7 +16,7 @@ export function YoVaultOverview({ chainId, vaultAddress }: Props) {
   const detail = useYoVaultDetail(chainId, vaultAddress);
 
   return (
-    <div className="space-y-6 font-yo">
+    <div className="space-y-6">
       <YoVaultMetrics
         snapshot={detail.snapshot}
         performance={detail.performance}
