@@ -1,7 +1,6 @@
 import { Agent } from '@mastra/core/agent';
 import { LibSQLStore } from '@mastra/libsql';
 import { Memory } from '@mastra/memory';
-import { z } from 'zod';
 import { env } from '../env';
 import {
   getYoVaultsTool,
@@ -11,23 +10,9 @@ import {
   createYoSwapActionTool,
 } from '../tools/yo-treasury';
 import { displayPendingActionsTool, executePendingActionsTool } from '../tools/alpha';
+import { createWorkingMemorySchema } from '../tools/shared/pending-action-schema';
 
-const pendingActionSchema = z.object({
-  id: z.string().describe('Unique ID, e.g. "1", "2"'),
-  protocol: z.enum(['yo-erc4626', 'yo-swap']).describe('Protocol name'),
-  actionType: z.enum(['supply', 'withdraw', 'swap']).describe('Action type'),
-  description: z.string().describe('Human-readable description'),
-  fuseActions: z.array(z.object({
-    fuse: z.string().describe('Fuse contract address'),
-    data: z.string().describe('Hex-encoded calldata'),
-  })),
-});
-
-export const yoTreasuryWorkingMemorySchema = z.object({
-  pendingActions: z.array(pendingActionSchema).optional().describe(
-    'List of pending fuse actions to execute as a batch'
-  ),
-});
+export const yoTreasuryWorkingMemorySchema = createWorkingMemorySchema(['yo-erc4626', 'yo-swap']);
 
 const memory = new Memory({
   storage: new LibSQLStore({

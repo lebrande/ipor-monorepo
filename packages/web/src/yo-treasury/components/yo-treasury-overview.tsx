@@ -1,8 +1,9 @@
 'use client';
 
-import { TreasuryChat } from './treasury-chat';
 import { TreasuryDashboard } from './treasury-dashboard';
 import { useAccount } from 'wagmi';
+import { AgentChat } from '@/alpha/agent-chat';
+import { ToolRenderer } from '@/alpha/tools/tool-renderer';
 import type { ChainId } from '@/app/chains.config';
 import type { Address } from 'viem';
 
@@ -17,10 +18,13 @@ export function YoTreasuryOverview({ chainId, vaultAddress }: Props) {
   return (
     <div className="space-y-4 font-yo">
       <TreasuryDashboard chainId={chainId} vaultAddress={vaultAddress} />
-      <TreasuryChat
+      <AgentChat
+        apiEndpoint="/api/yo/treasury/chat"
+        body={{ callerAddress: address, vaultAddress, chainId }}
         chainId={chainId}
-        vaultAddress={vaultAddress}
-        callerAddress={address}
+        toolRenderer={ToolRenderer}
+        emptyStateText="Ask about YO vaults or manage your treasury"
+        placeholder="Ask about YO vaults or manage your treasury..."
       />
     </div>
   );

@@ -1,19 +1,20 @@
 import { Loader2 } from 'lucide-react';
-import { YoVaultsList } from './yo-vaults-list';
-import { TreasuryBalances } from './treasury-balances';
-import { ActionWithSimulation } from '@/vault-details/components/action-with-simulation';
-import { PendingActionsList } from '@/vault-details/components/pending-actions-list';
-import { ExecuteActions } from '@/vault-details/components/execute-actions';
+import { YoVaultsList } from './yo-vaults/yo-vaults-list';
+import { TreasuryBalances } from './treasury-balances/treasury-balances';
+import { MarketBalancesList } from './market-balances/market-balances-list';
+import { ActionWithSimulation } from './action-with-simulation/action-with-simulation';
+import { PendingActionsList } from './pending-actions/pending-actions-list';
+import { ExecuteActions } from './execute-actions/execute-actions';
+import type { ToolPartProps } from '../agent-chat';
 import type { YoVaultsOutput, TreasuryBalancesOutput } from '@ipor/fusion-mastra/yo-treasury-types';
-import type { ActionWithSimulationOutput, PendingActionsOutput, ExecuteActionsOutput } from '@ipor/fusion-mastra/alpha-types';
+import type {
+  ActionWithSimulationOutput,
+  PendingActionsOutput,
+  ExecuteActionsOutput,
+  MarketBalancesOutput,
+} from '@ipor/fusion-mastra/alpha-types';
 
-interface ToolPartProps {
-  state: string;
-  output?: unknown;
-  chainId: number;
-}
-
-export function YoToolRenderer({ state, output, chainId }: ToolPartProps) {
+export function ToolRenderer({ state, output, chainId }: ToolPartProps) {
   if (state === 'input-available' || state === 'input-streaming') {
     return (
       <div className="flex items-center gap-2 text-muted-foreground">
@@ -30,10 +31,27 @@ export function YoToolRenderer({ state, output, chainId }: ToolPartProps) {
   const typed = output as { type: string };
 
   switch (typed.type) {
+    // YO Treasury tools
     case 'yo-vaults':
       return <YoVaultsList output={typed as YoVaultsOutput} chainId={chainId} />;
     case 'treasury-balances':
       return <TreasuryBalances output={typed as TreasuryBalancesOutput} chainId={chainId} />;
+
+    // Alpha tools
+    case 'market-balances': {
+      const mb = typed as MarketBalancesOutput;
+      return (
+        <MarketBalancesList
+          assets={mb.assets}
+          markets={mb.markets}
+          totalValueUsd={mb.totalValueUsd}
+          message={mb.message}
+          chainId={chainId}
+        />
+      );
+    }
+
+    // Shared tools
     case 'action-with-simulation': {
       const action = typed as ActionWithSimulationOutput;
       return (
@@ -70,6 +88,7 @@ export function YoToolRenderer({ state, output, chainId }: ToolPartProps) {
         />
       );
     }
+
     default:
       return null;
   }

@@ -11,26 +11,10 @@ import {
   getMarketBalancesTool,
   executePendingActionsTool,
 } from '../tools/alpha';
+import { createPendingActionSchema, createWorkingMemorySchema } from '../tools/shared/pending-action-schema';
 
-/** Schema for a single pending action stored in working memory */
-const pendingActionSchema = z.object({
-  id: z.string().describe('Unique ID for this action, e.g. "1", "2"'),
-  protocol: z.enum(['aave-v3', 'morpho', 'euler-v2']).describe('Protocol name'),
-  actionType: z.enum(['supply', 'withdraw', 'borrow', 'repay']).describe('Action type'),
-  description: z.string().describe('Human-readable description'),
-  fuseActions: z.array(z.object({
-    fuse: z.string().describe('Fuse contract address'),
-    data: z.string().describe('Hex-encoded calldata'),
-  })).describe('Raw FuseAction data from SDK'),
-});
-
-/** Working memory schema for the Alpha Agent */
-export const alphaWorkingMemorySchema = z.object({
-  pendingActions: z.array(pendingActionSchema).optional().describe(
-    'List of pending fuse actions to execute as a batch'
-  ),
-});
-
+const pendingActionSchema = createPendingActionSchema(['aave-v3', 'morpho', 'euler-v2']);
+export const alphaWorkingMemorySchema = createWorkingMemorySchema(['aave-v3', 'morpho', 'euler-v2']);
 export type PendingAction = z.infer<typeof pendingActionSchema>;
 
 const memory = new Memory({

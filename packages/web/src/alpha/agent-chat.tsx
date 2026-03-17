@@ -2,50 +2,45 @@
 
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
-import { useRef, useEffect, useLayoutEffect, useState, useCallback } from 'react';
-import { useAccount } from 'wagmi';
+import { useRef, useEffect, useState, type ComponentType } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { SendHorizontal, Bot, User } from 'lucide-react';
-import { AlphaToolRenderer } from './alpha-tool-renderer';
-import type { ChainId } from '@/app/chains.config';
-import type { Address } from 'viem';
 
-interface Props {
-  chainId: ChainId;
-  vaultAddress: Address;
+export interface ToolPartProps {
+  state: string;
+  output?: unknown;
+  chainId: number;
+}
+
+interface AgentChatProps {
+  apiEndpoint: string;
+  body?: Record<string, unknown>;
+  chainId: number;
+  toolRenderer: ComponentType<ToolPartProps>;
+  emptyStateText?: string;
+  placeholder?: string;
   className?: string;
 }
 
-export function VaultAlpha({ chainId, vaultAddress, className }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
+export function AgentChat({
+  apiEndpoint,
+  body,
+  chainId,
+  toolRenderer: ToolRenderer,
+  emptyStateText = 'Ask anything...',
+  placeholder = 'Type a message...',
+  className,
+}: AgentChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [inputValue, setInputValue] = useState('');
-  const [height, setHeight] = useState<number>(600);
-  const { address: walletAddress } = useAccount();
-
-  const updateHeight = useCallback(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const top = el.getBoundingClientRect().top;
-    setHeight(window.innerHeight - top - 24);
-  }, []);
-
-  useLayoutEffect(() => {
-    updateHeight();
-  }, [updateHeight]);
-
-  useEffect(() => {
-    window.addEventListener('resize', updateHeight);
-    return () => window.removeEventListener('resize', updateHeight);
-  }, [updateHeight]);
 
   const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({
-      api: `/api/vaults/${chainId}/${vaultAddress}/chat`,
-      body: walletAddress ? { callerAddress: walletAddress } : undefined,
+      api: apiEndpoint,
+      body,
     }),
   });
 
@@ -63,17 +58,13 @@ export function VaultAlpha({ chainId, vaultAddress, className }: Props) {
   };
 
   return (
-    <Card
-      ref={containerRef}
-      className={cn('flex flex-col', className)}
-      style={{ height }}
-    >
+    <Card className={cn('flex flex-col h-[600px]', className)}>
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
             <Bot className="w-8 h-8" />
-            <p>Ask anything about this vault</p>
+            <p>{emptyStateText}</p>
           </div>
         )}
         {messages.map((message) => (
@@ -110,7 +101,7 @@ export function VaultAlpha({ chainId, vaultAddress, className }: Props) {
 
                 if (part.type.startsWith('tool-')) {
                   return (
-                    <AlphaToolRenderer
+                    <ToolRenderer
                       key={index}
                       state={(part as { state: string }).state}
                       output={
@@ -146,7 +137,7 @@ export function VaultAlpha({ chainId, vaultAddress, className }: Props) {
         <Input
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Ask about this vault..."
+          placeholder={placeholder}
           disabled={isLoading}
           className="flex-1"
         />

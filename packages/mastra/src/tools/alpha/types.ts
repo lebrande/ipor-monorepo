@@ -10,13 +10,6 @@
  * 3. Add a case in the web app's AlphaToolRenderer
  */
 
-/** Placeholder: displays a list of transactions to sign */
-export type TransactionsToSignOutput = {
-  type: 'transactions-to-sign';
-  message: string;
-  placeholder: true;
-};
-
 /** Displays the list of pending fuse actions from working memory */
 export type PendingActionsOutput = {
   type: 'pending-actions';
@@ -90,25 +83,6 @@ export interface BalanceSnapshot {
   totalValueUsd: string;
 }
 
-/** Displays simulation result with before/after balance comparison */
-export type SimulationResultOutput = {
-  type: 'simulation-result';
-  success: boolean;
-  message: string;
-  vaultAddress: string;
-  chainId: number;
-  callerAddress: string;
-  actionsCount: number;
-  fuseActionsCount: number;
-  error?: string;
-  flatFuseActions: Array<{
-    fuse: string;
-    data: string;
-  }>;
-  balancesBefore?: BalanceSnapshot;
-  balancesAfter?: BalanceSnapshot;
-};
-
 /** Passes pending actions to the UI for the full connect → role check → simulate → execute flow */
 export type ExecuteActionsOutput = {
   type: 'execute-actions';
@@ -148,9 +122,7 @@ export type ActionWithSimulationOutput = {
 
 /** Union of all alpha tool output types */
 export type AlphaToolOutput =
-  | TransactionsToSignOutput
   | PendingActionsOutput
   | MarketBalancesOutput
-  | SimulationResultOutput
   | ExecuteActionsOutput
   | ActionWithSimulationOutput;

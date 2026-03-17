@@ -2,8 +2,13 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { WalletDecorator } from '@/app/wallet.decorator';
 import { ExecuteActions } from './execute-actions';
 
+/**
+ * 5-step execution wizard: connect wallet -> switch chain -> check ALPHA_ROLE
+ * -> simulate -> execute. Renders when the agent calls `executePendingActionsTool`.
+ * Auto-skips client simulation since the agent already simulated on an Anvil fork.
+ */
 const meta: Meta<typeof ExecuteActions> = {
-  title: 'Vault Details / ExecuteActions',
+  title: 'Alpha Tools / ExecuteActions',
   component: ExecuteActions,
   decorators: [WalletDecorator],
 };
@@ -11,7 +16,7 @@ const meta: Meta<typeof ExecuteActions> = {
 export default meta;
 type Story = StoryObj<typeof ExecuteActions>;
 
-/** Supply 1 USDC to Aave V3 on Base — real vault, real fuse action data */
+/** Supply 1 USDC to Aave V3 on Base — single fuse action */
 export const SupplyUsdcAaveV3: Story = {
   args: {
     vaultAddress: '0xa13f7342a1db4c32f8dc0539e3b6d1cf101e7d04',
@@ -29,7 +34,7 @@ export const SupplyUsdcAaveV3: Story = {
   },
 };
 
-/** Multiple actions */
+/** Two Aave V3 supply actions batched together */
 export const MultipleActions: Story = {
   args: {
     vaultAddress: '0xa13f7342a1db4c32f8dc0539e3b6d1cf101e7d04',
@@ -48,5 +53,22 @@ export const MultipleActions: Story = {
     fuseActionsCount: 2,
     actionsSummary:
       'supply on aave-v3: Aave V3 supply 1000000 USDC\nsupply on aave-v3: Aave V3 supply 1000000 USDC',
+  },
+};
+
+/** YO vault allocation on Base */
+export const YoAllocation: Story = {
+  args: {
+    vaultAddress: '0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D',
+    chainId: 8453,
+    flatFuseActions: [
+      {
+        fuse: '0xaabbccdd11223344aabbccdd11223344aabbccdd',
+        data: '0x12345678000000000000000000000000000000000000000000000000000000001dcd6500',
+      },
+    ],
+    actionsCount: 1,
+    fuseActionsCount: 1,
+    actionsSummary: 'supply on yo-erc4626: Allocate 500 USDC to yoUSD',
   },
 };
