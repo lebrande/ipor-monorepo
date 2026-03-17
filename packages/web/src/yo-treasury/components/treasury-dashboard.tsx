@@ -51,6 +51,9 @@ export function TreasuryDashboard({ chainId, vaultAddress }: Props) {
         assetSymbol={symbol}
         tokenPriceUsd={tokenPriceUsd}
         isLoading={isPositionsLoading}
+        chainId={chainId}
+        vaultAddress={vaultAddress}
+        userAddress={userAddress}
       />
 
       {/* Allocation table with vault APR/TVL */}

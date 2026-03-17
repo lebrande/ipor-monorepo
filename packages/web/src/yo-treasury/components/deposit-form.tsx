@@ -14,6 +14,7 @@ import { Card } from '@/components/ui/card';
 import { TokenIcon } from '@/components/token-icon';
 import { Loader2, CheckCircle2 } from 'lucide-react';
 import { useVaultReads, formatAmountUsd } from '../hooks/use-vault-reads';
+import { useWhitelistRole } from '@/vault-actions/hooks/use-whitelist-role';
 
 interface Props {
   chainId: number;
@@ -26,6 +27,10 @@ export function DepositForm({ chainId, vaultAddress }: Props) {
   const [inputValue, setInputValue] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const isWrongChain = !!userAddress && chain?.id !== chainId;
+
+  // ─── Whitelist role check ───
+
+  const { isWhitelisted, isLoading: isRoleLoading } = useWhitelistRole({ chainId, vaultAddress });
 
   // ─── Shared on-chain reads ───
 
@@ -177,6 +182,7 @@ export function DepositForm({ chainId, vaultAddress }: Props) {
 
   const buttonLabel = (() => {
     if (!userAddress) return 'Connect Wallet';
+    if (!isWhitelisted) return 'Not whitelisted';
     if (isApproving) return 'Confirm in wallet...';
     if (isApproveConfirming) return 'Approving...';
     if (isDepositing) return 'Confirm in wallet...';
@@ -190,6 +196,7 @@ export function DepositForm({ chainId, vaultAddress }: Props) {
 
   const buttonDisabled =
     !userAddress ||
+    !isWhitelisted ||
     depositAmount === 0n ||
     parseError ||
     !hasEnoughBalance ||
@@ -208,6 +215,29 @@ export function DepositForm({ chainId, vaultAddress }: Props) {
           <TokenIcon chainId={chainId} address={assetAddress} className="w-5 h-5" />
         )}
       </div>
+
+      {/* Whitelist status */}
+      {userAddress && !isWrongChain && (
+        <div className="flex items-center justify-between text-xs">
+          {isRoleLoading ? (
+            <span className="text-muted-foreground">Checking role...</span>
+          ) : isWhitelisted ? (
+            <span className="text-green-500 flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3" /> Whitelisted
+            </span>
+          ) : (
+            <span className="text-destructive">Not whitelisted</span>
+          )}
+          <a
+            href="https://app.ipor.io/fusion/base/0x09d1c2e03f73853916ee86b4e1a729f9fbaa960d/edit/access-manager"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:underline"
+          >
+            Access Manager
+          </a>
+        </div>
+      )}
 
       {/* Amount input */}
       <div className="rounded-lg border bg-muted/30 p-3 space-y-1">

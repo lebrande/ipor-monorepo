@@ -10,11 +10,12 @@ import type { Address } from 'viem';
 interface Props {
   chainId: ChainId;
   vaultAddress: Address;
+  accessManagerUrl?: string;
 }
 
 type Tab = 'deposit' | 'withdraw';
 
-export function VaultActionTabs({ chainId, vaultAddress }: Props) {
+export function VaultActionTabs({ chainId, vaultAddress, accessManagerUrl }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('deposit');
 
   return (
@@ -36,9 +37,9 @@ export function VaultActionTabs({ chainId, vaultAddress }: Props) {
         ))}
       </div>
       {activeTab === 'deposit' ? (
-        <DepositForm chainId={chainId} vaultAddress={vaultAddress} />
+        <DepositForm chainId={chainId} vaultAddress={vaultAddress} accessManagerUrl={accessManagerUrl} />
       ) : (
-        <WithdrawForm chainId={chainId} vaultAddress={vaultAddress} />
+        <WithdrawForm chainId={chainId} vaultAddress={vaultAddress} accessManagerUrl={accessManagerUrl} />
       )}
     </div>
   );

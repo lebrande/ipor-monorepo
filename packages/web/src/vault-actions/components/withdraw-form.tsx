@@ -12,15 +12,17 @@ import { erc20Abi, erc4626Abi, formatUnits, parseUnits, type Address } from 'vie
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { TokenIcon } from '@/components/token-icon';
-import { Loader2, CheckCircle2 } from 'lucide-react';
+import { Loader2, CheckCircle2, ExternalLink } from 'lucide-react';
 import { useVaultReads, formatAmountUsd } from '../hooks/use-vault-reads';
+import { useWhitelistRole } from '../hooks/use-whitelist-role';
 
 interface Props {
   chainId: number;
   vaultAddress: Address;
+  accessManagerUrl?: string;
 }
 
-export function WithdrawForm({ chainId, vaultAddress }: Props) {
+export function WithdrawForm({ chainId, vaultAddress, accessManagerUrl }: Props) {
   const { address: rawUserAddress, chain } = useAccount();
   const { switchChain, isPending: isSwitching } = useSwitchChain();
   const [inputValue, setInputValue] = useState('');
@@ -32,6 +34,14 @@ export function WithdrawForm({ chainId, vaultAddress }: Props) {
   // Delay wallet-dependent rendering until after hydration
   const userAddress = mounted ? rawUserAddress : undefined;
   const isWrongChain = !!userAddress && chain?.id !== chainId;
+
+  // ─── Whitelist role check (only for vaults with access manager) ───
+
+  const { isWhitelisted, isLoading: isRoleLoading } = useWhitelistRole({
+    chainId,
+    vaultAddress,
+    enabled: !!accessManagerUrl,
+  });
 
   // ─── Shared on-chain reads ───
 
@@ -147,8 +157,11 @@ export function WithdrawForm({ chainId, vaultAddress }: Props) {
 
   const isBusy = isRedeeming || isRedeemConfirming;
 
+  const requiresWhitelist = !!accessManagerUrl;
+
   const buttonLabel = (() => {
     if (!userAddress) return 'Connect Wallet';
+    if (requiresWhitelist && !isWhitelisted) return 'Not whitelisted';
     if (isRedeeming) return 'Confirm in wallet...';
     if (isRedeemConfirming) return 'Withdrawing...';
     if (parseError) return 'Invalid amount';
@@ -159,6 +172,7 @@ export function WithdrawForm({ chainId, vaultAddress }: Props) {
 
   const buttonDisabled =
     !userAddress ||
+    (requiresWhitelist && !isWhitelisted) ||
     withdrawAmount === 0n ||
     parseError ||
     !hasEnoughPosition ||
@@ -176,6 +190,33 @@ export function WithdrawForm({ chainId, vaultAddress }: Props) {
           <TokenIcon chainId={chainId} address={assetAddress} className="w-5 h-5" />
         )}
       </div>
+
+      {/* Whitelist status + Access Manager link */}
+      {accessManagerUrl && (
+        <div className="flex items-center justify-between text-xs">
+          <div>
+            {userAddress && !isWrongChain && (
+              isRoleLoading ? (
+                <span className="text-muted-foreground">Checking role...</span>
+              ) : isWhitelisted ? (
+                <span className="text-green-500 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Whitelisted
+                </span>
+              ) : (
+                <span className="text-destructive">Not whitelisted</span>
+              )
+            )}
+          </div>
+          <a
+            href={accessManagerUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:underline flex items-center gap-1"
+          >
+            Manage roles <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+      )}
 
       {/* Amount input */}
       <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
