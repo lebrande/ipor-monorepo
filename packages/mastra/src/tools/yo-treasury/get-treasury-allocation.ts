@@ -3,7 +3,8 @@ import { z } from 'zod';
 import { type Address } from 'viem';
 import { getPublicClient } from '../plasma-vault/utils/viem-clients';
 import { readYoTreasuryBalances } from './read-yo-treasury-balances';
-import type { TreasuryBalancesOutput } from './types';
+import { mapYoPositionsToMarkets } from './map-yo-to-market-balances';
+import type { MarketBalancesOutput } from '../alpha/types';
 
 export const getTreasuryAllocationTool = createTool({
   id: 'get-treasury-allocation',
@@ -15,7 +16,7 @@ Call when the user asks "where are my funds?", "show my portfolio", or "what's m
     chainId: z.number().describe('Chain ID'),
   }),
   outputSchema: z.object({
-    type: z.literal('treasury-balances'),
+    type: z.literal('market-balances'),
     success: z.boolean(),
     assets: z.array(z.object({
       address: z.string(),
@@ -27,38 +28,30 @@ Call when the user asks "where are my funds?", "show my portfolio", or "what's m
       priceUsd: z.string(),
       valueUsd: z.string(),
     })),
-    yoPositions: z.array(z.object({
-      vaultAddress: z.string(),
-      vaultSymbol: z.string(),
-      shares: z.string(),
-      underlyingAddress: z.string(),
-      underlyingSymbol: z.string(),
-      underlyingDecimals: z.number(),
-      underlyingAmount: z.string(),
-      underlyingFormatted: z.string(),
-      valueUsd: z.string(),
-    })),
+    markets: z.array(z.any()),
     totalValueUsd: z.string(),
     message: z.string(),
     error: z.string().optional(),
   }),
-  execute: async ({ vaultAddress, chainId }): Promise<TreasuryBalancesOutput> => {
+  execute: async ({ vaultAddress, chainId }): Promise<MarketBalancesOutput> => {
     try {
       const publicClient = getPublicClient(chainId);
       const snapshot = await readYoTreasuryBalances(publicClient, vaultAddress as Address);
 
       return {
-        type: 'treasury-balances' as const,
+        type: 'market-balances' as const,
         success: true,
-        ...snapshot,
-        message: `[UI rendered treasury holdings — do NOT list or repeat balances in text]`,
+        assets: snapshot.assets,
+        markets: mapYoPositionsToMarkets(snapshot.yoPositions),
+        totalValueUsd: snapshot.totalValueUsd,
+        message: '[UI rendered treasury holdings — do NOT list or repeat balances in text]',
       };
     } catch (error) {
       return {
-        type: 'treasury-balances' as const,
+        type: 'market-balances' as const,
         success: false,
         assets: [],
-        yoPositions: [],
+        markets: [],
         totalValueUsd: '0.00',
         message: 'Failed to read treasury allocation',
         error: error instanceof Error ? error.message : String(error),

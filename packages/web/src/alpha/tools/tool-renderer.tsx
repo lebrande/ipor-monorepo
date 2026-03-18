@@ -1,12 +1,9 @@
 import { Loader2 } from 'lucide-react';
-import { YoVaultsList } from './yo-vaults/yo-vaults-list';
-import { TreasuryBalances } from './treasury-balances/treasury-balances';
 import { MarketBalancesList } from './market-balances/market-balances-list';
 import { ActionWithSimulation } from './action-with-simulation/action-with-simulation';
 import { PendingActionsList } from './pending-actions/pending-actions-list';
 import { ExecuteActions } from './execute-actions/execute-actions';
 import type { ToolPartProps } from '../agent-chat';
-import type { YoVaultsOutput, TreasuryBalancesOutput } from '@ipor/fusion-mastra/yo-treasury-types';
 import type {
   ActionWithSimulationOutput,
   PendingActionsOutput,
@@ -31,13 +28,6 @@ export function ToolRenderer({ state, output, chainId }: ToolPartProps) {
   const typed = output as { type: string };
 
   switch (typed.type) {
-    // YO Treasury tools
-    case 'yo-vaults':
-      return <YoVaultsList output={typed as YoVaultsOutput} chainId={chainId} />;
-    case 'treasury-balances':
-      return <TreasuryBalances output={typed as TreasuryBalancesOutput} chainId={chainId} />;
-
-    // Alpha tools
     case 'market-balances': {
       const mb = typed as MarketBalancesOutput;
       return (
@@ -51,7 +41,6 @@ export function ToolRenderer({ state, output, chainId }: ToolPartProps) {
       );
     }
 
-    // Shared tools
     case 'action-with-simulation': {
       const action = typed as ActionWithSimulationOutput;
       return (

@@ -1,10 +1,11 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
-import { type Address, erc20Abi, formatUnits } from 'viem';
+import { type Address } from 'viem';
 import { createYoClient } from '@yo-protocol/core';
 import { getPublicClient } from '../plasma-vault/utils/viem-clients';
 import { readYoTreasuryBalances } from './read-yo-treasury-balances';
-import type { YoVaultsOutput, YoVaultUserPosition } from './types';
+import { mapYoPositionsToMarkets } from './map-yo-to-market-balances';
+import type { MarketBalancesOutput } from '../alpha/types';
 
 export const getYoVaultsTool = createTool({
   id: 'get-yo-vaults',
@@ -16,111 +17,63 @@ If a vaultAddress is provided, includes the user's current position in each vaul
     vaultAddress: z.string().optional().describe('Treasury PlasmaVault address — if provided, includes user positions'),
   }),
   outputSchema: z.object({
-    type: z.literal('yo-vaults'),
+    type: z.literal('market-balances'),
     success: z.boolean(),
-    chainId: z.number(),
-    vaults: z.array(z.object({
-      symbol: z.string(),
-      name: z.string(),
+    assets: z.array(z.object({
       address: z.string(),
-      underlying: z.string(),
-      underlyingAddress: z.string(),
-      underlyingDecimals: z.number(),
-      apy7d: z.string().nullable(),
-      tvl: z.string().nullable(),
-      chainId: z.number(),
-      userPosition: z.object({
-        shares: z.string(),
-        underlyingAmount: z.string(),
-        underlyingFormatted: z.string(),
-        valueUsd: z.string(),
-      }).optional(),
-      unallocatedBalance: z.string().optional(),
+      name: z.string(),
+      symbol: z.string(),
+      decimals: z.number(),
+      balance: z.string(),
+      balanceFormatted: z.string(),
+      priceUsd: z.string(),
+      valueUsd: z.string(),
     })),
+    markets: z.array(z.any()),
+    totalValueUsd: z.string(),
     message: z.string(),
     error: z.string().optional(),
   }),
-  execute: async ({ chainId, vaultAddress }): Promise<YoVaultsOutput> => {
+  execute: async ({ chainId, vaultAddress }): Promise<MarketBalancesOutput> => {
     try {
       const client = createYoClient({ chainId: chainId as 1 | 8453 | 42161 });
       const vaults = await client.getVaults();
 
-      // Optionally read user positions and unallocated balances
-      let positionsByVault: Map<string, YoVaultUserPosition> | undefined;
-      let unallocatedByUnderlying: Map<string, string> | undefined;
+      const vaultSummary = vaults.map(v =>
+        `${v.shareAsset.symbol} (${v.asset.symbol}, chain ${v.chain.id})`
+      ).join(', ');
+
+      let assets: MarketBalancesOutput['assets'] = [];
+      let markets: MarketBalancesOutput['markets'] = [];
+      let totalValueUsd = '0.00';
+
       if (vaultAddress) {
         const publicClient = getPublicClient(chainId);
-
-        // Read YO positions
         try {
           const snapshot = await readYoTreasuryBalances(publicClient, vaultAddress as Address);
-          positionsByVault = new Map();
-          for (const pos of snapshot.yoPositions) {
-            positionsByVault.set(pos.vaultAddress.toLowerCase(), {
-              shares: pos.shares,
-              underlyingAmount: pos.underlyingAmount,
-              underlyingFormatted: pos.underlyingFormatted,
-              valueUsd: pos.valueUsd,
-            });
-          }
+          assets = snapshot.assets;
+          markets = mapYoPositionsToMarkets(snapshot.yoPositions);
+          totalValueUsd = snapshot.totalValueUsd;
         } catch {
-          // Positions read failed — continue without them
-        }
-
-        // Read unallocated balances of each vault's underlying asset
-        try {
-          const underlyingAddresses = [...new Set(vaults.map(v => v.asset.address.toLowerCase()))];
-          const balanceResults = await publicClient.multicall({
-            contracts: underlyingAddresses.map((addr) => ({
-              address: addr as Address,
-              abi: erc20Abi,
-              functionName: 'balanceOf' as const,
-              args: [vaultAddress as Address],
-            })),
-            allowFailure: true,
-          });
-          unallocatedByUnderlying = new Map();
-          for (let i = 0; i < underlyingAddresses.length; i++) {
-            const result = balanceResults[i];
-            if (result.status === 'success') {
-              const balance = result.result as bigint;
-              const vault = vaults.find(v => v.asset.address.toLowerCase() === underlyingAddresses[i]);
-              const decimals = vault?.asset.decimals ?? 18;
-              unallocatedByUnderlying.set(underlyingAddresses[i], formatUnits(balance, decimals));
-            }
-          }
-        } catch {
-          // Unallocated reads failed — continue without them
+          // Position read failed — continue with empty
         }
       }
 
-      const vaultData = vaults.map((vault) => ({
-        symbol: vault.shareAsset.symbol,
-        name: vault.name,
-        address: vault.contracts.vaultAddress,
-        underlying: vault.asset.symbol,
-        underlyingAddress: vault.asset.address,
-        underlyingDecimals: vault.asset.decimals,
-        apy7d: vault.yield['7d'],
-        tvl: vault.tvl.formatted,
-        chainId: vault.chain.id,
-        userPosition: positionsByVault?.get(vault.contracts.vaultAddress.toLowerCase()),
-        unallocatedBalance: unallocatedByUnderlying?.get(vault.asset.address.toLowerCase()),
-      }));
-
       return {
-        type: 'yo-vaults' as const,
+        type: 'market-balances' as const,
         success: true,
-        chainId,
-        vaults: vaultData,
-        message: `[UI rendered a table with ${vaultData.length} vaults — do NOT list or repeat vault data in text]`,
+        assets,
+        markets,
+        totalValueUsd,
+        message: `[UI rendered ${vaults.length} vaults. Available: ${vaultSummary}. Do NOT repeat data in text]`,
       };
     } catch (error) {
       return {
-        type: 'yo-vaults' as const,
+        type: 'market-balances' as const,
         success: false,
-        chainId,
-        vaults: [],
+        assets: [],
+        markets: [],
+        totalValueUsd: '0.00',
         message: 'Failed to fetch YO vaults',
         error: error instanceof Error ? error.message : String(error),
       };
