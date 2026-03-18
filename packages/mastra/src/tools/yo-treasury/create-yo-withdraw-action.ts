@@ -10,7 +10,7 @@ import {
   YO_REDEEM_FUSE_SLOT4_ADDRESS,
 } from '@ipor/fusion-sdk';
 import { getPublicClient } from '../plasma-vault/utils/viem-clients';
-import { simulateOnFork } from '../alpha/simulate-on-fork';
+import { buildTransactionProposal, transactionProposalOutputSchema } from '../alpha/build-transaction-proposal';
 import { existingActionSchema } from './types';
 
 const REDEEM_FUSE_BY_SLOT: Record<number, Record<number, Address | undefined>> = {
@@ -25,8 +25,8 @@ export const createYoWithdrawActionTool = createTool({
   description: `Create a fuse action to withdraw from a YO vault back to the treasury.
 Uses YoRedeemFuse.exit() which calls redeem() — NOT withdraw() (withdraw is disabled on YO vaults).
 Reads the vault's current YO share balance and redeems all or a specified amount.
-Resolves the correct YoRedeemFuse address automatically from yoVaultId.
-Auto-simulates all pending actions on an Anvil fork.`,
+Returns a unified transaction proposal with simulation.
+Set isReady=true when this is the last action, false if more actions follow.`,
   inputSchema: z.object({
     vaultAddress: z.string().describe('Treasury PlasmaVault address'),
     chainId: z.number().describe('Chain ID'),
@@ -35,18 +35,10 @@ Auto-simulates all pending actions on an Anvil fork.`,
     shares: z.string().optional().describe('Share amount to redeem. If omitted, redeems all shares.'),
     callerAddress: z.string().optional(),
     existingPendingActions: z.array(existingActionSchema).optional(),
+    isReady: z.boolean().describe('true if this is the last action (show execute button), false if more actions follow'),
   }),
-  outputSchema: z.object({
-    type: z.literal('action-with-simulation'),
-    success: z.boolean(),
-    protocol: z.string(),
-    actionType: z.string(),
-    description: z.string(),
-    fuseActions: z.array(z.object({ fuse: z.string(), data: z.string() })),
-    error: z.string().optional(),
-    simulation: z.any().optional(),
-  }),
-  execute: async ({ vaultAddress, chainId, yoVaultId, yoVaultAddress, shares, callerAddress, existingPendingActions }) => {
+  outputSchema: transactionProposalOutputSchema,
+  execute: async ({ vaultAddress, chainId, yoVaultId, yoVaultAddress, shares, callerAddress, existingPendingActions, isReady }) => {
     try {
       const slot = YO_VAULT_SLOTS[yoVaultId as keyof typeof YO_VAULT_SLOTS];
       if (!slot) throw new Error(`Unknown YO vault: ${yoVaultId}`);
@@ -72,15 +64,21 @@ Auto-simulates all pending actions on an Anvil fork.`,
       }
 
       if (sharesToRedeem === 0n) {
-        return {
-          type: 'action-with-simulation' as const,
-          success: false,
-          protocol: 'yo-erc4626',
-          actionType: 'withdraw',
-          description: `No ${yoVaultId} shares to withdraw`,
-          fuseActions: [],
-          error: `Treasury holds 0 ${yoVaultId} shares`,
-        };
+        return buildTransactionProposal({
+          newAction: {
+            success: false,
+            protocol: 'yo-erc4626',
+            actionType: 'withdraw',
+            description: `No ${yoVaultId} shares to withdraw`,
+            fuseActions: [],
+            error: `Treasury holds 0 ${yoVaultId} shares`,
+          },
+          existingPendingActions,
+          vaultAddress,
+          chainId,
+          callerAddress,
+          isReady: false,
+        });
       }
 
       const data = encodeFunctionData({
@@ -90,43 +88,40 @@ Auto-simulates all pending actions on an Anvil fork.`,
       });
 
       const newFuseActions = [{ fuse: fuseAddress, data }];
-      const description = `Withdraw ${sharesToRedeem} shares from ${yoVaultId}`;
+      const description = shares
+        ? `Withdraw ${shares} shares from ${yoVaultId}`
+        : `Withdraw all shares from ${yoVaultId}`;
 
-      let simulation;
-      if (callerAddress) {
-        const existingFuseActions = (existingPendingActions ?? []).flatMap(a => a.fuseActions);
-        const allFuseActions = [...existingFuseActions, ...newFuseActions];
-        const simResult = await simulateOnFork({
-          vaultAddress,
-          chainId,
-          callerAddress,
-          flatFuseActions: allFuseActions,
-        });
-        simulation = {
-          ...simResult,
-          actionsCount: (existingPendingActions?.length ?? 0) + 1,
-        };
-      }
-
-      return {
-        type: 'action-with-simulation' as const,
-        success: true,
-        protocol: 'yo-erc4626',
-        actionType: 'withdraw',
-        description,
-        fuseActions: newFuseActions,
-        simulation,
-      };
+      return buildTransactionProposal({
+        newAction: {
+          success: true,
+          protocol: 'yo-erc4626',
+          actionType: 'withdraw',
+          description,
+          fuseActions: newFuseActions,
+        },
+        existingPendingActions,
+        vaultAddress,
+        chainId,
+        callerAddress,
+        isReady,
+      });
     } catch (error) {
-      return {
-        type: 'action-with-simulation' as const,
-        success: false,
-        protocol: 'yo-erc4626',
-        actionType: 'withdraw',
-        description: `Failed: withdraw from ${yoVaultId}`,
-        fuseActions: [],
-        error: error instanceof Error ? error.message : String(error),
-      };
+      return buildTransactionProposal({
+        newAction: {
+          success: false,
+          protocol: 'yo-erc4626',
+          actionType: 'withdraw',
+          description: `Failed: withdraw from ${yoVaultId}`,
+          fuseActions: [],
+          error: error instanceof Error ? error.message : String(error),
+        },
+        existingPendingActions,
+        vaultAddress,
+        chainId,
+        callerAddress,
+        isReady: false,
+      });
     }
   },
 });

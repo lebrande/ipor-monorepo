@@ -1,6 +1,5 @@
 'use client';
 
-import { Card } from '@/components/ui/card';
 import { ArrowRight, TrendingUp, TrendingDown } from 'lucide-react';
 import { TokenIcon } from '@/components/token-icon/token-icon';
 import { ProtocolIcon, getProtocolLabel } from '@/components/protocol-icon/protocol-icon';
@@ -222,7 +221,7 @@ export function SimulationBalanceComparison({ before, after, chainId }: Props) {
   });
 
   return (
-    <Card className="p-4 space-y-4">
+    <div className="space-y-4 border rounded-lg p-4">
       {/* Total value header */}
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium">Balance Changes</span>
@@ -272,6 +271,6 @@ export function SimulationBalanceComparison({ before, after, chainId }: Props) {
           />
         );
       })}
-    </Card>
+    </div>
   );
 }

@@ -9,8 +9,10 @@ import {
   ERC4626_SUPPLY_FUSE_SLOT3_ADDRESS,
   ERC4626_SUPPLY_FUSE_SLOT4_ADDRESS,
 } from '@ipor/fusion-sdk';
-import { simulateOnFork } from '../alpha/simulate-on-fork';
+import { buildTransactionProposal, transactionProposalOutputSchema } from '../alpha/build-transaction-proposal';
+import { formatTokenAmount } from '../alpha/format-amount';
 import { existingActionSchema } from './types';
+import { YO_UNDERLYING } from './yo-vault-metadata';
 
 const SUPPLY_FUSE_BY_SLOT: Record<number, Record<number, Address | undefined>> = {
   1: ERC4626_SUPPLY_FUSE_SLOT1_ADDRESS,
@@ -24,7 +26,8 @@ export const createYoAllocationActionTool = createTool({
   description: `Create a fuse action to allocate tokens from the treasury to a YO vault (yoUSD, yoETH, yoBTC, yoEUR).
 Uses Erc4626SupplyFuse.enter() to deposit the underlying asset into the YO vault.
 The treasury must hold the correct underlying token (e.g., USDC for yoUSD, WETH for yoETH).
-Auto-simulates all pending actions on an Anvil fork.`,
+Returns a unified transaction proposal with simulation.
+Set isReady=true when this is the last action, false if more actions follow.`,
   inputSchema: z.object({
     vaultAddress: z.string().describe('Treasury PlasmaVault address'),
     chainId: z.number().describe('Chain ID (8453 for Base)'),
@@ -33,18 +36,10 @@ Auto-simulates all pending actions on an Anvil fork.`,
     amount: z.string().describe('Amount in underlying token smallest unit (e.g., "50000000" for 50 USDC)'),
     callerAddress: z.string().optional().describe('Caller with ALPHA_ROLE for simulation'),
     existingPendingActions: z.array(existingActionSchema).optional(),
+    isReady: z.boolean().describe('true if this is the last action (show execute button), false if more actions follow'),
   }),
-  outputSchema: z.object({
-    type: z.literal('action-with-simulation'),
-    success: z.boolean(),
-    protocol: z.string(),
-    actionType: z.string(),
-    description: z.string(),
-    fuseActions: z.array(z.object({ fuse: z.string(), data: z.string() })),
-    error: z.string().optional(),
-    simulation: z.any().optional(),
-  }),
-  execute: async ({ vaultAddress, chainId, yoVaultId, yoVaultAddress, amount, callerAddress, existingPendingActions }) => {
+  outputSchema: transactionProposalOutputSchema,
+  execute: async ({ vaultAddress, chainId, yoVaultId, yoVaultAddress, amount, callerAddress, existingPendingActions, isReady }) => {
     try {
       const slot = YO_VAULT_SLOTS[yoVaultId as keyof typeof YO_VAULT_SLOTS];
       if (!slot) throw new Error(`Unknown YO vault: ${yoVaultId}`);
@@ -61,43 +56,40 @@ Auto-simulates all pending actions on an Anvil fork.`,
       });
 
       const newFuseActions = [{ fuse: fuseAddress, data }];
-      const description = `Allocate ${amount} to ${yoVaultId}`;
+      const meta = YO_UNDERLYING[yoVaultId] ?? { decimals: 0, symbol: yoVaultId };
+      const formatted = formatTokenAmount(amount, meta.decimals);
+      const description = `Allocate ${formatted} ${meta.symbol} to ${yoVaultId}`;
 
-      let simulation;
-      if (callerAddress) {
-        const existingFuseActions = (existingPendingActions ?? []).flatMap(a => a.fuseActions);
-        const allFuseActions = [...existingFuseActions, ...newFuseActions];
-        const simResult = await simulateOnFork({
-          vaultAddress,
-          chainId,
-          callerAddress,
-          flatFuseActions: allFuseActions,
-        });
-        simulation = {
-          ...simResult,
-          actionsCount: (existingPendingActions?.length ?? 0) + 1,
-        };
-      }
-
-      return {
-        type: 'action-with-simulation' as const,
-        success: true,
-        protocol: 'yo-erc4626',
-        actionType: 'supply',
-        description,
-        fuseActions: newFuseActions,
-        simulation,
-      };
+      return buildTransactionProposal({
+        newAction: {
+          success: true,
+          protocol: 'yo-erc4626',
+          actionType: 'supply',
+          description,
+          fuseActions: newFuseActions,
+        },
+        existingPendingActions,
+        vaultAddress,
+        chainId,
+        callerAddress,
+        isReady,
+      });
     } catch (error) {
-      return {
-        type: 'action-with-simulation' as const,
-        success: false,
-        protocol: 'yo-erc4626',
-        actionType: 'supply',
-        description: `Failed: allocate to ${yoVaultId}`,
-        fuseActions: [],
-        error: error instanceof Error ? error.message : String(error),
-      };
+      return buildTransactionProposal({
+        newAction: {
+          success: false,
+          protocol: 'yo-erc4626',
+          actionType: 'supply',
+          description: `Failed: allocate to ${yoVaultId}`,
+          fuseActions: [],
+          error: error instanceof Error ? error.message : String(error),
+        },
+        existingPendingActions,
+        vaultAddress,
+        chainId,
+        callerAddress,
+        isReady: false,
+      });
     }
   },
 });

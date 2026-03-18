@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const result = await yoTreasuryAgent.stream(messages, {
-      maxSteps: 5,
+      maxSteps: 10,
       system,
       memory: {
         thread: threadId,

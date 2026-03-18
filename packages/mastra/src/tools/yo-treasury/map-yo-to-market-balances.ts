@@ -1,7 +1,7 @@
 import type { MarketAllocation } from '../alpha/types';
 import type { YoPosition } from './read-yo-treasury-balances';
 
-/** Map YoPosition[] to a single grouped MarketAllocation for MarketBalancesOutput */
+/** Map YoPosition[] to a single grouped MarketAllocation */
 export function mapYoPositionsToMarkets(yoPositions: YoPosition[]): MarketAllocation[] {
   if (yoPositions.length === 0) return [];
 

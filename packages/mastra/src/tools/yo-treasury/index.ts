@@ -1,8 +1,7 @@
-export { getYoVaultsTool } from './get-yo-vaults';
-export { getTreasuryAllocationTool } from './get-treasury-allocation';
 export { createYoAllocationActionTool } from './create-yo-allocation-action';
 export { createYoWithdrawActionTool } from './create-yo-withdraw-action';
 export { createYoSwapActionTool } from './create-yo-swap-action';
+export { readTreasuryBalancesTool } from './read-treasury-balances-tool';
 export { readYoTreasuryBalances } from './read-yo-treasury-balances';
 export { mapYoPositionsToMarkets } from './map-yo-to-market-balances';
 export type {

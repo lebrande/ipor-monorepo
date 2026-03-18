@@ -5,7 +5,8 @@ import {
   yoUniversalTokenSwapperFuseAbi,
   UNIVERSAL_TOKEN_SWAPPER_FUSE_ADDRESS,
 } from '@ipor/fusion-sdk';
-import { simulateOnFork } from '../alpha/simulate-on-fork';
+import { buildTransactionProposal, transactionProposalOutputSchema } from '../alpha/build-transaction-proposal';
+import { formatTokenAmount } from '../alpha/format-amount';
 import { existingActionSchema } from './types';
 
 /** Call Odos quote + assemble APIs to get swap calldata */
@@ -69,7 +70,8 @@ export const createYoSwapActionTool = createTool({
   description: `Create a fuse action to swap tokens via the UniversalTokenSwapperFuse using Odos aggregator.
 Use this when the user wants to swap assets (e.g., "Swap 500 USDC to WETH").
 The swap executes through the Odos router via the vault's SwapExecutor.
-Auto-simulates all pending actions on an Anvil fork.`,
+Returns a unified transaction proposal with simulation.
+Set isReady=true when this is the last action, false if more actions follow.`,
   inputSchema: z.object({
     vaultAddress: z.string().describe('Treasury PlasmaVault address'),
     chainId: z.number().describe('Chain ID (8453 for Base)'),
@@ -77,20 +79,15 @@ Auto-simulates all pending actions on an Anvil fork.`,
     tokenOut: z.string().describe('Address of token to buy'),
     amountIn: z.string().describe('Amount to swap in smallest unit'),
     executorAddress: z.string().describe('SwapExecutor contract address'),
+    tokenInSymbol: z.string().optional().describe('Symbol of token to sell (e.g., "USDC") for human-readable description'),
+    tokenInDecimals: z.number().optional().describe('Decimals of token to sell for formatting'),
+    tokenOutSymbol: z.string().optional().describe('Symbol of token to buy (e.g., "WETH")'),
     callerAddress: z.string().optional(),
     existingPendingActions: z.array(existingActionSchema).optional(),
+    isReady: z.boolean().describe('true if this is the last action (show execute button), false if more actions follow'),
   }),
-  outputSchema: z.object({
-    type: z.literal('action-with-simulation'),
-    success: z.boolean(),
-    protocol: z.string(),
-    actionType: z.string(),
-    description: z.string(),
-    fuseActions: z.array(z.object({ fuse: z.string(), data: z.string() })),
-    error: z.string().optional(),
-    simulation: z.any().optional(),
-  }),
-  execute: async ({ vaultAddress, chainId, tokenIn, tokenOut, amountIn, executorAddress, callerAddress, existingPendingActions }) => {
+  outputSchema: transactionProposalOutputSchema,
+  execute: async ({ vaultAddress, chainId, tokenIn, tokenOut, amountIn, executorAddress, tokenInSymbol, tokenInDecimals, tokenOutSymbol, callerAddress, existingPendingActions, isReady }) => {
     try {
       const odos = await getOdosSwapCalldata({
         chainId,
@@ -128,43 +125,46 @@ Auto-simulates all pending actions on an Anvil fork.`,
       if (!swapFuseAddress) throw new Error(`Swap fuse not configured for chain ${chainId}`);
 
       const newFuseActions = [{ fuse: swapFuseAddress, data: fuseCalldata }];
-      const description = `Swap ${amountIn} ${tokenIn} → ${tokenOut} via Odos (expected out: ${odos.amountOut})`;
 
-      let simulation;
-      if (callerAddress) {
-        const existingFuseActions = (existingPendingActions ?? []).flatMap(a => a.fuseActions);
-        const allFuseActions = [...existingFuseActions, ...newFuseActions];
-        const simResult = await simulateOnFork({
-          vaultAddress,
-          chainId,
-          callerAddress,
-          flatFuseActions: allFuseActions,
-        });
-        simulation = {
-          ...simResult,
-          actionsCount: (existingPendingActions?.length ?? 0) + 1,
-        };
+      // Build human-readable description
+      let description: string;
+      if (tokenInSymbol && tokenInDecimals !== undefined) {
+        const formattedIn = formatTokenAmount(amountIn, tokenInDecimals);
+        description = `Swap ${formattedIn} ${tokenInSymbol} → ${tokenOutSymbol ?? tokenOut.slice(0, 10)} via Odos`;
+      } else {
+        description = `Swap ${amountIn} ${tokenIn.slice(0, 10)}... → ${tokenOut.slice(0, 10)}... via Odos`;
       }
 
-      return {
-        type: 'action-with-simulation' as const,
-        success: true,
-        protocol: 'yo-swap',
-        actionType: 'swap',
-        description,
-        fuseActions: newFuseActions,
-        simulation,
-      };
+      return buildTransactionProposal({
+        newAction: {
+          success: true,
+          protocol: 'yo-swap',
+          actionType: 'swap',
+          description,
+          fuseActions: newFuseActions,
+        },
+        existingPendingActions,
+        vaultAddress,
+        chainId,
+        callerAddress,
+        isReady,
+      });
     } catch (error) {
-      return {
-        type: 'action-with-simulation' as const,
-        success: false,
-        protocol: 'yo-swap',
-        actionType: 'swap',
-        description: 'Failed: swap via Odos',
-        fuseActions: [],
-        error: error instanceof Error ? error.message : String(error),
-      };
+      return buildTransactionProposal({
+        newAction: {
+          success: false,
+          protocol: 'yo-swap',
+          actionType: 'swap',
+          description: 'Failed: swap via Odos',
+          fuseActions: [],
+          error: error instanceof Error ? error.message : String(error),
+        },
+        existingPendingActions,
+        vaultAddress,
+        chainId,
+        callerAddress,
+        isReady: false,
+      });
     }
   },
 });
