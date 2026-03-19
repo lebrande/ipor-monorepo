@@ -148,17 +148,38 @@ function PositionRow({ before, after, chainId }: { before: Position; after: Posi
 }
 
 function MarketSection({ beforeMarket, afterMarket, chainId }: { beforeMarket: Market; afterMarket: Market; chainId: number }) {
-  // Filter to only changed positions
-  const changedPositions = beforeMarket.positions
-    .map((beforePos, i) => {
-      const afterPos = afterMarket.positions[i] ?? beforePos;
-      return hasPositionChanged(beforePos, afterPos) ? i : -1;
-    })
-    .filter((i) => i !== -1);
+  // Build lookup by substrate address for stable matching (positions may appear/disappear or reorder)
+  const afterPosMap = new Map(afterMarket.positions.map(p => [p.substrate.toLowerCase(), p]));
+  const beforePosMap = new Map(beforeMarket.positions.map(p => [p.substrate.toLowerCase(), p]));
+
+  // Collect all unique substrate keys
+  const allSubstrates = new Set([...beforePosMap.keys(), ...afterPosMap.keys()]);
+
+  // Build matched pairs, filtering to only changed positions
+  const changedPairs: Array<{ before: Position; after: Position }> = [];
+  const zeroPosition = (pos: Position): Position => ({
+    ...pos,
+    supplyFormatted: '0',
+    supplyValueUsd: '0.00',
+    borrowFormatted: '0',
+    borrowValueUsd: '0.00',
+    totalValueUsd: '0.00',
+  });
+
+  for (const substrate of allSubstrates) {
+    const beforePos = beforePosMap.get(substrate);
+    const afterPos = afterPosMap.get(substrate);
+    if (!beforePos && !afterPos) continue;
+    const b = beforePos ?? zeroPosition(afterPos!);
+    const a = afterPos ?? zeroPosition(beforePos!);
+    if (hasPositionChanged(b, a)) {
+      changedPairs.push({ before: b, after: a });
+    }
+  }
 
   const marketTotalChanged = beforeMarket.totalValueUsd !== afterMarket.totalValueUsd;
 
-  if (changedPositions.length === 0 && !marketTotalChanged) return null;
+  if (changedPairs.length === 0 && !marketTotalChanged) return null;
 
   return (
     <div className="space-y-1">
@@ -177,18 +198,14 @@ function MarketSection({ beforeMarket, afterMarket, chainId }: { beforeMarket: M
         </div>
       </div>
       <div>
-        {changedPositions.map((i) => {
-          const beforePos = beforeMarket.positions[i];
-          const afterPos = afterMarket.positions[i] ?? beforePos;
-          return (
-            <PositionRow
-              key={`${beforeMarket.marketId}-${i}`}
-              before={beforePos}
-              after={afterPos}
-              chainId={chainId}
-            />
-          );
-        })}
+        {changedPairs.map(({ before: beforePos, after: afterPos }) => (
+          <PositionRow
+            key={`${beforeMarket.marketId}-${beforePos.substrate}`}
+            before={beforePos}
+            after={afterPos}
+            chainId={chainId}
+          />
+        ))}
       </div>
     </div>
   );

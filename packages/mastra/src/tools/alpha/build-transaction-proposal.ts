@@ -26,6 +26,8 @@ interface BuildProposalParams {
   chainId: number;
   callerAddress?: string;
   isReady: boolean;
+  /** Extra token addresses to include in simulation balance snapshots */
+  additionalTokenAddresses?: string[];
 }
 
 /**
@@ -40,6 +42,7 @@ export async function buildTransactionProposal({
   chainId,
   callerAddress,
   isReady,
+  additionalTokenAddresses,
 }: BuildProposalParams): Promise<TransactionProposalOutput> {
   // If new action failed, return with error — don't add to queue or simulate
   if (!newAction.success) {
@@ -85,6 +88,7 @@ export async function buildTransactionProposal({
       chainId,
       callerAddress,
       flatFuseActions,
+      additionalTokenAddresses,
     });
     simulation = {
       ...simResult,

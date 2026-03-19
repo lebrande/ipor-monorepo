@@ -3,6 +3,10 @@ import {
   PlasmaVault,
   MARKET_ID,
   substrateToAddress,
+  YO_USDC_ADDRESS,
+  YO_WETH_ADDRESS,
+  YO_CBBTC_ADDRESS,
+  YO_EURC_ADDRESS,
 } from '@ipor/fusion-sdk';
 
 /** Minimal ERC4626 ABI — only functions used by this module */
@@ -103,15 +107,32 @@ export async function readYoTreasuryBalances(
       functionName: 'asset',
     }) as Address;
 
-    // First try ERC20_VAULT_BALANCE substrates for additional tokens
+    // Include all YO vault underlying tokens + ERC20_VAULT_BALANCE substrates
+    const chainId = plasmaVault.chainId;
+    const yoUnderlyings = [
+      YO_USDC_ADDRESS[chainId],
+      YO_WETH_ADDRESS[chainId],
+      YO_CBBTC_ADDRESS[chainId],
+      YO_EURC_ADDRESS[chainId],
+    ].filter((a): a is Address => a !== undefined);
+
     let tokenAddresses: Address[] = [underlyingAddress];
+    const addrSet = new Set(tokenAddresses.map(a => a.toLowerCase()));
+
+    // Add all YO vault underlyings
+    for (const addr of yoUnderlyings) {
+      if (!addrSet.has(addr.toLowerCase())) {
+        tokenAddresses.push(addr);
+        addrSet.add(addr.toLowerCase());
+      }
+    }
+
+    // Also try ERC20_VAULT_BALANCE substrates for any extra tokens
     try {
       const substrates = await plasmaVault.getMarketSubstrates(MARKET_ID.ERC20_VAULT_BALANCE);
       const substrateAddrs = substrates
         .map((s) => substrateToAddress(s))
         .filter((addr): addr is Address => addr !== undefined);
-      // Merge with underlying, deduplicate
-      const addrSet = new Set(tokenAddresses.map(a => a.toLowerCase()));
       for (const addr of substrateAddrs) {
         if (!addrSet.has(addr.toLowerCase())) {
           tokenAddresses.push(addr);
@@ -119,7 +140,7 @@ export async function readYoTreasuryBalances(
         }
       }
     } catch {
-      // ERC20_VAULT_BALANCE substrates not configured — just use underlying
+      // ERC20_VAULT_BALANCE substrates not configured — fine, we have YO underlyings
     }
 
     const metadataResults = await publicClient.multicall({

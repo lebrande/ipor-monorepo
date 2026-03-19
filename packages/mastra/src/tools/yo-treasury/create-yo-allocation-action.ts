@@ -12,7 +12,7 @@ import {
 import { buildTransactionProposal, transactionProposalOutputSchema } from '../alpha/build-transaction-proposal';
 import { formatTokenAmount } from '../alpha/format-amount';
 import { existingActionSchema } from './types';
-import { YO_UNDERLYING } from './yo-vault-metadata';
+import { YO_UNDERLYING, getYoUnderlyingAddresses } from './yo-vault-metadata';
 
 const SUPPLY_FUSE_BY_SLOT: Record<number, Record<number, Address | undefined>> = {
   1: ERC4626_SUPPLY_FUSE_SLOT1_ADDRESS,
@@ -73,6 +73,7 @@ Set isReady=true when this is the last action, false if more actions follow.`,
         chainId,
         callerAddress,
         isReady,
+        additionalTokenAddresses: getYoUnderlyingAddresses(chainId),
       });
     } catch (error) {
       return buildTransactionProposal({
@@ -89,6 +90,7 @@ Set isReady=true when this is the last action, false if more actions follow.`,
         chainId,
         callerAddress,
         isReady: false,
+        additionalTokenAddresses: getYoUnderlyingAddresses(chainId),
       });
     }
   },

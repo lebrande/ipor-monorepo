@@ -137,6 +137,7 @@ export interface BalanceSnapshot {
 export async function readVaultBalances(
   publicClient: PublicClient,
   vaultAddress: Address,
+  additionalTokenAddresses?: Address[],
 ): Promise<BalanceSnapshot> {
   const plasmaVault = await PlasmaVault.create(
     publicClient,
@@ -153,10 +154,21 @@ export async function readVaultBalances(
 
   let assets: BalanceSnapshot['assets'] = [];
 
-  if (substrates.length > 0) {
+  {
     const tokenAddresses = substrates
       .map((s) => substrateToAddress(s))
       .filter((addr): addr is Address => addr !== undefined);
+
+    // Merge additional token addresses (e.g. YO vault underlyings)
+    if (additionalTokenAddresses) {
+      const addrSet = new Set(tokenAddresses.map(a => a.toLowerCase()));
+      for (const addr of additionalTokenAddresses) {
+        if (!addrSet.has(addr.toLowerCase())) {
+          tokenAddresses.push(addr);
+          addrSet.add(addr.toLowerCase());
+        }
+      }
+    }
 
     if (tokenAddresses.length > 0) {
       const metadataResults = await publicClient.multicall({

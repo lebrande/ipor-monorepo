@@ -12,6 +12,7 @@ import {
 import { getPublicClient } from '../plasma-vault/utils/viem-clients';
 import { buildTransactionProposal, transactionProposalOutputSchema } from '../alpha/build-transaction-proposal';
 import { existingActionSchema } from './types';
+import { getYoUnderlyingAddresses } from './yo-vault-metadata';
 
 const REDEEM_FUSE_BY_SLOT: Record<number, Record<number, Address | undefined>> = {
   1: YO_REDEEM_FUSE_SLOT1_ADDRESS,
@@ -78,6 +79,7 @@ Set isReady=true when this is the last action, false if more actions follow.`,
           chainId,
           callerAddress,
           isReady: false,
+          additionalTokenAddresses: getYoUnderlyingAddresses(chainId),
         });
       }
 
@@ -105,6 +107,7 @@ Set isReady=true when this is the last action, false if more actions follow.`,
         chainId,
         callerAddress,
         isReady,
+        additionalTokenAddresses: getYoUnderlyingAddresses(chainId),
       });
     } catch (error) {
       return buildTransactionProposal({
@@ -121,6 +124,7 @@ Set isReady=true when this is the last action, false if more actions follow.`,
         chainId,
         callerAddress,
         isReady: false,
+        additionalTokenAddresses: getYoUnderlyingAddresses(chainId),
       });
     }
   },

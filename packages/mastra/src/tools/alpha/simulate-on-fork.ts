@@ -30,6 +30,8 @@ export interface SimulationInput {
   chainId: number;
   callerAddress: string;
   flatFuseActions: Array<{ fuse: string; data: string }>;
+  /** Extra token addresses to include in balance snapshots (e.g. YO vault underlyings) */
+  additionalTokenAddresses?: string[];
 }
 
 export interface SimulationOutput {
@@ -48,7 +50,8 @@ export interface SimulationOutput {
  * No eth_call fallback — Anvil only.
  */
 export async function simulateOnFork(input: SimulationInput): Promise<SimulationOutput> {
-  const { vaultAddress, chainId, callerAddress, flatFuseActions } = input;
+  const { vaultAddress, chainId, callerAddress, flatFuseActions, additionalTokenAddresses } = input;
+  const extraTokens = additionalTokenAddresses?.map(a => a as Address);
 
   if (flatFuseActions.length === 0) {
     return {
@@ -67,6 +70,7 @@ export async function simulateOnFork(input: SimulationInput): Promise<Simulation
     const balancesBefore = await readVaultBalances(
       fork.publicClient,
       vaultAddress as Address,
+      extraTokens,
     );
 
     await fork.impersonateAndFund(callerAddress as Address);
@@ -89,6 +93,7 @@ export async function simulateOnFork(input: SimulationInput): Promise<Simulation
     const balancesAfter = await readVaultBalances(
       fork.publicClient,
       vaultAddress as Address,
+      extraTokens,
     );
 
     return {
