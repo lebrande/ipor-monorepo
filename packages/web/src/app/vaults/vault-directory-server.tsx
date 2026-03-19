@@ -28,7 +28,7 @@ export function VaultDirectoryServer({
               Vaults List
             </h1>
             <p className="text-muted-foreground">
-              Browse and explore IPOR Fusion vaults
+              Browse and explore vaults
             </p>
           </div>
           <VaultDirectoryContent

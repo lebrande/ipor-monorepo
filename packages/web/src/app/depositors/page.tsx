@@ -4,9 +4,11 @@ import {
 } from '@/depositors/fetch-depositors';
 import { DepositorsServer } from './depositors-server';
 
-export const metadata = {
-  title: 'Depositors - Fusion by IPOR',
-};
+import { getAppConfig } from '@/lib/app-config';
+
+export function generateMetadata() {
+  return { title: `Depositors - ${getAppConfig().title}` };
+}
 
 interface PageProps {
   searchParams: Promise<DepositorSearchParams>;
@@ -28,7 +30,7 @@ export default async function DepositorsPage({ searchParams }: PageProps) {
               Depositors
             </h1>
             <p className="text-muted-foreground">
-              Explore depositors across IPOR Fusion vaults
+              Explore depositors across vaults
             </p>
           </div>
           <div className="rounded-lg border bg-card p-8 text-center">

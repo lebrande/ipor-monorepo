@@ -102,7 +102,7 @@ You MUST respond with ONLY a valid JSON object (no markdown, no code blocks) mat
       const userPrompt = `Generate a SQL query for this question: "${naturalLanguageQuery}"`;
 
       const result = await generateText({
-        model: openai('gpt-4o'),
+        model: openai('gpt-5.4-mini'),
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },

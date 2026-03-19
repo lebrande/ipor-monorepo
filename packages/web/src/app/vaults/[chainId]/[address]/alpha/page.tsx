@@ -2,9 +2,11 @@ import { AlphaChatWrapper } from './alpha-chat-wrapper';
 import type { ChainId } from '@/app/chains.config';
 import type { Address } from 'viem';
 
-export const metadata = {
-  title: 'Alpha - Fusion by IPOR',
-};
+import { getAppConfig } from '@/lib/app-config';
+
+export function generateMetadata() {
+  return { title: `Alpha - ${getAppConfig().title}` };
+}
 
 export default async function VaultAlphaPage({
   params,

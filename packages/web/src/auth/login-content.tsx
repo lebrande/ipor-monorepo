@@ -5,6 +5,7 @@ import { useAccount, useConnect, useDisconnect, useSignMessage } from 'wagmi';
 import { injected } from 'wagmi/connectors';
 import { createSiweMessage, generateSiweNonce } from 'viem/siwe';
 import { useRouter } from 'next/navigation';
+import { getAppConfig } from '@/lib/app-config';
 
 type Status = 'idle' | 'signing' | 'authenticating' | 'error';
 
@@ -15,6 +16,7 @@ export function LoginContent() {
   const { disconnect } = useDisconnect();
   const { signMessageAsync } = useSignMessage();
 
+  const config = getAppConfig();
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +36,7 @@ export function LoginContent() {
       const message = createSiweMessage({
         domain: window.location.host,
         address,
-        statement: 'Sign in to Fusion by IPOR',
+        statement: `Sign in to ${config.name}`,
         uri: window.location.origin,
         version: '1',
         chainId,
@@ -78,8 +80,8 @@ export function LoginContent() {
       <div className="w-full max-w-sm space-y-6 rounded-lg border border-border bg-card p-8">
         <div className="flex flex-col items-center gap-4">
           <img
-            src="/assets/logo-fusion-by-ipor.svg"
-            alt="Fusion by IPOR"
+            src={config.logo}
+            alt={config.name}
             className="h-12 w-auto"
           />
           <h1 className="text-xl font-semibold text-foreground">Sign In</h1>

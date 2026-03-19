@@ -4,10 +4,11 @@ import {
   type VaultSearchParams,
 } from '@/vault-directory/fetch-vaults';
 import { VaultDirectoryServer } from './vault-directory-server';
+import { getAppConfig } from '@/lib/app-config';
 
-export const metadata = {
-  title: 'Vaults List - Fusion by IPOR',
-};
+export function generateMetadata() {
+  return { title: `Vaults List - ${getAppConfig().title}` };
+}
 
 interface PageProps {
   searchParams: Promise<VaultSearchParams>;
@@ -38,7 +39,7 @@ export default async function VaultsPage({ searchParams }: PageProps) {
               Vaults List
             </h1>
             <p className="text-muted-foreground">
-              Browse and explore IPOR Fusion vaults
+              Browse and explore vaults
             </p>
           </div>
           <div className="rounded-lg border bg-card p-8 text-center">

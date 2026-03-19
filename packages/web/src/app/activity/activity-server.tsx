@@ -32,7 +32,7 @@ export function ActivityServer({
             <div>
               <h1 className="text-3xl font-bold text-foreground mb-2">Activity</h1>
               <p className="text-muted-foreground">
-                Track deposits and withdrawals across IPOR Fusion vaults
+                Track deposits and withdrawals across vaults
               </p>
             </div>
             <TotalInflows inflows={inflows.inflows} />

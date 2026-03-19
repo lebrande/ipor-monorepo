@@ -2,6 +2,7 @@
 
 import type { Address } from 'viem';
 import { Wallet, TrendingUp, Layers, Shield } from 'lucide-react';
+import { useTotalTvl } from '@yo-protocol/react';
 import type { TreasuryPosition } from '../hooks/use-treasury-positions';
 import { useAlphaRole } from '../hooks/use-alpha-role';
 
@@ -73,6 +74,11 @@ export function PortfolioSummary({
     vaultAddress,
     userAddress,
   });
+  const { tvl: totalTvlData } = useTotalTvl();
+  const protocolTvl = totalTvlData?.length
+    ? totalTvlData[totalTvlData.length - 1]
+    : null;
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -110,7 +116,9 @@ export function PortfolioSummary({
       <StatCard
         label="Total Value"
         value={formatUsd(totalUsd)}
-        subValue="treasury holdings"
+        subValue={protocolTvl
+          ? `YO Protocol TVL: $${(parseFloat(protocolTvl.tvlUsd) / 1_000_000).toFixed(1)}M`
+          : 'treasury holdings'}
         icon={Wallet}
         accent
       />

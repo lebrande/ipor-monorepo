@@ -5,9 +5,11 @@ import {
 } from '@/activity/fetch-activity';
 import { VaultActivityContent } from '@/vault-details/components/vault-activity-content';
 
-export const metadata = {
-  title: 'Vault Activity - Fusion by IPOR',
-};
+import { getAppConfig } from '@/lib/app-config';
+
+export function generateMetadata() {
+  return { title: `Vault Activity - ${getAppConfig().title}` };
+}
 
 interface PageProps {
   params: Promise<{

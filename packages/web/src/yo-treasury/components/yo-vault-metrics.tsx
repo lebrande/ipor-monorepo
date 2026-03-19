@@ -1,13 +1,16 @@
 'use client';
 
-import { TrendingUp, DollarSign, BarChart3, Activity } from 'lucide-react';
+import { TrendingUp, DollarSign, BarChart3, Activity, Award } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useVaultPercentile } from '@yo-protocol/react';
 import type { VaultSnapshot, VaultPerformance } from '@yo-protocol/core';
+import type { Address } from 'viem';
 
 interface Props {
   snapshot: VaultSnapshot | undefined;
   performance: VaultPerformance | undefined;
+  vaultAddress: Address;
   isLoading: boolean;
 }
 
@@ -23,11 +26,13 @@ function formatTvl(formatted: string | undefined): string {
   return formatted;
 }
 
-export function YoVaultMetrics({ snapshot, performance, isLoading }: Props) {
+export function YoVaultMetrics({ snapshot, performance, vaultAddress, isLoading }: Props) {
+  const { percentile } = useVaultPercentile(vaultAddress);
+
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
+        {Array.from({ length: 5 }).map((_, i) => (
           <Card key={i}>
             <CardHeader className="pb-3">
               <Skeleton className="h-4 w-20" />
@@ -72,10 +77,20 @@ export function YoVaultMetrics({ snapshot, performance, isLoading }: Props) {
       description: 'all time',
       icon: <Activity className="h-4 w-4" />,
     },
+    {
+      title: 'DeFi Ranking',
+      value: percentile?.yoRanking
+        ? `Top ${percentile.yoRanking}%`
+        : '—',
+      description: percentile?.pools
+        ? `vs ${percentile.pools} DeFi pools`
+        : '',
+      icon: <Award className="h-4 w-4" />,
+    },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
       {items.map((item) => (
         <Card key={item.title} className="hover:shadow-md transition-shadow">
           <CardHeader className="pb-3">

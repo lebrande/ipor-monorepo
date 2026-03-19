@@ -6,13 +6,13 @@ import { DashboardFlowChart } from '@/dashboard/dashboard-flow-chart';
 import { DashboardVaultRankings } from '@/dashboard/components/dashboard-vault-rankings';
 import { DashboardLargestTransactions } from '@/dashboard/components/dashboard-largest-transactions';
 import { DashboardTopDepositors } from '@/dashboard/components/dashboard-top-depositors';
-import { YoDashboard } from '@/yo-treasury/components/yo-dashboard';
+import { YoLandingPage } from '@/yo-treasury/components/yo-landing-page';
 
 export default async function DashboardPage() {
   const config = getAppConfig();
 
   if (config.id === 'yo') {
-    return <YoDashboard />;
+    return <YoLandingPage />;
   }
 
   const [metrics, rankings] = await Promise.all([

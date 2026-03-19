@@ -6,9 +6,11 @@ import {
 } from '@/activity/fetch-activity';
 import { ActivityServer } from './activity-server';
 
-export const metadata = {
-  title: 'Activity - Fusion by IPOR',
-};
+import { getAppConfig } from '@/lib/app-config';
+
+export function generateMetadata() {
+  return { title: `Activity - ${getAppConfig().title}` };
+}
 
 interface PageProps {
   searchParams: Promise<ActivitySearchParams>;
@@ -41,7 +43,7 @@ export default async function ActivityPage({ searchParams }: PageProps) {
               Activity
             </h1>
             <p className="text-muted-foreground">
-              Deposits and withdrawals across Fusion Vaults
+              Deposits and withdrawals across vaults
             </p>
           </div>
           <div className="rounded-lg border bg-card p-8 text-center">

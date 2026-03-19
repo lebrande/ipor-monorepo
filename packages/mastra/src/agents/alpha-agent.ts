@@ -1,8 +1,8 @@
 import { Agent } from '@mastra/core/agent';
-import { LibSQLStore } from '@mastra/libsql';
 import { Memory } from '@mastra/memory';
 import { z } from 'zod';
 import { env } from '../env';
+import { createStorage } from '../storage';
 import {
   readVaultBalancesTool,
   createAaveV3ActionTool,
@@ -16,10 +16,7 @@ export const alphaWorkingMemorySchema = createWorkingMemorySchema(['aave-v3', 'm
 export type PendingAction = z.infer<typeof pendingActionSchema>;
 
 const memory = new Memory({
-  storage: new LibSQLStore({
-    id: 'alpha-agent-memory',
-    url: 'file:./mastra.db',
-  }),
+  storage: createStorage('alpha-agent-memory'),
   options: {
     workingMemory: {
       enabled: true,

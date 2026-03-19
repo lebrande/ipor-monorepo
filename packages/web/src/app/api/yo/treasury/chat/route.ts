@@ -1,8 +1,7 @@
 import { NextRequest } from 'next/server';
 import { isAddress } from 'viem';
-import { toAISdkStream } from '@mastra/ai-sdk';
-import { createUIMessageStreamResponse } from 'ai';
-import { yoTreasuryAgent } from '@ipor/fusion-mastra/agents';
+
+const MASTRA_URL = process.env.MASTRA_SERVER_URL ?? 'http://localhost:4111';
 
 export async function POST(request: NextRequest) {
   const { messages, callerAddress, vaultAddress, chainId } = await request.json();
@@ -11,33 +10,49 @@ export async function POST(request: NextRequest) {
     callerAddress && isAddress(callerAddress, { strict: false })
       ? ` The user's connected wallet (callerAddress for simulation) is ${callerAddress}.`
       : '';
-
   const vaultContext =
     vaultAddress && isAddress(vaultAddress, { strict: false })
       ? ` The user's treasury vault address is ${vaultAddress} on chainId ${chainId}.`
       : ' The user has not created a treasury vault yet.';
-
   const system = `CURRENT CONTEXT:${callerContext}${vaultContext} Chain: ${chainId ?? 8453} (Base).`;
 
   const threadId = callerAddress
     ? `yo-treasury-${callerAddress.toLowerCase()}`
     : 'yo-treasury-anonymous';
 
+  const augmentedMessages = [
+    { role: 'system', content: system },
+    ...messages,
+  ];
+
   try {
-    const result = await yoTreasuryAgent.stream(messages, {
-      maxSteps: 10,
-      system,
-      memory: {
-        thread: threadId,
-        resource: threadId,
-      },
+    const upstream = await fetch(`${MASTRA_URL}/chat/yoTreasuryAgent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: augmentedMessages,
+        maxSteps: 10,
+        memory: { thread: threadId, resource: threadId },
+      }),
+      signal: request.signal,
     });
 
-    const stream = toAISdkStream(result, { from: 'agent' });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return createUIMessageStreamResponse({ stream: stream as any });
+    if (!upstream.ok) {
+      const errorText = await upstream.text().catch(() => 'Unknown error');
+      console.error('Mastra server error:', upstream.status, errorText);
+      return new Response('Agent server error', { status: upstream.status });
+    }
+
+    return new Response(upstream.body, {
+      headers: {
+        'Content-Type':
+          upstream.headers.get('Content-Type') ?? 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'X-Accel-Buffering': 'no',
+      },
+    });
   } catch (error) {
-    console.error('Error in yo-treasury agent stream', error);
+    console.error('Error proxying to Mastra', error);
     return new Response('An error occurred while processing your request.', {
       status: 500,
     });

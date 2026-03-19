@@ -1,7 +1,7 @@
 import { Agent } from '@mastra/core/agent';
-import { LibSQLStore } from '@mastra/libsql';
 import { Memory } from '@mastra/memory';
 import { env } from '../env';
+import { createStorage } from '../storage';
 import {
   readTreasuryBalancesTool,
   createYoAllocationActionTool,
@@ -13,10 +13,7 @@ import { createWorkingMemorySchema } from '../tools/shared/pending-action-schema
 export const yoTreasuryWorkingMemorySchema = createWorkingMemorySchema(['yo-erc4626', 'yo-swap']);
 
 const memory = new Memory({
-  storage: new LibSQLStore({
-    id: 'yo-treasury-agent-memory',
-    url: 'file:./mastra.db',
-  }),
+  storage: createStorage('yo-treasury-agent-memory'),
   options: {
     workingMemory: {
       enabled: true,

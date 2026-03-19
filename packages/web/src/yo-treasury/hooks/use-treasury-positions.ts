@@ -28,7 +28,7 @@ const YO_VAULTS: Record<
       underlying: 'USDC',
       underlyingAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
       underlyingDecimals: 6,
-      logo: 'https://assets.coingecko.com/coins/images/55386/standard/yoUSD.png',
+      logo: '/assets/yo/yoUSD.png',
       color: '#00FF8B',
     },
     {
@@ -38,7 +38,7 @@ const YO_VAULTS: Record<
       underlying: 'WETH',
       underlyingAddress: '0x4200000000000000000000000000000000000006',
       underlyingDecimals: 18,
-      logo: 'https://assets.coingecko.com/coins/images/54932/standard/yoETH.png',
+      logo: '/assets/yo/yoETH.svg',
       color: '#627EEA',
     },
     {
@@ -48,7 +48,7 @@ const YO_VAULTS: Record<
       underlying: 'cbBTC',
       underlyingAddress: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf',
       underlyingDecimals: 8,
-      logo: 'https://assets.coingecko.com/coins/images/55189/standard/yoBTC.png',
+      logo: '/assets/yo/yoBTC.svg',
       color: '#FFAF4F',
     },
     {
@@ -58,7 +58,7 @@ const YO_VAULTS: Record<
       underlying: 'EURC',
       underlyingAddress: '0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42',
       underlyingDecimals: 6,
-      logo: 'https://assets.coingecko.com/coins/images/68746/standard/yoEUR_color.png',
+      logo: '/assets/yo/yoEUR.svg',
       color: '#4E6FFF',
     },
   ],

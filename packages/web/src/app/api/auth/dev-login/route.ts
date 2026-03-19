@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { privateKeyToAccount } from 'viem/accounts';
 import { createSiweMessage, generateSiweNonce } from 'viem/siwe';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { getAppConfig } from '@/lib/app-config';
 
 // Hardhat account 0 — well-known test private key, NEVER use with real funds
 const DEV_PRIVATE_KEY =
@@ -20,7 +21,7 @@ export async function GET() {
   const message = createSiweMessage({
     domain: 'localhost:3000',
     address: account.address,
-    statement: 'Sign in to Fusion by IPOR (dev mode)',
+    statement: `Sign in to ${getAppConfig().name} (dev mode)`,
     uri: 'http://localhost:3000',
     version: '1',
     chainId: 1,

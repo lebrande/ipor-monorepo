@@ -20,10 +20,10 @@ const envSchema = z.object({
 
   /**
    * Model to use for agents
-   * Defaults to 'openrouter/anthropic/claude-3-5-haiku-20241022' (Claude Haiku 4.5)
+   * Defaults to 'openrouter/anthropic/claude-haiku-4.5' (Claude Haiku 4.5)
    * This model handles parallel tool calls excellently
    */
-  MODEL: z.string().optional().default('openrouter/anthropic/claude-3-5-haiku-20241022'),
+  MODEL: z.string().optional().default('openrouter/anthropic/claude-haiku-4.5'),
 
   /**
    * RPC URLs for blockchain connections
@@ -32,6 +32,18 @@ const envSchema = z.object({
   ETHEREUM_RPC_URL: z.string().url().optional(),
   ARBITRUM_RPC_URL: z.string().url().optional(),
   BASE_RPC_URL: z.string().url().optional(),
+
+  /**
+   * Turso remote LibSQL URL (required for Vercel deployment)
+   * Falls back to file:./mastra.db for local development
+   * Example: libsql://your-db-name.turso.io
+   */
+  TURSO_DATABASE_URL: z.string().optional(),
+
+  /**
+   * Turso auth token (required when TURSO_DATABASE_URL is set)
+   */
+  TURSO_AUTH_TOKEN: z.string().optional(),
 });
 
 /**

@@ -60,10 +60,10 @@ const yoConfig: AppConfig = {
   name: 'YO Treasury',
   title: 'YO Treasury',
   description: 'YO Protocol Treasury Management',
-  logo: '/assets/logo-icon.svg',
+  logo: '/assets/yo/yo_no_bg.svg',
   themeClass: 'yo',
   navItems: [
-    { title: 'Dashboard', url: '/', icon: Home },
+    { title: 'Home', url: '/', icon: Home },
     { title: 'Vaults List', url: '/vaults', icon: Vault },
     {
       title: 'YO Treasury',

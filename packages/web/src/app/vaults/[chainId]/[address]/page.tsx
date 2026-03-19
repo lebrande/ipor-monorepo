@@ -5,9 +5,11 @@ import { YoVaultOverview } from '@/yo-treasury/components/yo-vault-overview';
 import type { ChainId } from '@/app/chains.config';
 import type { Address } from 'viem';
 
-export const metadata = {
-  title: 'Vault Overview - Fusion by IPOR',
-};
+import { getAppConfig } from '@/lib/app-config';
+
+export function generateMetadata() {
+  return { title: `Vault Overview - ${getAppConfig().title}` };
+}
 
 export default async function VaultOverviewPage({
   params,

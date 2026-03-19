@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { useUserPerformance } from '@yo-protocol/react';
+import type { Address } from 'viem';
 import type { TreasuryPosition } from '../hooks/use-treasury-positions';
 import type { YoVaultData } from '../hooks/use-yo-vaults-data';
 
@@ -38,6 +40,16 @@ function formatCompactAsset(value: number, symbol: string): string {
   if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K ${symbol}`;
   const dp = value < 1 ? 4 : 2;
   return `${value.toLocaleString(undefined, { maximumFractionDigits: dp })} ${symbol}`;
+}
+
+function VaultRowPerformance({ vaultAddress }: { vaultAddress: Address }) {
+  const { performance } = useUserPerformance(vaultAddress);
+  if (!performance?.unrealized?.formatted) return <span className="text-yo-muted">—</span>;
+  return (
+    <span className="font-mono text-xs text-yo-neon">
+      {performance.unrealized.formatted}
+    </span>
+  );
 }
 
 function VaultDot({ color }: { color: string }) {
@@ -95,6 +107,7 @@ export function AllocationTable({ chainId, positions, vaultsData, prices, isLoad
             <th className="font-medium pb-2 pl-4 text-left">Vault</th>
             <th className="font-medium pb-2 text-right">Unallocated</th>
             <th className="font-medium pb-2 text-right">Position</th>
+            <th className="font-medium pb-2 text-right">P&amp;L</th>
             <th className="font-medium pb-2 text-right">APR</th>
             <th className="font-medium pb-2 pr-4 text-right">TVL</th>
           </tr>
@@ -173,6 +186,11 @@ export function AllocationTable({ chainId, positions, vaultsData, prices, isLoad
                       {formatUsd(positionUsd)}
                     </div>
                   )}
+                </td>
+
+                {/* P&L */}
+                <td className="py-3 text-right">
+                  <VaultRowPerformance vaultAddress={row.vaultAddress as Address} />
                 </td>
 
                 {/* APR */}

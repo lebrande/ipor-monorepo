@@ -23,7 +23,7 @@ export function DepositorsServer({ initialData, searchParams }: Props) {
               Depositors
             </h1>
             <p className="text-muted-foreground">
-              Explore depositors across IPOR Fusion vaults
+              Explore depositors across vaults
             </p>
           </div>
 
