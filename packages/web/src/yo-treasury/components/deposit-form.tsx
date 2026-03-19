@@ -3,11 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   useAccount,
+  useConnect,
   useReadContract,
   useWriteContract,
   useWaitForTransactionReceipt,
   useSwitchChain,
 } from 'wagmi';
+import { injected } from 'wagmi/connectors';
 import { erc20Abi, erc4626Abi, formatUnits, parseUnits, type Address } from 'viem';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -23,6 +25,7 @@ interface Props {
 
 export function DepositForm({ chainId, vaultAddress }: Props) {
   const { address: userAddress, chain } = useAccount();
+  const { connect } = useConnect();
   const { switchChain, isPending: isSwitching } = useSwitchChain();
   const [inputValue, setInputValue] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
@@ -194,15 +197,19 @@ export function DepositForm({ chainId, vaultAddress }: Props) {
     return 'Deposit';
   })();
 
-  const buttonDisabled =
-    !userAddress ||
-    !isWhitelisted ||
-    depositAmount === 0n ||
-    parseError ||
-    !hasEnoughBalance ||
-    isBusy;
+  const buttonDisabled = !userAddress
+    ? false
+    : !isWhitelisted ||
+      depositAmount === 0n ||
+      parseError ||
+      !hasEnoughBalance ||
+      isBusy;
 
-  const handleClick = needsApproval ? handleApprove : handleDeposit;
+  const handleClick = !userAddress
+    ? () => connect({ connector: injected() })
+    : needsApproval
+      ? handleApprove
+      : handleDeposit;
 
   // ─── Render ───
 

@@ -3,11 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   useAccount,
+  useConnect,
   useReadContract,
   useWriteContract,
   useWaitForTransactionReceipt,
   useSwitchChain,
 } from 'wagmi';
+import { injected } from 'wagmi/connectors';
 import { erc20Abi, erc4626Abi, formatUnits, parseUnits, type Address } from 'viem';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -24,6 +26,7 @@ interface Props {
 
 export function WithdrawForm({ chainId, vaultAddress, accessManagerUrl }: Props) {
   const { address: rawUserAddress, chain } = useAccount();
+  const { connect } = useConnect();
   const { switchChain, isPending: isSwitching } = useSwitchChain();
   const [inputValue, setInputValue] = useState('');
   const [isMax, setIsMax] = useState(false);
@@ -170,14 +173,14 @@ export function WithdrawForm({ chainId, vaultAddress, accessManagerUrl }: Props)
     return 'Withdraw';
   })();
 
-  const buttonDisabled =
-    !userAddress ||
-    (requiresWhitelist && !isWhitelisted) ||
-    withdrawAmount === 0n ||
-    parseError ||
-    !hasEnoughPosition ||
-    !sharesReady ||
-    isBusy;
+  const buttonDisabled = !userAddress
+    ? false
+    : (requiresWhitelist && !isWhitelisted) ||
+      withdrawAmount === 0n ||
+      parseError ||
+      !hasEnoughPosition ||
+      !sharesReady ||
+      isBusy;
 
   // ─── Render ───
 
@@ -314,7 +317,7 @@ export function WithdrawForm({ chainId, vaultAddress, accessManagerUrl }: Props)
         </Button>
       ) : (
         <Button
-          onClick={handleRedeem}
+          onClick={!userAddress ? () => connect({ connector: injected() }) : handleRedeem}
           disabled={buttonDisabled}
           size="sm"
           className="w-full"

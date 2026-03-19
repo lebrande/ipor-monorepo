@@ -1130,7 +1130,7 @@
       "name": "YO Treasury",
       "address": "0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D",
       "chainId": 8453,
-      "protocol": "IPOR Fusion",
+      "protocol": "YO Protocol & IPOR Fusion",
       "tags": [
         "yo-treasury"
       ],

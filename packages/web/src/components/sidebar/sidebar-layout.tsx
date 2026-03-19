@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { AppSidebar } from './app-sidebar';
 import { BottomNav } from './bottom-nav';
 import { SidebarUser } from './sidebar-user';
+import { ConnectWalletButton } from './connect-wallet-button';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { getAppConfig } from '@/lib/app-config';
 
@@ -37,6 +38,7 @@ export function SidebarLayout({ children, pathname }: SidebarLayoutProps) {
           />
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
+            <ConnectWalletButton />
             <SidebarUser />
           </div>
         </header>

@@ -1,9 +1,7 @@
-# Only packages/mastra and packages/sdk are needed for the Mastra build
-packages/web
+# Packages not needed for Vercel deployments
 packages/ponder
 packages/hardhat-tests
 packages/supabase-mastra
-packages/supabase-ponder
 thoughts
 external
 .git
