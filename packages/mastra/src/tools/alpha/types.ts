@@ -3,35 +3,7 @@
  *
  * The `type` field is the discriminator — the web app uses it to decide
  * which React component to render for each tool output.
- *
- * Adding a new output type:
- * 1. Add the type to this union
- * 2. Create a tool in this directory that returns it
- * 3. Add a case in the web app's AlphaToolRenderer
  */
-
-/** Placeholder: displays a list of transactions to sign */
-export type TransactionsToSignOutput = {
-  type: 'transactions-to-sign';
-  message: string;
-  placeholder: true;
-};
-
-/** Displays the list of pending fuse actions from working memory */
-export type PendingActionsOutput = {
-  type: 'pending-actions';
-  actions: Array<{
-    id: string;
-    protocol: 'aave-v3' | 'morpho' | 'euler-v2';
-    actionType: 'supply' | 'withdraw' | 'borrow' | 'repay';
-    description: string;
-    fuseActions: Array<{
-      fuse: string;
-      data: string;
-    }>;
-  }>;
-  message: string;
-};
 
 /** A position in a DeFi market */
 export interface MarketPosition {
@@ -54,26 +26,6 @@ export interface MarketAllocation {
   totalValueUsd: string;
 }
 
-/** Displays the vault's ERC20 token holdings AND market allocations */
-export type MarketBalancesOutput = {
-  type: 'market-balances';
-  success: boolean;
-  assets: Array<{
-    address: string;
-    name: string;
-    symbol: string;
-    decimals: number;
-    balance: string;
-    balanceFormatted: string;
-    priceUsd: string;
-    valueUsd: string;
-  }>;
-  markets: MarketAllocation[];
-  totalValueUsd: string;
-  message: string;
-  error?: string;
-};
-
 /** Balance snapshot for a vault — ERC20 tokens + market positions */
 export interface BalanceSnapshot {
   assets: Array<{
@@ -90,51 +42,28 @@ export interface BalanceSnapshot {
   totalValueUsd: string;
 }
 
-/** Displays simulation result with before/after balance comparison */
-export type SimulationResultOutput = {
-  type: 'simulation-result';
-  success: boolean;
-  message: string;
-  vaultAddress: string;
-  chainId: number;
-  callerAddress: string;
-  actionsCount: number;
-  fuseActionsCount: number;
-  error?: string;
-  flatFuseActions: Array<{
-    fuse: string;
-    data: string;
+/** Unified transaction proposal — replaces action-with-simulation, pending-actions, execute-actions */
+export type TransactionProposalOutput = {
+  type: 'transaction-proposal';
+  /** 'partial' = more actions expected (no execute), 'ready' = final (show execute) */
+  status: 'partial' | 'ready';
+  /** All pending actions (existing + newly created) */
+  actions: Array<{
+    id: string;
+    protocol: string;
+    actionType: string;
+    description: string;
+    fuseActions: Array<{ fuse: string; data: string }>;
   }>;
-  balancesBefore?: BalanceSnapshot;
-  balancesAfter?: BalanceSnapshot;
-};
-
-/** Passes pending actions to the UI for the full connect → role check → simulate → execute flow */
-export type ExecuteActionsOutput = {
-  type: 'execute-actions';
-  vaultAddress: string;
-  chainId: number;
-  flatFuseActions: Array<{
-    fuse: string;
-    data: string;
-  }>;
-  actionsCount: number;
-  fuseActionsCount: number;
-  actionsSummary: string;
-};
-
-/** Action creation result with integrated simulation */
-export type ActionWithSimulationOutput = {
-  type: 'action-with-simulation';
-  success: boolean;
-  protocol: 'aave-v3' | 'morpho' | 'euler-v2';
-  actionType: 'supply' | 'withdraw' | 'borrow' | 'repay';
-  description: string;
-  fuseActions: Array<{
-    fuse: string;
-    data: string;
-  }>;
-  error?: string;
+  /** The newly created action result */
+  newAction: {
+    success: boolean;
+    protocol: string;
+    actionType: string;
+    description: string;
+    error?: string;
+  };
+  /** Fork simulation of the full batch (always runs when callerAddress available) */
   simulation?: {
     success: boolean;
     message: string;
@@ -144,13 +73,35 @@ export type ActionWithSimulationOutput = {
     balancesAfter?: BalanceSnapshot;
     error?: string;
   };
+  /** Execute data — always included, UI uses status to show/hide execute section */
+  vaultAddress: string;
+  chainId: number;
+  flatFuseActions: Array<{ fuse: string; data: string }>;
+  actionsCount: number;
+  fuseActionsCount: number;
+  actionsSummary: string;
+};
+
+/** Lightweight balance data for agent reasoning — not rendered in UI */
+export type BalanceCheckOutput = {
+  type: 'balance-check';
+  success: boolean;
+  assets: Array<{
+    address: string;
+    name: string;
+    symbol: string;
+    decimals: number;
+    balance: string;
+    balanceFormatted: string;
+    priceUsd: string;
+    valueUsd: string;
+  }>;
+  markets: MarketAllocation[];
+  totalValueUsd: string;
+  error?: string;
 };
 
 /** Union of all alpha tool output types */
 export type AlphaToolOutput =
-  | TransactionsToSignOutput
-  | PendingActionsOutput
-  | MarketBalancesOutput
-  | SimulationResultOutput
-  | ExecuteActionsOutput
-  | ActionWithSimulationOutput;
+  | TransactionProposalOutput
+  | BalanceCheckOutput;

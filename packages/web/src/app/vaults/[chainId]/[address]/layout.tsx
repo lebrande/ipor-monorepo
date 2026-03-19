@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation';
 import { isAddress, type Address } from 'viem';
 import { isValidChainId, type ChainId } from '@/app/chains.config';
-import { getVaultFromRegistry } from '@/lib/vaults-registry';
+import { getVaultFromRegistry, type AppId } from '@/lib/vaults-registry';
+import { getAppConfig, getThemeClassForVaultApps } from '@/lib/app-config';
 import { VaultDetailLayout } from './vault-detail-layout';
 
 interface LayoutProps {
@@ -26,8 +27,22 @@ export default async function VaultLayout({ children, params }: LayoutProps) {
 
   const vaultAddress = addressParam as Address;
   const vault = getVaultFromRegistry(chainId, vaultAddress);
+  const config = getAppConfig();
 
-  return (
+  if (
+    vault &&
+    config.id !== 'all' &&
+    !vault.apps.includes(config.id as AppId)
+  ) {
+    notFound();
+  }
+
+  const themeClass =
+    config.id === 'all' && vault
+      ? getThemeClassForVaultApps(vault.apps)
+      : config.themeClass;
+
+  const content = (
     <VaultDetailLayout
       chainId={chainId as ChainId}
       vaultAddress={vaultAddress}
@@ -37,4 +52,7 @@ export default async function VaultLayout({ children, params }: LayoutProps) {
       {children}
     </VaultDetailLayout>
   );
+
+  if (!themeClass) return content;
+  return <div className={themeClass}>{content}</div>;
 }

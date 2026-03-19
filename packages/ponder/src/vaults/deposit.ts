@@ -41,15 +41,18 @@ ponder.on('ERC4626:Deposit', async ({ event, context }) => {
     .values(setValue(getBucketId(Number(timestamp), '4_DAYS')))
     .onConflictDoUpdate(update);
 
-  await context.db.insert(schema.depositEvent).values({
-    id: event.id,
-    chainId,
-    vaultAddress,
-    sender: event.args.caller,
-    receiver: event.args.owner,
-    assets: event.args.assets,
-    shares: event.args.shares,
-    timestamp: Number(timestamp),
-    transactionHash: event.transaction.hash,
-  });
+  await context.db
+    .insert(schema.depositEvent)
+    .values({
+      id: event.id,
+      chainId,
+      vaultAddress,
+      sender: event.args.caller,
+      receiver: event.args.owner,
+      assets: event.args.assets,
+      shares: event.args.shares,
+      timestamp: Number(timestamp),
+      transactionHash: event.transaction.hash,
+    })
+    .onConflictDoNothing();
 });

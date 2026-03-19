@@ -83,10 +83,10 @@ export function VaultActivityFilterBar({ searchParams }: Props) {
         onValueChange={(value) => handleMinAmountChange(value || 'all')}
         disabled={isPending}
       >
-        <ToggleGroupItem value="all">All</ToggleGroupItem>
-        <ToggleGroupItem value="100">&gt;$100</ToggleGroupItem>
-        <ToggleGroupItem value="1000">&gt;$1K</ToggleGroupItem>
-        <ToggleGroupItem value="10000">&gt;$10K</ToggleGroupItem>
+        <ToggleGroupItem value="all" className="px-5">All</ToggleGroupItem>
+        <ToggleGroupItem value="100" className="px-5">&gt;$100</ToggleGroupItem>
+        <ToggleGroupItem value="1000" className="px-5">&gt;$1K</ToggleGroupItem>
+        <ToggleGroupItem value="10000" className="px-5">&gt;$10K</ToggleGroupItem>
       </ToggleGroup>
 
       {/* Depositor Address Input */}

@@ -30,6 +30,24 @@ const getAssetPriceAbi = [
   },
 ] as const;
 
+/** Minimal ERC4626 ABI for reading vault positions */
+const erc4626Abi = [
+  {
+    type: 'function',
+    name: 'asset',
+    inputs: [],
+    outputs: [{ name: '', type: 'address', internalType: 'address' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'convertToAssets',
+    inputs: [{ name: 'shares', type: 'uint256', internalType: 'uint256' }],
+    outputs: [{ name: '', type: 'uint256', internalType: 'uint256' }],
+    stateMutability: 'view',
+  },
+] as const;
+
 /** Minimal ABI for Morpho.idToMarketParams(bytes32) */
 const idToMarketParamsAbi = [
   {
@@ -88,7 +106,8 @@ function formatProtocolName(marketId: string): string {
     SPARK: 'Spark',
     MOONWELL: 'Moonwell',
   };
-  return names[marketId] ?? marketId;
+  if (names[marketId]) return names[marketId];
+  return marketId;
 }
 
 /** Balance snapshot for a vault — ERC20 tokens + market positions */
@@ -118,6 +137,7 @@ export interface BalanceSnapshot {
 export async function readVaultBalances(
   publicClient: PublicClient,
   vaultAddress: Address,
+  additionalTokenAddresses?: Address[],
 ): Promise<BalanceSnapshot> {
   const plasmaVault = await PlasmaVault.create(
     publicClient,
@@ -134,10 +154,21 @@ export async function readVaultBalances(
 
   let assets: BalanceSnapshot['assets'] = [];
 
-  if (substrates.length > 0) {
+  {
     const tokenAddresses = substrates
       .map((s) => substrateToAddress(s))
       .filter((addr): addr is Address => addr !== undefined);
+
+    // Merge additional token addresses (e.g. YO vault underlyings)
+    if (additionalTokenAddresses) {
+      const addrSet = new Set(tokenAddresses.map(a => a.toLowerCase()));
+      for (const addr of additionalTokenAddresses) {
+        if (!addrSet.has(addr.toLowerCase())) {
+          tokenAddresses.push(addr);
+          addrSet.add(addr.toLowerCase());
+        }
+      }
+    }
 
     if (tokenAddresses.length > 0) {
       const metadataResults = await publicClient.multicall({
@@ -254,8 +285,80 @@ export async function readVaultBalances(
     marketIdSet.add(getMarketName(id));
   }
 
+  // Accumulator for ERC4626 positions — grouped into one MarketAllocation
+  const erc4626Positions: import('./types').MarketPosition[] = [];
+  let erc4626TotalUsd = 0;
+
   for (const marketName of marketIdSet) {
     try {
+      if (marketName.startsWith('ERC4626_')) {
+        // Find the numeric market ID for this name
+        const marketId = activeMarketIds.find(id => getMarketName(id) === marketName);
+        if (!marketId) continue;
+
+        const erc4626Substrates = await plasmaVault.getMarketSubstrates(marketId);
+        const vaultAddrs = erc4626Substrates
+          .map(s => substrateToAddress(s))
+          .filter((a): a is Address => a !== undefined);
+
+        // Pass 1: shares, symbol, underlying asset for each ERC4626 vault
+        const pass1 = await publicClient.multicall({
+          contracts: vaultAddrs.flatMap((addr) => [
+            { address: addr, abi: erc20Abi, functionName: 'balanceOf' as const, args: [plasmaVault.address] },
+            { address: addr, abi: erc20Abi, functionName: 'symbol' as const },
+            { address: addr, abi: erc4626Abi, functionName: 'asset' as const },
+          ]),
+          allowFailure: true,
+        });
+
+        for (let i = 0; i < vaultAddrs.length; i++) {
+          const shares = pass1[i * 3 + 0].status === 'success' ? (pass1[i * 3 + 0].result as bigint) : 0n;
+          if (shares === 0n) continue;
+
+          const vaultSymbol = pass1[i * 3 + 1].status === 'success' ? (pass1[i * 3 + 1].result as string) : '???';
+          const underlyingAddr = pass1[i * 3 + 2].status === 'success' ? (pass1[i * 3 + 2].result as Address) : undefined;
+          if (!underlyingAddr) continue;
+
+          // Pass 2: convertToAssets, underlying metadata, price
+          const pass2 = await publicClient.multicall({
+            contracts: [
+              { address: vaultAddrs[i], abi: erc4626Abi, functionName: 'convertToAssets' as const, args: [shares] },
+              { address: underlyingAddr, abi: erc20Abi, functionName: 'symbol' as const },
+              { address: underlyingAddr, abi: erc20Abi, functionName: 'decimals' as const },
+              { address: plasmaVault.priceOracle, abi: getAssetPriceAbi, functionName: 'getAssetPrice' as const, args: [underlyingAddr] },
+            ],
+            allowFailure: true,
+          });
+
+          const underlyingAmount = pass2[0].status === 'success' ? (pass2[0].result as bigint) : shares;
+          const underlyingSym = pass2[1].status === 'success' ? (pass2[1].result as string) : '???';
+          const underlyingDec = pass2[2].status === 'success' ? Number(pass2[2].result) : 18;
+
+          let posValueUsd = 0;
+          if (pass2[3].status === 'success') {
+            const [rawPrice, rawPriceDecimals] = pass2[3].result as [bigint, bigint];
+            const pDecimals = Number(rawPriceDecimals);
+            if (underlyingAmount > 0n && rawPrice > 0n) {
+              posValueUsd = Number(underlyingAmount * rawPrice) / 10 ** (underlyingDec + pDecimals);
+            }
+          }
+
+          erc4626TotalUsd += posValueUsd;
+          erc4626Positions.push({
+            substrate: vaultAddrs[i],
+            underlyingToken: underlyingAddr,
+            underlyingSymbol: underlyingSym,
+            label: vaultSymbol,
+            supplyFormatted: formatUnits(underlyingAmount, underlyingDec),
+            supplyValueUsd: posValueUsd.toFixed(2),
+            borrowFormatted: '0',
+            borrowValueUsd: '0.00',
+            totalValueUsd: posValueUsd.toFixed(2),
+          });
+        }
+        continue;
+      }
+
       let balances: MarketSubstrateBalance[] = [];
 
       if (
@@ -338,6 +441,17 @@ export async function readVaultBalances(
     } catch {
       // Skip failed market reads
     }
+  }
+
+  // Push grouped ERC4626 allocation if any positions found
+  if (erc4626Positions.length > 0) {
+    markets.push({
+      marketId: 'ERC4626',
+      protocol: 'ERC4626',
+      positions: erc4626Positions,
+      totalValueUsd: erc4626TotalUsd.toFixed(2),
+    });
+    totalValueUsdFloat += erc4626TotalUsd;
   }
 
   return {

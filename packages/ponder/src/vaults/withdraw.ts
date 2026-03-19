@@ -41,16 +41,19 @@ ponder.on('ERC4626:Withdraw', async ({ event, context }) => {
     .values(setValue(getBucketId(Number(timestamp), '4_DAYS')))
     .onConflictDoUpdate(update);
 
-  await context.db.insert(schema.withdrawalEvent).values({
-    id: event.id,
-    chainId,
-    vaultAddress,
-    sender: event.args.caller,
-    owner: event.args.owner,
-    receiver: event.args.receiver,
-    assets: event.args.assets,
-    shares: event.args.shares,
-    timestamp: Number(timestamp),
-    transactionHash: event.transaction.hash,
-  });
+  await context.db
+    .insert(schema.withdrawalEvent)
+    .values({
+      id: event.id,
+      chainId,
+      vaultAddress,
+      sender: event.args.caller,
+      owner: event.args.owner,
+      receiver: event.args.receiver,
+      assets: event.args.assets,
+      shares: event.args.shares,
+      timestamp: Number(timestamp),
+      transactionHash: event.transaction.hash,
+    })
+    .onConflictDoNothing();
 });

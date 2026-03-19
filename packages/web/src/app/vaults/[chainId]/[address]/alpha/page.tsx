@@ -1,4 +1,4 @@
-import { VaultAlpha } from '@/vault-details/components/vault-alpha';
+import { AlphaChatWrapper } from './alpha-chat-wrapper';
 import type { ChainId } from '@/app/chains.config';
 import type { Address } from 'viem';
 
@@ -14,7 +14,7 @@ export default async function VaultAlphaPage({
   const { chainId, address } = await params;
 
   return (
-    <VaultAlpha
+    <AlphaChatWrapper
       chainId={Number(chainId) as ChainId}
       vaultAddress={address as Address}
     />

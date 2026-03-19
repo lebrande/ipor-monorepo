@@ -4,6 +4,7 @@ import { useMemo, useCallback } from 'react';
 import { ActivityDataTable } from '@/activity/components/activity-data-table';
 import { ActivityScrollTrigger } from '@/activity/components/activity-scroll-trigger';
 import { TotalInflows } from '@/activity/components/total-inflows';
+import { FlowChart } from '@/flow-chart/flow-chart';
 import { VaultActivityFilterBar } from './vault-activity-filter-bar';
 import { useInfiniteActivity } from '@/activity/hooks/use-infinite-activity';
 import type {
@@ -52,6 +53,7 @@ export function VaultActivityContent({
 
   return (
     <div className="space-y-4">
+      <FlowChart />
       {/* Header with filters and TotalInflows */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <VaultActivityFilterBar searchParams={searchParams} />

@@ -7,13 +7,16 @@ ponder.on('ERC4626:Transfer', async ({ event, context }) => {
   const { id: chainId } = context.chain;
   const vaultAddress = event.log.address;
 
-  await context.db.insert(schema.transferEvent).values({
-    id: event.id,
-    from: event.args.from,
-    to: event.args.to,
-    amount: event.args.amount,
-    timestamp: Number(event.block.timestamp),
-  });
+  await context.db
+    .insert(schema.transferEvent)
+    .values({
+      id: event.id,
+      from: event.args.from,
+      to: event.args.to,
+      amount: event.args.amount,
+      timestamp: Number(event.block.timestamp),
+    })
+    .onConflictDoNothing();
 
   await context.db
     .insert(schema.depositor)

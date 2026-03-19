@@ -1,10 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { isAddressEqual, type Address } from 'viem';
 import { parseSiweMessage } from 'viem/siwe';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 
-const WHITELISTED_ADDRESSES: Set<string> = new Set([
+const WHITELISTED_ADDRESSES: Address[] = [
   '0xa6a7b66ebbb5cbfdff3c83781193618ee4e22f4d',
-]);
+  '0x35b4915b0fCA6097167fAa8340D3af3E51AA3841',
+];
 
 // --- Rate limiting (in-memory, per IP) ---
 
@@ -91,7 +93,7 @@ export async function POST(request: NextRequest) {
     if (!parsed.address) {
       throw new Error('No address in SIWE message');
     }
-    address = parsed.address.toLowerCase();
+    address = parsed.address;
   } catch {
     return NextResponse.json(
       { error: 'Invalid SIWE message.' },
@@ -100,7 +102,7 @@ export async function POST(request: NextRequest) {
   }
 
   // 4. Check whitelist
-  if (!WHITELISTED_ADDRESSES.has(address)) {
+  if (!WHITELISTED_ADDRESSES.some((w) => isAddressEqual(w, address as Address))) {
     return NextResponse.json(
       { error: 'Address not authorized. Contact an administrator to request access.' },
       { status: 403 }

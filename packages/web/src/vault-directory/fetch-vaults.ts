@@ -3,7 +3,7 @@ import { formatUnits, type Address } from 'viem';
 import { addressSchema } from '@/lib/schema';
 import { chainIdSchema } from '@/app/chains.config';
 import { supabase } from '@ipor/fusion-supabase-ponder';
-import { ERC4626_VAULTS, getChainName } from '@/lib/vaults-registry';
+import { APP_VAULTS, getChainName } from '@/lib/vaults-registry';
 import { fetchAllVaultsRpcData } from '@/lib/rpc/vault-rpc-data';
 import { getCacheKey } from '@/lib/rpc/cache';
 import { BUCKET_SIZE, getBucketId } from '@/lib/buckets';
@@ -179,7 +179,7 @@ export async function fetchVaults(
   const limit = 20;
   const sort = (searchParams.sort || 'tvl') as 'tvl' | 'depositors' | 'age';
 
-  const vaults = ERC4626_VAULTS.map((v) => ({
+  const vaults = APP_VAULTS.map((v) => ({
     chainId: v.chainId,
     address: v.address,
   }));
@@ -190,7 +190,7 @@ export async function fetchVaults(
   ]);
 
   // Combine data sources
-  let enrichedVaults = ERC4626_VAULTS.map((vault) => {
+  let enrichedVaults = APP_VAULTS.map((vault) => {
     const rpcKey = getCacheKey(vault.chainId, vault.address);
     const dbKey = `${vault.chainId}:${vault.address.toLowerCase()}`;
     const rpcData = rpcDataMap.get(rpcKey);
@@ -300,7 +300,7 @@ export async function fetchVaults(
 }
 
 export async function fetchVaultsMetadata(): Promise<VaultsMetadata> {
-  const vaults = ERC4626_VAULTS.map((v) => ({
+  const vaults = APP_VAULTS.map((v) => ({
     chainId: v.chainId,
     address: v.address,
   }));
@@ -316,7 +316,7 @@ export async function fetchVaultsMetadata(): Promise<VaultsMetadata> {
   const protocolsSet = new Set<string>();
   const assetsMap = new Map<string, { symbol: string; chainId: number; address: string }>();
 
-  for (const vault of ERC4626_VAULTS) {
+  for (const vault of APP_VAULTS) {
     const rpcKey = getCacheKey(vault.chainId, vault.address);
     const dbKey = `${vault.chainId}:${vault.address.toLowerCase()}`;
     const rpcData = rpcDataMap.get(rpcKey);
@@ -358,6 +358,6 @@ export async function fetchVaultsMetadata(): Promise<VaultsMetadata> {
     chains,
     protocols,
     assets,
-    totalVaults: ERC4626_VAULTS.length,
+    totalVaults: APP_VAULTS.length,
   });
 }

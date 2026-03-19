@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { TABS } from '@/vault-details/vault-tabs.config';
+import { getVisibleTabs } from '@/vault-details/vault-tabs.config';
 import type { ChainId } from '@/app/chains.config';
 import type { Address } from 'viem';
 
@@ -15,6 +15,7 @@ interface Props {
 export const VaultDetailTabs = ({ chainId, vaultAddress }: Props) => {
   const pathname = usePathname();
   const basePath = `/vaults/${chainId}/${vaultAddress}`;
+  const visibleTabs = getVisibleTabs();
 
   const getTabHref = (tabId: string) => {
     return tabId === 'overview' ? basePath : `${basePath}/${tabId}`;
@@ -30,7 +31,7 @@ export const VaultDetailTabs = ({ chainId, vaultAddress }: Props) => {
   return (
     <nav className="border-b border-border">
       <div className="flex overflow-x-auto -mb-px">
-        {TABS.map(({ id, label }) => (
+        {visibleTabs.map(({ id, label }) => (
           <Link
             key={id}
             href={getTabHref(id)}

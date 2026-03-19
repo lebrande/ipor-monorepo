@@ -1,7 +1,7 @@
 import { type Address, formatUnits } from 'viem';
 import { getPublicClient } from './clients';
 import { getFromCache, setInCache } from './cache';
-import { ERC4626_VAULTS } from '@/lib/vaults-registry';
+import { APP_VAULTS } from '@/lib/vaults-registry';
 import { fetchVaultRpcData } from './vault-rpc-data';
 
 const plasmaVaultAbi = [
@@ -68,8 +68,8 @@ export async function fetchAllAssetPrices(): Promise<
   const results = new Map<string, AssetPriceInfo>();
 
   // Group vaults by chain for batched RPC calls
-  const byChain = new Map<number, typeof ERC4626_VAULTS>();
-  for (const vault of ERC4626_VAULTS) {
+  const byChain = new Map<number, typeof APP_VAULTS>();
+  for (const vault of APP_VAULTS) {
     const list = byChain.get(vault.chainId) || [];
     list.push(vault);
     byChain.set(vault.chainId, list);

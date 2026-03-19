@@ -5,11 +5,13 @@ const PROTOCOL_ICONS: Record<string, { icon: string; label: string; bgColor: str
   'aave-v3': { icon: '/protocols/aave.svg', label: 'Aave V3', bgColor: '#2B2D3E' },
   morpho: { icon: '/protocols/morpho-blue.svg', label: 'Morpho', bgColor: '#2559FF' },
   'euler-v2': { icon: '/protocols/euler.svg', label: 'Euler V2', bgColor: '#1E1E2E' },
+  'yo-erc4626': { icon: '/protocols/yo.svg', label: 'YO Vault', bgColor: '#000000' },
   // display-name keys (from getMarketBalancesTool / readVaultBalances)
   'Aave V3': { icon: '/protocols/aave.svg', label: 'Aave V3', bgColor: '#2B2D3E' },
   'Aave V3 Lido': { icon: '/protocols/aave.svg', label: 'Aave V3 Lido', bgColor: '#2B2D3E' },
   'Morpho': { icon: '/protocols/morpho-blue.svg', label: 'Morpho', bgColor: '#2559FF' },
   'Euler V2': { icon: '/protocols/euler.svg', label: 'Euler V2', bgColor: '#1E1E2E' },
+  'ERC4626': { icon: '/protocols/yo.svg', label: 'YO Vault', bgColor: '#000000' },
 };
 
 interface Props {

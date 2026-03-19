@@ -6,7 +6,8 @@
   "exports": {
     ".": "./src/mastra/index.ts",
     "./agents": "./src/agents/index.ts",
-    "./alpha-types": "./src/tools/alpha/types.ts"
+    "./alpha-types": "./src/tools/alpha/types.ts",
+    "./yo-treasury-types": "./src/tools/yo-treasury/types.ts"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -32,6 +33,7 @@
     "@mastra/loggers": "^1.0.1",
     "@mastra/memory": "^1.1.0",
     "@mastra/observability": "^1.2.0",
+    "@yo-protocol/core": "^1.0.4",
     "ai": "^4.3.16",
     "pg": "^8.16.0",
     "viem": "catalog:",

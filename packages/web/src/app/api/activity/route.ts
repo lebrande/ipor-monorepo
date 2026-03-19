@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@ipor/fusion-supabase-ponder';
 import { z } from 'zod';
 import { type Address, formatUnits } from 'viem';
-import { ERC4626_VAULTS } from '@/lib/vaults-registry';
+import { APP_VAULTS } from '@/lib/vaults-registry';
 import { fetchAllVaultsRpcData } from '@/lib/rpc/vault-rpc-data';
 import { getCacheKey } from '@/lib/rpc/cache';
 
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
 
   // Vault lookup for names
   const vaultLookup = new Map<string, { name: string; chainId: number }>();
-  for (const vault of ERC4626_VAULTS) {
+  for (const vault of APP_VAULTS) {
     vaultLookup.set(
       `${vault.chainId}:${vault.address.toLowerCase()}`,
       { name: vault.name, chainId: vault.chainId },
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
   }
 
   // RPC data for amount formatting
-  const vaultsForRpc = ERC4626_VAULTS.map((v) => ({
+  const vaultsForRpc = APP_VAULTS.map((v) => ({
     chainId: v.chainId,
     address: v.address,
   }));

@@ -1,3 +1,6 @@
 [submodule "ipor-fusion"]
 	path = external/ipor-fusion
 	url = https://github.com/IPOR-Labs/ipor-fusion.git
+[submodule "external/core"]
+	path = external/core
+	url = https://github.com/yoprotocol/core

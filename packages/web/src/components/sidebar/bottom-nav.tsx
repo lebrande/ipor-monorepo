@@ -1,4 +1,4 @@
-import { navItems, getActiveNavItem } from './nav-config';
+import { getNavItems, getActiveNavItem } from './nav-config';
 import { cn } from '@/lib/utils';
 
 interface BottomNavProps {
@@ -7,6 +7,7 @@ interface BottomNavProps {
 
 export function BottomNav({ pathname }: BottomNavProps) {
   const activeUrl = getActiveNavItem(pathname);
+  const navItems = getNavItems();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background md:hidden">

@@ -3,7 +3,7 @@ import { type Address, formatUnits } from 'viem';
 import { isHex } from 'viem';
 import { addressSchema } from '@/lib/schema';
 import { supabase } from '@ipor/fusion-supabase-ponder';
-import { ERC4626_VAULTS } from '@/lib/vaults-registry';
+import { APP_VAULTS } from '@/lib/vaults-registry';
 import { fetchAllVaultsRpcData } from '@/lib/rpc/vault-rpc-data';
 import { getCacheKey } from '@/lib/rpc/cache';
 import { getUnixTime, subDays } from 'date-fns';
@@ -128,7 +128,7 @@ export async function fetchActivity(
 
   // Vault lookup for names
   const vaultLookup = new Map<string, { name: string; chainId: number }>();
-  for (const vault of ERC4626_VAULTS) {
+  for (const vault of APP_VAULTS) {
     vaultLookup.set(
       `${vault.chainId}:${vault.address.toLowerCase()}`,
       { name: vault.name, chainId: vault.chainId },
@@ -136,7 +136,7 @@ export async function fetchActivity(
   }
 
   // RPC data for amount formatting
-  const vaultsForRpc = ERC4626_VAULTS.map((v) => ({
+  const vaultsForRpc = APP_VAULTS.map((v) => ({
     chainId: v.chainId,
     address: v.address,
   }));
@@ -353,7 +353,7 @@ export async function fetchActivityInflows(
 
 // Fetch activity metadata (server-side)
 export async function fetchActivityMetadata(): Promise<ActivityMetadata> {
-  const vaultChainIds = new Set(ERC4626_VAULTS.map((v) => v.chainId));
+  const vaultChainIds = new Set(APP_VAULTS.map((v) => v.chainId));
 
   // Build chain list from known chains
   const CHAIN_NAMES: Record<number, string> = {
@@ -373,13 +373,13 @@ export async function fetchActivityMetadata(): Promise<ActivityMetadata> {
     }));
 
   // Fetch RPC data for asset info
-  const vaultsForRpc = ERC4626_VAULTS.map((v) => ({
+  const vaultsForRpc = APP_VAULTS.map((v) => ({
     chainId: v.chainId,
     address: v.address,
   }));
   const rpcDataMap = await fetchAllVaultsRpcData(vaultsForRpc);
 
-  const vaultList = ERC4626_VAULTS.map((vault) => {
+  const vaultList = APP_VAULTS.map((vault) => {
     const rpcKey = getCacheKey(vault.chainId, vault.address);
     const rpcData = rpcDataMap.get(rpcKey);
     return {

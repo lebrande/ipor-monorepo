@@ -41,7 +41,8 @@ mastra.db-wal
 # TypeScript
 *.tsbuildinfo
 
-# Playwright MCP screenshots
+# Playwright
 .playwright-mcp
+.playwright-cli
 
 packages/sdk/tsconfig.tsbuildinfo
