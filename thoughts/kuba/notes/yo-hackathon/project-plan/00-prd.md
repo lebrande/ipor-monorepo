@@ -93,7 +93,7 @@ The **AI chat interface is secondary** but still significant. It handles alpha-o
 3. **AI-managed allocation** — conversation-driven alpha strategy, not forms and buttons for complex actions
 4. **Cross-asset swaps** — user can deposit USDC and have the vault swap to WETH for yoETH
 5. **Composability story** — demonstrates ERC4626 composability (Fusion vault wrapping YO vaults)
-6. **Simulation before execution** — Anvil fork shows balance changes before signing
+6. **Simulation before execution** — Tenderly fork shows balance changes before signing
 
 ## Key Structural Decision
 

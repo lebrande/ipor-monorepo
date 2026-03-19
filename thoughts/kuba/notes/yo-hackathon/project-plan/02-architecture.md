@@ -236,18 +236,16 @@ Based on existing `alphaAgent` pattern from `packages/mastra/src/agents/alpha-ag
 }
 ```
 
-### Tools (8 total)
+### Tools (4 yo-treasury tools)
+
+> **Note**: Originally planned 8 tools. Final implementation consolidated to 4 — `getYoVaultDetailsTool` merged into `getYoVaultsTool`, `getTreasuryAllocationTool` renamed to `readTreasuryBalancesTool`, and `displayPendingActionsTool`/`executePendingActionsTool` replaced by the unified `TransactionProposal` UI pattern (each action tool builds a complete proposal with simulation).
 
 | Tool | Purpose | Data Source | Output Type |
 |------|---------|-------------|-------------|
-| `getYoVaultsTool` | List available YO vaults with APY/TVL | `@yo-protocol/core` getVaultSnapshot | `yo-vaults` |
-| `getYoVaultDetailsTool` | Deep dive on a specific vault | `@yo-protocol/core` getVaultState + snapshot | `yo-vault-details` |
-| `getTreasuryAllocationTool` | Read user's Fusion vault allocation | `@ipor/fusion-sdk` readVaultBalances | `treasury-allocation` |
-| `createAllocationActionTool` | Create Erc4626SupplyFuse.enter FuseAction | `@ipor/fusion-sdk` + simulation | `action-with-simulation` |
-| `createWithdrawActionTool` | Create YoRedeemFuse.exit FuseAction (redeem, not withdraw) | `@ipor/fusion-sdk` + simulation | `action-with-simulation` |
-| `createSwapActionTool` | Create UniversalTokenSwapperFuse.enter FuseAction | Odos/KyberSwap/Velora API + fusion-sdk | `action-with-simulation` |
-| `displayPendingActionsTool` | Show accumulated pending actions | working memory | `pending-actions` |
-| `executePendingActionsTool` | Flatten and send to UI for signing | working memory | `execute-actions` |
+| `readTreasuryBalancesTool` | Read user's Fusion vault balances (unallocated + YO positions) | `@ipor/fusion-sdk` readYoTreasuryBalances | `balance-check` |
+| `createYoAllocationActionTool` | Create Erc4626SupplyFuse.enter FuseAction | `@ipor/fusion-sdk` + Tenderly simulation | `transaction-proposal` |
+| `createYoWithdrawActionTool` | Create YoRedeemFuse.exit FuseAction (redeem, not withdraw) | `@ipor/fusion-sdk` + Tenderly simulation | `transaction-proposal` |
+| `createYoSwapActionTool` | Create UniversalTokenSwapperFuse.enter FuseAction | Odos API + fusion-sdk + Tenderly simulation | `transaction-proposal` |
 
 ### Swap Action Flow (createSwapActionTool)
 
@@ -314,13 +312,9 @@ User: "Swap 500 USDC to WETH and put it in yoETH"
     │
     ├── TreasuryChat (treasury-chat.tsx) — flex-1, secondary view
     │   ├── useChat → POST /api/yo/treasury/chat
-    │   └── YoToolRenderer (yo-tool-renderer.tsx) — switch on type
-    │       ├── 'yo-vaults' → YoVaultsList (yo-vaults-list.tsx)
-    │       ├── 'treasury-allocation' → TreasuryAllocation (TODO)
-    │       ├── 'swap-preview' → SwapPreview (TODO)
-    │       ├── 'action-with-simulation' → ActionWithSimulation (reused from alpha)
-    │       ├── 'pending-actions' → PendingActionsList (reused from alpha)
-    │       └── 'execute-actions' → ExecuteActions 5-step flow (reused from alpha)
+    │   └── ToolRenderer (tool-renderer.tsx) — generic alpha renderer, switch on type
+    │       ├── 'transaction-proposal' → TransactionProposal (unified: simulation diff + execute flow)
+    │       └── 'balance-check' → null (silently consumed, no UI render needed)
     │
     └── Forms (w-full lg:w-80, sticky sidebar on desktop)
         ├── DepositForm (deposit-form.tsx) — approve + deposit, uses useVaultReads
@@ -353,7 +347,7 @@ WalletProvider (existing wagmi — already configured for multi-chain)
 | `ExecuteActions` 5-step flow | `execute-actions.tsx` | Reuse as-is — already handles PlasmaVault.execute() |
 | `SimulationBalanceComparison` | `simulation-balance-comparison.tsx` | Reuse as-is |
 | `PendingActionsList` | `pending-actions-list.tsx` | Reuse as-is |
-| Anvil fork simulation | `simulate-on-fork.ts` | Reuse as-is |
+| Tenderly fork simulation | `simulate-on-fork.ts` + `tenderly-fork.ts` | Reuse as-is (migrated from Anvil to Tenderly) |
 | viem client management | `viem-clients.ts` | Reuse as-is |
 | wagmi config | `packages/web` | Add chain configs if needed |
 | `PlasmaVault` class | `@ipor/fusion-sdk` | Reuse for balance reads, role checks |
@@ -380,7 +374,7 @@ WalletProvider (existing wagmi — already configured for multi-chain)
 | `components/yo-treasury-tab.tsx` | DONE | Entry point — dashboard-first layout |
 | `components/yo-treasury-tab.stories.tsx` | DONE | Storybook story with WalletDecorator |
 | `components/create-vault-flow.tsx` | DONE | 6-step vault creation (FSN-0055) |
-| `components/treasury-allocation.tsx` | TODO | Allocation breakdown (chat inline renderer) |
-| `components/swap-preview.tsx` | TODO | Swap route visualization (chat renderer) |
+| `components/treasury-allocation.tsx` | NOT NEEDED | Swap tool returns `transaction-proposal` type, rendered by unified TransactionProposal |
+| `components/swap-preview.tsx` | NOT NEEDED | Swap tool returns `transaction-proposal` type, rendered by unified TransactionProposal |
 | `components/first-deposit-prompt.tsx` | STRETCH | Post-creation deposit guide |
 | `components/chain-selector.tsx` | STRETCH | Chain selection for vault creation |

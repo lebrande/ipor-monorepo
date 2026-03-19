@@ -53,6 +53,12 @@ const envSchema = z.object({
   TENDERLY_RPC_URL_ETHEREUM: z.string().url().optional(),
   TENDERLY_RPC_URL_ARBITRUM: z.string().url().optional(),
   TENDERLY_RPC_URL_BASE: z.string().url().optional(),
+
+  /**
+   * API key for authenticating requests to the Mastra server
+   * Must match the key sent by the Next.js web app in the X-API-Key header
+   */
+  MASTRA_API_KEY: z.string().min(1, 'MASTRA_API_KEY is required for API protection'),
 });
 
 /**

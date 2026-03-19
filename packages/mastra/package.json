@@ -28,6 +28,7 @@
     "@ipor/fusion-sdk": "workspace:*",
     "@mastra/ai-sdk": "^1.1.4",
     "@mastra/core": "^1.14.0",
+    "hono": "^4.12.8",
     "@mastra/deployer-vercel": "^1.1.6",
     "@mastra/libsql": "^1.7.1",
     "@mastra/loggers": "^1.0.3",

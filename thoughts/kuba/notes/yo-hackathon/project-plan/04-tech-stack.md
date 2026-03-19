@@ -34,7 +34,7 @@
 | `pnpm` | Package manager (workspace monorepo) |
 | `tsx` | TypeScript script runner (for deployment scripts) |
 | `hardhat` | Fork testing — pin to a block, deterministic tests (see `packages/hardhat-tests/`) |
-| `anvil` (Foundry) | Local fork simulation for agent action testing (Mastra tools) |
+| Tenderly Virtual TestNet | Serverless fork simulation for agent action testing (replaced local Anvil forks — FSN-0087) |
 | `@yo-protocol/cli` | CLI tool for ad-hoc vault queries during development |
 | Playwright MCP | Browser automation for web UI testing |
 | Mastra Studio | Agent testing and debugging UI |

@@ -209,7 +209,9 @@ connection = await network.connect({
 ## Phase 2: AI Agent (Mastra)
 
 ### Overview
-Build the `yo-treasury-agent` with tools that read YO vault data, read Fusion vault allocation, create allocation/withdrawal/swap actions, simulate on Anvil, and pass to UI for execution. Agent handles alpha actions only — NOT deposit/withdraw from treasury.
+Build the `yo-treasury-agent` with tools that read YO vault data, read Fusion vault allocation, create allocation/withdrawal/swap actions, simulate on Tenderly fork, and pass to UI for execution. Agent handles alpha actions only — NOT deposit/withdraw from treasury.
+
+> **STATUS: DONE** — All tools implemented and tested e2e. Simulation migrated from Anvil to Tenderly Virtual TestNet (FSN-0087). Agent has 4 tools (consolidated from original 8 — see architecture doc). All flows tested on Base mainnet: allocate, withdraw, swap, swap+allocate batch.
 
 ### Implementation Order
 1. Tool types and output schemas
@@ -332,7 +334,7 @@ const fuseAction = {
 }
 ```
 
-Includes Anvil fork simulation (reuse `simulateOnFork` from alpha tools).
+Includes Tenderly fork simulation (reuse `simulateOnFork` from alpha tools — migrated from Anvil to Tenderly).
 
 #### 5. Withdrawal Action Tool
 
@@ -372,21 +374,20 @@ Add `yoTreasuryAgent` to the Mastra instance agents map.
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] Agent instantiates without errors
-- [ ] `getYoVaultsTool` returns live APY/TVL data from Base
-- [ ] `getTreasuryAllocationTool` reads a test vault's balances
-- [ ] `createAllocationActionTool` generates valid FuseAction calldata
-- [ ] `createSwapActionTool` calls Odos API and returns valid swap calldata
-- [ ] Anvil simulation works for allocation actions
-- [ ] TypeScript compiles: `pnpm tsc --noEmit`
+- [x] Agent instantiates without errors
+- [x] `readTreasuryBalancesTool` reads a test vault's balances (renamed from `getTreasuryAllocationTool`)
+- [x] `createYoAllocationActionTool` generates valid FuseAction calldata
+- [x] `createYoSwapActionTool` calls Odos API and returns valid swap calldata
+- [x] Tenderly simulation works for allocation actions (migrated from Anvil — FSN-0087)
+- [x] TypeScript compiles: `pnpm tsc --noEmit`
 
 #### Manual Verification:
-- [ ] Chat with agent in Mastra Studio — agent uses tools correctly
-- [ ] Agent responds naturally to "What are my yield options?"
-- [ ] Agent creates correct allocation actions when asked
-- [ ] Agent does NOT try to handle deposit/withdraw from treasury
+- [x] Chat with agent in Mastra Studio — agent uses tools correctly
+- [x] Agent responds naturally to "What are my yield options?"
+- [x] Agent creates correct allocation actions when asked
+- [x] Agent does NOT try to handle deposit/withdraw from treasury
 
-**Implementation Note**: After completing this phase and all automated verification passes, pause for manual confirmation.
+**Implementation Note**: Phase 2 complete. All tools tested e2e on Base mainnet.
 
 ---
 
@@ -513,6 +514,8 @@ Shown after vault creation or when returning user has zero balance:
 
 ## Phase 4: Frontend — Chat UI & Tool Renderers
 
+> **STATUS: DONE** — Chat UI, tool renderers, and all alpha action flows tested e2e on Base mainnet. All 4 YO vaults allocated via chat copilot. Unified `TransactionProposal` renderer handles allocations, withdrawals, and swaps (no separate `TreasuryAllocation` or `SwapPreview` components needed). Dashboard refreshes after chat-initiated transactions.
+
 ### Overview
 Build the chat interface for alpha actions. This is the secondary view — users can allocate to YO vaults, swap assets, and manage positions through conversation. Reuse the vault-alpha.tsx streaming chat pattern with new YO-specific tool renderers.
 
@@ -596,26 +599,28 @@ Discriminated union for all tool outputs.
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] TypeScript compiles: `pnpm tsc --noEmit`
-- [ ] Build succeeds: `pnpm build`
-- [ ] API route responds to POST with streaming
+- [x] TypeScript compiles: `pnpm tsc --noEmit`
+- [x] Build succeeds: `pnpm build`
+- [x] API route responds to POST with streaming
 
 #### Manual Verification:
-- [ ] Chat loads with treasury context
-- [ ] "What are my yield options?" → Shows YO vault cards with live data
-- [ ] "Show my allocation" → Shows treasury breakdown
-- [ ] "Put 100 USDC into yoUSD" → Creates action, shows simulation, signs tx
-- [ ] "Swap 100 USDC to WETH" → Shows swap preview with Odos quote
-- [ ] "Swap and allocate to yoETH" → Batched swap+allocate in single tx
-- [ ] Agent does NOT try to handle deposit/withdraw from treasury
-- [ ] Transaction execution works end-to-end
-- [ ] Dashboard updates after chat-initiated transactions
+- [x] Chat loads with treasury context
+- [x] "What are my yield options?" → Shows YO vault table with live APR/TVL data
+- [x] "Show my allocation" → Shows treasury breakdown (unallocated + YO positions)
+- [x] "Allocate USDC to yoUSD" → Creates action, shows simulation, signs tx — confirmed on Base
+- [x] "Swap USDC to WETH" → Odos quote+assemble → simulation → execute — confirmed on Base
+- [x] "Swap and allocate to yoETH" → Batched swap+allocate in single tx — confirmed on Base
+- [x] Agent does NOT try to handle deposit/withdraw from treasury
+- [x] Transaction execution works end-to-end (all 4 YO vaults allocated)
+- [x] Dashboard updates after chat-initiated transactions (invalidateQueries + 2s delayed retry)
 
-**Implementation Note**: This is a complex phase. Pause for thorough manual testing.
+**Implementation Note**: Phase 4 complete. All flows tested e2e on Base mainnet.
 
 ---
 
 ## Phase 5: Polish, Demo & Submission
+
+> **STATUS: IN PROGRESS** — App deployed to Vercel, Mastra deployed to Vercel, README written, simulation migrated to Tenderly, voiceover script drafted. Video recording and DoraHacks submission remaining.
 
 ### Overview
 Polish the UX, record the demo video, prepare GitHub submission.
@@ -669,15 +674,15 @@ Polish the UX, record the demo video, prepare GitHub submission.
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] App builds clean: `pnpm build`
-- [ ] No TypeScript errors: `pnpm tsc --noEmit`
+- [x] App builds clean: `pnpm build`
+- [x] No TypeScript errors: `pnpm tsc --noEmit`
 - [ ] No lint errors: `pnpm lint`
 - [ ] All fork tests pass
 
 #### Manual Verification:
 - [ ] Full demo script executes without errors
 - [ ] Demo video recorded and under 3 minutes
-- [ ] README clearly explains the project
+- [x] README clearly explains the project (commit `b5cf48c`)
 - [ ] GitHub repo is public and clean
-- [ ] Dashboard is always visible and accurate
-- [ ] Chat handles alpha actions smoothly
+- [x] Dashboard is always visible and accurate
+- [x] Chat handles alpha actions smoothly

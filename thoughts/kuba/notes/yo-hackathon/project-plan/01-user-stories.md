@@ -119,7 +119,7 @@
 
 **Acceptance Criteria:**
 - Agent creates FuseAction using Erc4626SupplyFuse.enter({ vault: yoUSD, amount })
-- Agent simulates on Anvil fork showing balance before/after
+- Agent simulates on Tenderly fork showing balance before/after
 - Tool renderer shows simulation results
 - User signs PlasmaVault.execute([fuseActions])
 - YO vault shares appear in treasury balance
@@ -182,7 +182,7 @@
 **So that** I know exactly what I'm signing.
 
 **Acceptance Criteria:**
-- Every allocation/swap action runs through Anvil fork simulation first
+- Every allocation/swap action runs through Tenderly fork simulation first
 - Shows balance diff (before → after) for all affected tokens
 - User can decline to sign after seeing simulation
 

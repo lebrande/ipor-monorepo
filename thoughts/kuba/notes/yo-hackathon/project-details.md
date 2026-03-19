@@ -64,7 +64,7 @@ The agent uses deterministic, code-based tools — not LLM-generated code. Each 
 
 ### Fork Simulation Before Every Execution
 
-Before any transaction proposal is shown to the user, the agent spawns a temporary Anvil fork of the live blockchain, executes the full batch of fuse actions, and reads balances before and after. The user sees exactly which token balances will change and by how much — before signing anything.
+Before any transaction proposal is shown to the user, the agent runs a simulation on a Tenderly Virtual TestNet — a persistent, serverless fork of the live blockchain. It takes an EVM snapshot, executes the full batch of fuse actions, reads balances before and after, and reverts the snapshot. The user sees exactly which token balances will change and by how much — before signing anything. Unlike local Anvil forks, Tenderly runs serverlessly — no process management, no port allocation, and compatible with serverless deployments (Vercel, etc.).
 
 ### Role-Based Security Model
 
@@ -176,7 +176,7 @@ No arbitrary contract calls. No token transfers to external addresses. The vault
 
 ### Simulation Before Signing
 
-Every transaction proposal includes a fork simulation result showing exact balance changes. Users see which tokens increase, which decrease, and the USD impact — before they sign. Failed simulations are flagged and blocked from execution.
+Every transaction proposal includes a Tenderly fork simulation result showing exact balance changes. Users see which tokens increase, which decrease, and the USD impact — before they sign. Failed simulations are flagged and blocked from execution.
 
 ### On-Chain Verifiability
 
@@ -218,6 +218,8 @@ The fuse runs via `delegatecall` from the PlasmaVault, so `address(this)` equals
 
 The project started with a POC using Hardhat fork tests against Base mainnet. All on-chain flows (vault creation, role grants, fuse installation, deposits, swaps, withdrawals) were validated on a forked chain before any frontend work began. This ensured the smart contract architecture was sound before building the UI layer.
 
+Early agent development used local Anvil forks (spawned per-request) for transaction simulation. This was later migrated to **Tenderly Virtual TestNets** — persistent, serverless forks that support snapshot/revert semantics. This change eliminated the need for local process management and made the simulation pipeline compatible with serverless deployments (Vercel, etc.).
+
 ---
 
 ## Tech Stack
@@ -225,13 +227,13 @@ The project started with a POC using Hardhat fork tests against Base mainnet. Al
 | Layer | Technology |
 |-------|-----------|
 | **Frontend** | Next.js 16, React, Tailwind CSS, shadcn/ui |
-| **Wallet** | wagmi, viem, WalletConnect |
+| **Wallet** | wagmi, viem (injected wallets — MetaMask, Rabby, etc.) |
 | **On-chain reads** | wagmi `useReadContracts` (multicall batching) |
 | **YO SDK** | `@yo-protocol/core` (vault data, API), `@yo-protocol/react` (deposit/redeem hooks) |
 | **Vault SDK** | `@ipor/fusion-sdk` (PlasmaVault interactions, fuse encoding) |
-| **AI Agent** | Mastra framework, Claude 3.5 Haiku |
+| **AI Agent** | Mastra framework, Claude Haiku 4.5 (via OpenRouter) |
 | **DEX Aggregation** | Odos API (quote + assemble) |
-| **Simulation** | Anvil fork (spawned per-request) |
+| **Simulation** | Tenderly Virtual TestNet (persistent fork with snapshot/revert) |
 | **Blockchain** | Base (primary), with support for Ethereum and Arbitrum |
 | **Indexing** | Ponder (blockchain event indexer) → Supabase |
 | **Charts** | Recharts (yield history, TVL, share price) |
@@ -250,7 +252,7 @@ From the web UI, a user enters a USDC amount and clicks Deposit. If needed, an E
 The user opens the chat panel and says *"Put 500 USDC into yoUSD."* The agent:
 1. Reads current treasury balances
 2. Encodes an `Erc4626SupplyFuse.enter()` call
-3. Simulates on an Anvil fork — shows before/after balances
+3. Simulates on a Tenderly fork — shows before/after balances
 4. Presents a transaction proposal card in the chat
 5. User clicks Execute — single transaction, single signature
 6. Dashboard updates to show the new yoUSD position earning yield
@@ -261,7 +263,7 @@ The user says *"Swap 200 USDC to WETH and allocate to yoETH."* The agent:
 2. Encodes a `UniversalTokenSwapperFuse.enter()` call (approve + swap)
 3. Encodes an `Erc4626SupplyFuse.enter()` call for yoETH
 4. Batches both fuse actions into one proposal
-5. Simulates the full batch — one fork, both actions executed atomically
+5. Simulates the full batch on Tenderly — one fork snapshot, both actions executed atomically
 6. User signs once — swap and deposit happen in a single transaction
 
 ### 5. Monitor Portfolio Performance

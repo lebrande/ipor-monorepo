@@ -50,8 +50,8 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [x] Implement createYoWithdrawActionTool (YoRedeemFuse.exit — uses `yoRedeemFuseAbi`)
 - [x] Implement createYoSwapActionTool (Odos API quote+assemble + UniversalTokenSwapperFuse.enter)
 - [x] Wire up displayPendingActionsTool and executePendingActionsTool (reused from alpha, relaxed protocol enums to `z.string()`)
-- [x] Wire up Anvil fork simulation (reuses `simulateOnFork` as-is)
-- [x] Create yo-treasury-agent.ts with system prompt, working memory, 7 tools
+- [x] Wire up fork simulation (reuses `simulateOnFork` — later migrated from Anvil to Tenderly in FSN-0087)
+- [x] Create yo-treasury-agent.ts with system prompt, working memory, 4 yo-treasury tools
 - [x] Register agent in mastra/index.ts
 - [x] Extend `readVaultBalances` for ERC4626 markets (shared improvement for alpha + yo agents)
 - [x] Test in Mastra Studio: "What are my yield options?" → returns 4 YO vaults ✓
@@ -173,16 +173,16 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
 - [x] Agent system prompt tuned — brief plain text, no markdown, no data duplication
 - [x] Tool output messages include "[UI rendered...]" directive to prevent LLM from repeating data
 - [x] E2E browser test: "What are my yield options?" — table renders, agent responds with 1 sentence
-- [x] Add "Unallocated" column to YO vaults table (FSN-0062) — `getYoVaultsTool` multicalls `balanceOf(treasuryAddress)` for each underlying, frontend shows column between APR and Balance. **Note**: Can't verify in Storybook because mastra uses real chain RPC while wagmi uses Anvil fork — see known issues.
+- [x] Add "Unallocated" column to YO vaults table (FSN-0062) — `getYoVaultsTool` multicalls `balanceOf(treasuryAddress)` for each underlying, frontend shows column between APR and Balance.
 - [x] ~~Build TreasuryAllocation renderer~~ → Implemented as `TreasuryBalances` (type `treasury-balances`) — shows unallocated tokens + YO allocations with token icons and USD values
 - [x] ~~Build SwapPreview renderer~~ → Swap tool returns `action-with-simulation` type, rendered by existing `ActionWithSimulation` component (shows simulation balance diffs). No separate preview type needed.
 - [x] Test: "Show my allocation" → treasury overview renders with assets + YO positions
 - [x] Test: "Allocate USDC to yoUSD" → full flow works (tool → sim → execute → confirmed)
-- [x] Test: "Swap 0.04 USDC to WETH and allocate to yoETH" → batched tx. Agent chains swap (Odos quote+assemble) + allocation (Erc4626SupplyFuse.enter) as 2 pending actions. Anvil fork simulation passes with both fuse actions. ExecuteActions renders with 2 actions / 2 fuse calls summary. Screenshot: `screenshots/swap-allocate-batched-test.png`
+- [x] Test: "Swap 0.04 USDC to WETH and allocate to yoETH" → batched tx. Agent chains swap (Odos quote+assemble) + allocation (Erc4626SupplyFuse.enter) as 2 pending actions. Tenderly fork simulation passes with both fuse actions. ExecuteActions renders with 2 actions / 2 fuse calls summary. Screenshot: `screenshots/swap-allocate-batched-test.png`
 - [x] Test: "Swap 0.1 USDC to WETH" → Odos swap works (tool → sim → execute → confirmed)
 - [x] Test: "Withdraw from yoUSD" → exit flow works (YoRedeemFuse address resolved internally)
 - [x] Dashboard refresh after chat txs — `ExecuteActions` calls `queryClient.invalidateQueries()` immediately + 2s delayed retry (RPC may return stale data right after tx). Verified: after page reload, dashboard shows updated positions (Total Value ~$0.04, Active Vaults 1/4, yoETH 0.000020 WETH Active).
-- [x] Auto-skip client-side simulation — agent already simulates on Anvil fork. `ExecuteActions` auto-advances simulation step to `success` when preconditions met (wallet + chain + ALPHA_ROLE). Prevents Odos swap calldata expiration during manual simulation click.
+- [x] Auto-skip client-side simulation — agent already simulates on Tenderly fork. `ExecuteActions` auto-advances simulation step to `success` when preconditions met (wallet + chain + ALPHA_ROLE). Prevents Odos swap calldata expiration during manual simulation click.
 - [x] Odos slippage increased from 0.5% to 1.0% — small amounts cause rounding-based slippage failures
 - [x] **All 4 YO vaults allocated on Base mainnet** via chat copilot:
   - yoUSD: 0.009 USDC direct allocation — tx `0x2ec994eb...465471de`
@@ -192,19 +192,39 @@ This tracker reflects the current plan. Tasks may change as we learn during impl
   - Dashboard shows 4/4 Active Vaults generating yield
 
 ## Phase 5: Polish, Demo & Submission
-- [ ] Branding and color scheme (differentiate from YO's black/neon green)
+- [x] Branding and color scheme — YO dark theme (#000 background, #D6FF34 neon accent, Space Grotesk)
 - [ ] Loading states and transitions
 - [ ] Error handling and user-friendly messages
 - [x] Mobile responsive layout check — `yo-treasury-tab.tsx` uses `flex-col lg:flex-row` (verified via Playwright)
-- [ ] Rehearse demo script (dashboard-first narrative)
+- [x] Deploy webapp to Vercel (commit `c7dae4b`)
+- [x] Deploy Mastra agent to Vercel (commit `555e161`)
+- [x] Migrate simulation from Anvil to Tenderly Virtual TestNet (FSN-0087, commit `7f83853`) — serverless compatible
+- [x] Write README.md for submission (commit `b5cf48c`)
+- [x] Write voiceover script for demo video (`thoughts/kuba/notes/yo-hackathon/video-voiceover-script.md`)
+- [x] Draft ElevenLabs v3 prompting for voiceover (`thoughts/kuba/notes/yo-hackathon/prompting-eleven-labs.md`)
+- [ ] Generate voiceover audio in ElevenLabs v3
 - [ ] Record 3-minute demo video
-- [ ] Write README.md for submission
-- [ ] Clean up GitHub repo
+- [ ] Rehearse demo script (dashboard-first narrative)
+- [ ] Clean up GitHub repo / publish
 - [ ] Submit on DoraHacks
+
+### Additional Features Added (beyond original plan):
+- [x] YO vault detail pages with yield history, TVL history, share price charts (`useVaultHistory`, `useSharePriceHistory`)
+- [x] Performance benchmark comparison chart (`usePerformanceBenchmark`)
+- [x] DeFi ranking stat card (`useVaultPercentile`)
+- [x] P&L column in allocation table (`useUserPerformance`)
+- [x] User position history area chart (`useUserSnapshots`)
+- [x] Alpha role status in PortfolioSummary (shows Granted/Not Granted with access manager link)
+- [x] Pending redemption banner for async YO vault redemptions (`usePendingRedemptions`)
+- [x] Individual YO vault deposit/redeem forms using `@yo-protocol/react` hooks (`useDeposit`, `useRedeem`, `usePreviewDeposit`)
+- [x] YO Protocol total TVL in portfolio summary (`useTotalTvl`)
+- [x] Consolidated alpha tool output into unified `TransactionProposal` component (FSN-0079)
+- [x] Check roles tool — verify Alpha role before execution (FSN-0077)
+- [x] Separate config for each atomist (FSN-0078)
 
 ## Stretch Goals (if time permits)
 - [ ] Multi-chain portfolio view (read positions on multiple chains)
-- [ ] Merkl rewards display
+- [x] Merkl rewards display — `yo-merkl-rewards.tsx` using `useMerklCampaigns()` + `useMerklRewards()` from `@yo-protocol/react`
 - [ ] Yield comparison chart (yoUSD vs alternatives)
 - [ ] Allocation pie chart animation
 - [ ] Real-time allocation widget updates (websocket or polling)

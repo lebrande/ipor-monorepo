@@ -30,7 +30,10 @@ export async function POST(request: NextRequest) {
   try {
     const upstream = await fetch(`${MASTRA_URL}/chat/yoTreasuryAgent`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': process.env.MASTRA_API_KEY ?? '',
+      },
       body: JSON.stringify({
         messages: augmentedMessages,
         maxSteps: 10,
