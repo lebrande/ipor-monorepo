@@ -2,7 +2,7 @@
 
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
-import { useRef, useEffect, useState, type ComponentType } from 'react';
+import { useRef, useEffect, useState, useId, type ComponentType } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -36,11 +36,13 @@ export function AgentChat({
 }: AgentChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [inputValue, setInputValue] = useState('');
+  // Unique session ID per component mount — ensures fresh memory on page refresh
+  const [sessionId] = useState(() => crypto.randomUUID());
 
   const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({
       api: apiEndpoint,
-      body,
+      body: { ...body, sessionId },
     }),
   });
 
@@ -58,7 +60,7 @@ export function AgentChat({
   };
 
   return (
-    <Card className={cn('flex flex-col h-[600px]', className)}>
+    <Card className={cn('flex flex-col h-[1000px]', className)}>
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (

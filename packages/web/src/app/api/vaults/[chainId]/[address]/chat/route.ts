@@ -22,7 +22,7 @@ export async function POST(
 
   const vault = getVaultFromRegistry(chainId, address);
   const chainName = getChainName(chainId);
-  const { messages, callerAddress } = await request.json();
+  const { messages, callerAddress, sessionId } = await request.json();
 
   const callerContext =
     callerAddress && isAddress(callerAddress, { strict: false })
@@ -30,7 +30,9 @@ export async function POST(
       : '';
   const vaultContext = `CURRENT VAULT CONTEXT: The user is viewing vault "${vault?.name ?? 'Unknown'}" at address ${address} on ${chainName} (chainId: ${chainId}). When the user asks about "this vault", use this context.${callerContext}`;
 
-  const threadId = `vault-${chainId}-${address.toLowerCase()}`;
+  // Include sessionId so each page refresh gets a fresh thread (no stale memory)
+  const sessionSuffix = sessionId ? `-${sessionId}` : '';
+  const threadId = `vault-${chainId}-${address.toLowerCase()}${sessionSuffix}`;
 
   const augmentedMessages = [
     { role: 'system', content: vaultContext },

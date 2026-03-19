@@ -4,7 +4,7 @@ import { isAddress } from 'viem';
 const MASTRA_URL = process.env.MASTRA_SERVER_URL ?? 'http://localhost:4111';
 
 export async function POST(request: NextRequest) {
-  const { messages, callerAddress, vaultAddress, chainId } = await request.json();
+  const { messages, callerAddress, vaultAddress, chainId, sessionId } = await request.json();
 
   const callerContext =
     callerAddress && isAddress(callerAddress, { strict: false })
@@ -16,9 +16,11 @@ export async function POST(request: NextRequest) {
       : ' The user has not created a treasury vault yet.';
   const system = `CURRENT CONTEXT:${callerContext}${vaultContext} Chain: ${chainId ?? 8453} (Base).`;
 
+  // Include sessionId so each page refresh gets a fresh thread (no stale memory)
+  const sessionSuffix = sessionId ? `-${sessionId}` : '';
   const threadId = callerAddress
-    ? `yo-treasury-${callerAddress.toLowerCase()}`
-    : 'yo-treasury-anonymous';
+    ? `yo-treasury-${callerAddress.toLowerCase()}${sessionSuffix}`
+    : `yo-treasury-anonymous${sessionSuffix}`;
 
   const augmentedMessages = [
     { role: 'system', content: system },

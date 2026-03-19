@@ -1,3 +1,34 @@
+# FSN-0089 — Refine Demo Voiceover Script for ElevenLabs v3
+
+## Overview
+
+Rewrite the YO Treasury demo voiceover script optimized for ElevenLabs v3 synthesis. Target audience: asset managers. Tone: technical presentation — features and benefits, no salesmanship. ~500 words / 3 minutes.
+
+## Key Changes from Current Script
+
+1. **Reordered** — AI agent demo comes first (funds already deposited), dashboard shown after as the result
+2. **Simplified language** — No internal contract method names. Use terms like "fuse", "Fusion vault", "YO Treasury"
+3. **Added v3 audio tags** — `[professional]`, `[confident]`, `[short pause]` for corporate delivery
+4. **Vault creation wizard moved to closing** — brief mention, not a full section
+5. **Focus keywords** — One-Sign Batch Execution, AI Copilot, Fork Simulation, Role-Based Security, Transparent, Non-custodial, On-chain
+
+## Desired End State
+
+`thoughts/kuba/notes/yo-hackathon/video-voiceover-script.md` contains the refined script below, ready to paste into ElevenLabs v3.
+
+## The Script
+
+See Phase 1 below — the script IS the deliverable.
+
+---
+
+## Phase 1: Write the Refined Script
+
+### File: `thoughts/kuba/notes/yo-hackathon/video-voiceover-script.md`
+
+Replace entirely with:
+
+```markdown
 # YO Treasury — Demo Video Voiceover Script
 
 **Duration:** 3 minutes
@@ -95,3 +126,22 @@ Built with the YO SDK... IPOR Fusion... and live on Base.
   - 2:00 — Switch to dashboard view
   - 2:20 — Show role badges or fuse configuration
   - 2:40 — Final dashboard shot with all 4 vaults active
+```
+
+### Success Criteria
+
+#### Automated Verification:
+- [ ] File exists at `thoughts/kuba/notes/yo-hackathon/video-voiceover-script.md`
+- [ ] Word count is 450–550 words (target 3 min at ~150 wpm)
+
+#### Manual Verification:
+- [ ] Script reads naturally when spoken aloud
+- [ ] Audio tags produce correct delivery in ElevenLabs v3
+- [ ] Timing matches screen recording segments
+- [ ] Tone is corporate/technical, not salesy
+
+## References
+
+- Ticket: `thoughts/kuba/tickets/fsn_0089-refine-demo-voiceover-script-for-elevenlabs-v3.md`
+- ElevenLabs v3 guide: `thoughts/kuba/notes/yo-hackathon/prompting-eleven-labs.md`
+- Project spec: `thoughts/kuba/notes/yo-hackathon/project-details.md`

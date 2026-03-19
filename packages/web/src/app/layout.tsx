@@ -13,8 +13,6 @@ export function generateMetadata(): Metadata {
   };
 }
 
-const darkModeScript = `(function(){if(localStorage.getItem('theme')!=='light')document.documentElement.classList.add('dark')})()`;
-
 export default function RootLayout({
   children,
 }: {
@@ -23,10 +21,7 @@ export default function RootLayout({
   const config = getAppConfig();
 
   return (
-    <html lang="en" className={config.themeClass} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: darkModeScript }} />
-      </head>
+    <html lang="en" className={config.themeClass || undefined}>
       <body>{children}</body>
     </html>
   );

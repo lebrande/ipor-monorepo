@@ -44,6 +44,15 @@ const envSchema = z.object({
    * Turso auth token (required when TURSO_DATABASE_URL is set)
    */
   TURSO_AUTH_TOKEN: z.string().optional(),
+
+  /**
+   * Tenderly Virtual TestNet Admin RPC URLs
+   * Pre-created long-lived Virtual TestNets (one per chain) for fork simulation.
+   * Must be Admin RPC URLs (not Public RPC) to support impersonation and state overrides.
+   */
+  TENDERLY_RPC_URL_ETHEREUM: z.string().url().optional(),
+  TENDERLY_RPC_URL_ARBITRUM: z.string().url().optional(),
+  TENDERLY_RPC_URL_BASE: z.string().url().optional(),
 });
 
 /**
@@ -66,4 +75,13 @@ export const RPC_URLS: Record<number, string | undefined> = {
   1: env.ETHEREUM_RPC_URL, // Ethereum Mainnet
   42161: env.ARBITRUM_RPC_URL, // Arbitrum One
   8453: env.BASE_RPC_URL, // Base
+};
+
+/**
+ * Tenderly Virtual TestNet Admin RPC URLs by chain ID
+ */
+export const TENDERLY_RPC_URLS: Record<number, string | undefined> = {
+  1: env.TENDERLY_RPC_URL_ETHEREUM,
+  42161: env.TENDERLY_RPC_URL_ARBITRUM,
+  8453: env.TENDERLY_RPC_URL_BASE,
 };

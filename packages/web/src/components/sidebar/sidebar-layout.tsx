@@ -37,7 +37,7 @@ export function SidebarLayout({ children, pathname }: SidebarLayoutProps) {
             className="h-8 w-auto md:hidden"
           />
           <div className="ml-auto flex items-center gap-2">
-            <ThemeToggle />
+            {config.id !== 'yo' && <ThemeToggle />}
             <ConnectWalletButton />
             <SidebarUser />
           </div>

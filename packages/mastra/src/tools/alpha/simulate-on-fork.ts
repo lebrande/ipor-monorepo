@@ -1,7 +1,6 @@
 import { type Address, type Hex } from 'viem';
-import { SUPPORTED_CHAINS } from '../plasma-vault/utils/viem-clients';
 import { readVaultBalances } from './read-vault-balances';
-import { spawnAnvilFork } from './anvil-fork';
+import { createTenderlyFork } from './tenderly-fork';
 import type { BalanceSnapshot } from './types';
 
 /** Minimal ABI for PlasmaVault.execute(FuseAction[]) */
@@ -45,9 +44,9 @@ export interface SimulationOutput {
 }
 
 /**
- * Simulate fuse actions on an Anvil fork.
+ * Simulate fuse actions on a Tenderly Virtual TestNet fork.
  * Reads balances before and after execution.
- * No eth_call fallback — Anvil only.
+ * State is reverted via evm_snapshot/evm_revert after each simulation.
  */
 export async function simulateOnFork(input: SimulationInput): Promise<SimulationOutput> {
   const { vaultAddress, chainId, callerAddress, flatFuseActions, additionalTokenAddresses } = input;
@@ -62,10 +61,10 @@ export async function simulateOnFork(input: SimulationInput): Promise<Simulation
     };
   }
 
-  let fork: Awaited<ReturnType<typeof spawnAnvilFork>> | null = null;
+  let fork: Awaited<ReturnType<typeof createTenderlyFork>> | null = null;
 
   try {
-    fork = await spawnAnvilFork(chainId);
+    fork = await createTenderlyFork(chainId);
 
     const balancesBefore = await readVaultBalances(
       fork.publicClient,
@@ -78,7 +77,7 @@ export async function simulateOnFork(input: SimulationInput): Promise<Simulation
     const walletClient = fork.createImpersonatedWalletClient(callerAddress as Address);
     const hash = await walletClient.writeContract({
       account: callerAddress as Address,
-      chain: SUPPORTED_CHAINS[chainId],
+      chain: null,
       address: vaultAddress as Address,
       abi: plasmaVaultExecuteAbi,
       functionName: 'execute',
@@ -114,6 +113,6 @@ export async function simulateOnFork(input: SimulationInput): Promise<Simulation
       error: errorMessage,
     };
   } finally {
-    fork?.kill();
+    await fork?.revert();
   }
 }

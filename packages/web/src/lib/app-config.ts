@@ -61,10 +61,9 @@ const yoConfig: AppConfig = {
   title: 'YO Treasury',
   description: 'YO Protocol Treasury Management',
   logo: '/assets/yo/yo_no_bg.svg',
-  themeClass: 'yo',
+  themeClass: 'yo dark',
   navItems: [
     { title: 'Home', url: '/', icon: Home },
-    { title: 'Vaults List', url: '/vaults', icon: Vault },
     {
       title: 'YO Treasury',
       url: '/vaults/8453/0x09d1C2E03F73853916Ee86b4e1A729F9FbAA960D',
@@ -221,7 +220,7 @@ export function getAppConfig(): AppConfig {
 
 const APP_THEME_CLASS: Partial<Record<AppId, string>> = {
   fusion: 'fusion',
-  yo: 'yo',
+  yo: 'yo dark',
 };
 
 export function getThemeClassForVaultApps(apps: AppId[]): string {
