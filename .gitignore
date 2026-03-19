@@ -46,3 +46,4 @@ mastra.db-wal
 .playwright-cli
 
 packages/sdk/tsconfig.tsbuildinfo
+.vercel
