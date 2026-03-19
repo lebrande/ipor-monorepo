@@ -60,7 +60,7 @@ export function AgentChat({
   };
 
   return (
-    <Card className={cn('flex flex-col h-[1000px]', className)}>
+    <Card className={cn('flex flex-col h-[700px]', className)}>
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
