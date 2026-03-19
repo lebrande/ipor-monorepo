@@ -2,6 +2,28 @@ import { type Address, isAddress } from 'viem';
 import { z } from 'zod';
 import plasmaVaultsJson from '../../../../plasma-vaults.json';
 
+const APP_IDS = [
+  'fusion',
+  'yo',
+  'ipor-dao',
+  'clearstar',
+  'tesseract',
+  'xerberus',
+  'harvest',
+  'reservoir',
+  'tau-labs',
+  'tanken',
+  'alphaping',
+  'k3-capital',
+  'mev-capital',
+  'stake-dao',
+  'llama-risk',
+  'tid-capital',
+  'sentinel',
+  'hyperithm',
+] as const;
+export type AppId = (typeof APP_IDS)[number];
+
 const addressSchema = z.custom<Address>(
   (address) => isAddress(address as string, { strict: false }),
   { message: 'Invalid address' },
@@ -12,6 +34,7 @@ const vaultSchema = z.object({
   address: addressSchema,
   chainId: z.number(),
   protocol: z.string(),
+  apps: z.array(z.enum(APP_IDS)),
   tags: z.array(z.string()),
   startBlock: z.number(),
   url: z.url(),
@@ -24,6 +47,7 @@ export interface ParsedVault {
   address: Address;
   chainId: number;
   protocol: string;
+  apps: AppId[];
   tags: string[];
   startBlock: number;
   url: string;
@@ -67,3 +91,25 @@ const CHAIN_NAMES: Record<number, string> = {
 export const getChainName = (chainId: number): string => {
   return CHAIN_NAMES[chainId] || `Chain ${chainId}`;
 };
+
+// Tag constants
+export const VAULT_TAG = {
+  IPOR_FUSION: 'ipor-fusion',
+  YO_TREASURY: 'yo-treasury',
+  YO_VAULT: 'yo-vault',
+} as const;
+
+export type VaultTag = (typeof VAULT_TAG)[keyof typeof VAULT_TAG];
+
+export function hasTag(vault: ParsedVault | undefined, tag: VaultTag): boolean {
+  return vault?.tags.includes(tag) ?? false;
+}
+
+// Filtered vaults for the current app config
+import { getAppConfig } from './app-config';
+export const APP_VAULTS =
+  getAppConfig().id === 'all'
+    ? ERC4626_VAULTS
+    : ERC4626_VAULTS.filter((v) =>
+        v.apps.includes(getAppConfig().id as AppId),
+      );

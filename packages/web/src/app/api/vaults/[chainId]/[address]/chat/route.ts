@@ -35,7 +35,7 @@ export async function POST(
 
   try {
     const result = await alphaAgent.stream(messages, {
-      maxSteps: 5,
+      maxSteps: 10,
       system: vaultContext,
       memory: {
         thread: threadId,

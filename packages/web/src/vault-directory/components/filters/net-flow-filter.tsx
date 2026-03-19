@@ -30,7 +30,7 @@ export const NetFlowFilter = ({ value, onChange, className }: Props) => {
         <ToggleGroupItem
           key={option.value}
           value={option.value}
-          className="flex-1"
+          className="px-5"
         >
           {option.label}
         </ToggleGroupItem>

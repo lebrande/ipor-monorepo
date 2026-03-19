@@ -1,35 +1,13 @@
-import { Home, Vault, Activity, Users, type LucideIcon } from 'lucide-react';
+import { getAppConfig, type NavItem } from '@/lib/app-config';
 
-export interface NavItem {
-  title: string;
-  url: string;
-  icon: LucideIcon;
+export type { NavItem };
+
+export function getNavItems(): NavItem[] {
+  return getAppConfig().navItems;
 }
 
-export const navItems: NavItem[] = [
-  {
-    title: 'Dashboard',
-    url: '/',
-    icon: Home,
-  },
-  {
-    title: 'Vaults List',
-    url: '/vaults',
-    icon: Vault,
-  },
-  {
-    title: 'Depositors',
-    url: '/depositors',
-    icon: Users,
-  },
-  {
-    title: 'Activity',
-    url: '/activity',
-    icon: Activity,
-  },
-];
-
 export function getActiveNavItem(pathname: string): string | undefined {
+  const navItems = getNavItems();
   // Exact match first
   const exact = navItems.find((item) => item.url === pathname);
   if (exact) return exact.url;
