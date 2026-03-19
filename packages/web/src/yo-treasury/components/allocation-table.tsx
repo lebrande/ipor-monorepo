@@ -8,6 +8,7 @@ interface Props {
   chainId: number;
   positions: TreasuryPosition[];
   vaultsData: YoVaultData[] | undefined;
+  prices: Record<string, number>;
   isLoading: boolean;
 }
 
@@ -18,26 +19,27 @@ function formatApy(apy: string | null): string {
   return `${num.toFixed(2)}%`;
 }
 
-function formatTvl(tvl: string | null): string {
-  if (!tvl) return '—';
-  const num = parseFloat(tvl.replace(/[$,]/g, ''));
-  if (isNaN(num)) return tvl;
-  if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(1)}M`;
-  if (num >= 1_000) return `$${(num / 1_000).toFixed(0)}K`;
-  return `$${num.toFixed(0)}`;
+function formatUsd(value: number): string {
+  if (value < 0.01 && value > 0) return '<$0.01';
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 10_000) return `$${(value / 1_000).toFixed(0)}K`;
+  return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-function formatPosition(position: TreasuryPosition): string {
-  if (position.shares === 0n) return '—';
-  const val = Number(position.assetsFormatted);
-  if (val === 0) return '—';
-  const decimals = position.underlyingDecimals <= 6 ? 2 : 6;
-  return `${val.toFixed(decimals)} ${position.underlying}`;
+function formatAssetAmount(value: number, decimals: number, symbol: string): string {
+  if (value === 0) return '—';
+  const dp = decimals <= 6 ? 2 : decimals === 8 ? 4 : 6;
+  return `${value.toLocaleString(undefined, { minimumFractionDigits: dp, maximumFractionDigits: dp })} ${symbol}`;
 }
 
-/**
- * Get the vault-specific color indicator
- */
+function formatCompactAsset(value: number, symbol: string): string {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M ${symbol}`;
+  if (value >= 10_000) return `${(value / 1_000).toFixed(0)}K ${symbol}`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K ${symbol}`;
+  const dp = value < 1 ? 4 : 2;
+  return `${value.toLocaleString(undefined, { maximumFractionDigits: dp })} ${symbol}`;
+}
+
 function VaultDot({ color }: { color: string }) {
   return (
     <span
@@ -47,7 +49,7 @@ function VaultDot({ color }: { color: string }) {
   );
 }
 
-export function AllocationTable({ chainId, positions, vaultsData, isLoading }: Props) {
+export function AllocationTable({ chainId, positions, vaultsData, prices, isLoading }: Props) {
   if (isLoading) {
     return (
       <div className="bg-yo-dark rounded-lg border border-white/5 p-4">
@@ -55,9 +57,10 @@ export function AllocationTable({ chainId, positions, vaultsData, isLoading }: P
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="flex gap-4 py-2">
             <div className="h-4 w-16 bg-white/5 rounded animate-pulse" />
+            <div className="h-4 w-20 bg-white/5 rounded animate-pulse" />
+            <div className="h-4 w-20 bg-white/5 rounded animate-pulse" />
             <div className="h-4 w-12 bg-white/5 rounded animate-pulse" />
             <div className="h-4 w-16 bg-white/5 rounded animate-pulse" />
-            <div className="h-4 w-20 bg-white/5 rounded animate-pulse" />
           </div>
         ))}
       </div>
@@ -69,10 +72,14 @@ export function AllocationTable({ chainId, positions, vaultsData, isLoading }: P
     const vaultData = vaultsData?.find(
       (v) => v.vaultAddress.toLowerCase() === pos.vaultAddress.toLowerCase(),
     );
-    return { ...pos, apy7d: vaultData?.apy7d ?? null, tvl: vaultData?.tvlFormatted ?? null };
+    return {
+      ...pos,
+      apy7d: vaultData?.apy7d ?? null,
+      tvlAmount: vaultData?.tvlAmount ?? null,
+    };
   });
 
-  const hasAnyPosition = rows.some((r) => r.shares > 0n);
+  const hasAnyPosition = rows.some((r) => r.shares > 0n || r.unallocatedBalance > 0n);
 
   return (
     <div className="bg-yo-dark rounded-lg border border-white/5 overflow-hidden">
@@ -86,15 +93,24 @@ export function AllocationTable({ chainId, positions, vaultsData, isLoading }: P
         <thead>
           <tr className="text-yo-muted text-[11px] uppercase tracking-wider">
             <th className="font-medium pb-2 pl-4 text-left">Vault</th>
-            <th className="font-medium pb-2 text-right">APR</th>
-            <th className="font-medium pb-2 text-right">TVL</th>
+            <th className="font-medium pb-2 text-right">Unallocated</th>
             <th className="font-medium pb-2 text-right">Position</th>
-            <th className="font-medium pb-2 pr-4 text-right">Status</th>
+            <th className="font-medium pb-2 text-right">APR</th>
+            <th className="font-medium pb-2 pr-4 text-right">TVL</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => {
             const isActive = row.shares > 0n;
+            const price = prices[row.underlyingAddress.toLowerCase()];
+
+            // Position
+            const positionAmount = Number(row.assetsFormatted);
+            const positionUsd = price ? positionAmount * price : null;
+
+            // Unallocated
+            const unallocAmount = Number(row.unallocatedFormatted);
+            const unallocUsd = price ? unallocAmount * price : null;
 
             return (
               <tr
@@ -127,6 +143,38 @@ export function AllocationTable({ chainId, positions, vaultsData, isLoading }: P
                   </Link>
                 </td>
 
+                {/* Unallocated */}
+                <td className="py-3 text-right">
+                  <div className="font-mono text-xs text-white">
+                    {unallocAmount > 0
+                      ? formatAssetAmount(unallocAmount, row.underlyingDecimals, row.underlying)
+                      : '—'}
+                  </div>
+                  {unallocAmount > 0 && unallocUsd !== null && (
+                    <div className="font-mono text-[10px] text-yo-muted">
+                      {formatUsd(unallocUsd)}
+                    </div>
+                  )}
+                </td>
+
+                {/* Position */}
+                <td className="py-3 text-right">
+                  <div
+                    className={`font-mono text-xs ${
+                      isActive ? 'text-white' : 'text-yo-muted'
+                    }`}
+                  >
+                    {isActive
+                      ? formatAssetAmount(positionAmount, row.underlyingDecimals, row.underlying)
+                      : '—'}
+                  </div>
+                  {isActive && positionUsd !== null && (
+                    <div className="font-mono text-[10px] text-yo-muted">
+                      {formatUsd(positionUsd)}
+                    </div>
+                  )}
+                </td>
+
                 {/* APR */}
                 <td className="py-3 text-right">
                   <span className="font-mono font-medium text-yo-neon">
@@ -135,30 +183,16 @@ export function AllocationTable({ chainId, positions, vaultsData, isLoading }: P
                 </td>
 
                 {/* TVL */}
-                <td className="py-3 text-right text-yo-muted font-mono text-xs">
-                  {formatTvl(row.tvl)}
-                </td>
-
-                {/* Position */}
-                <td className="py-3 text-right">
-                  <span
-                    className={`font-mono text-xs ${
-                      isActive ? 'text-white' : 'text-yo-muted'
-                    }`}
-                  >
-                    {formatPosition(row)}
-                  </span>
-                </td>
-
-                {/* Status */}
                 <td className="py-3 pr-4 text-right">
-                  {isActive ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-yo-neon/10 text-yo-neon px-2 py-0.5 rounded-full">
-                      <span className="w-1.5 h-1.5 rounded-full bg-yo-neon animate-pulse" />
-                      Active
-                    </span>
-                  ) : (
-                    <span className="text-[10px] text-yo-muted">—</span>
+                  <div className="font-mono text-xs text-white">
+                    {row.tvlAmount !== null
+                      ? formatCompactAsset(row.tvlAmount, row.underlying)
+                      : '—'}
+                  </div>
+                  {row.tvlAmount !== null && price && (
+                    <div className="font-mono text-[10px] text-yo-muted">
+                      {formatUsd(row.tvlAmount * price)}
+                    </div>
                   )}
                 </td>
               </tr>

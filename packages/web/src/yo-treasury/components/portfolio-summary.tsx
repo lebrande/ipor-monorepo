@@ -1,6 +1,6 @@
 'use client';
 
-import { formatUnits, type Address } from 'viem';
+import type { Address } from 'viem';
 import { Wallet, TrendingUp, Layers, Shield } from 'lucide-react';
 import type { TreasuryPosition } from '../hooks/use-treasury-positions';
 import { useAlphaRole } from '../hooks/use-alpha-role';
@@ -10,10 +10,7 @@ const ACCESS_MANAGER_URL =
 
 interface Props {
   positions: TreasuryPosition[];
-  unallocatedBalance: bigint | undefined;
-  assetDecimals: number;
-  assetSymbol: string;
-  tokenPriceUsd: number | undefined;
+  prices: Record<string, number>;
   isLoading: boolean;
   chainId: number;
   vaultAddress: Address;
@@ -65,10 +62,7 @@ function StatCard({
 
 export function PortfolioSummary({
   positions,
-  unallocatedBalance,
-  assetDecimals,
-  assetSymbol,
-  tokenPriceUsd,
+  prices,
   isLoading,
   chainId,
   vaultAddress,
@@ -95,71 +89,41 @@ export function PortfolioSummary({
     );
   }
 
-  // Calculate totals
-  const unallocatedNum = unallocatedBalance
-    ? Number(formatUnits(unallocatedBalance, assetDecimals))
-    : 0;
-  const unallocatedUsd = tokenPriceUsd ? unallocatedNum * tokenPriceUsd : unallocatedNum;
-
-  // For allocated positions, sum up USD values
-  // Since positions are in different tokens, we estimate USD based on the
-  // assumption that the treasury underlying is the primary unit.
-  // For non-underlying positions (yoETH, yoBTC), we'd need separate prices.
-  // For hackathon: show asset amounts, use unallocated USD for total.
-  const activePositions = positions.filter((p) => p.shares > 0n);
-
-  // Simple total: unallocated USD + position asset values
-  // This is approximate — proper USD conversion would need per-token prices
+  // Sum allocated and unallocated USD across ALL positions using per-token prices
   let allocatedUsd = 0;
-  for (const pos of activePositions) {
-    const amount = Number(pos.assetsFormatted);
-    // For USDC-denominated positions, approximate $1
-    if (pos.underlying === 'USDC') {
-      allocatedUsd += amount;
-    } else if (pos.underlying === 'EURC') {
-      allocatedUsd += amount * 1.1; // rough EUR/USD
-    } else {
-      // For WETH/cbBTC we don't have exact prices here
-      // Show the position amount without USD conversion
-      allocatedUsd += 0; // will show "—" for non-USD positions
+  let unallocatedUsd = 0;
+
+  for (const pos of positions) {
+    const price = prices[pos.underlyingAddress.toLowerCase()];
+    if (price) {
+      if (pos.shares > 0n) {
+        allocatedUsd += Number(pos.assetsFormatted) * price;
+      }
+      unallocatedUsd += Number(pos.unallocatedFormatted) * price;
     }
   }
 
-  const totalUsd = unallocatedUsd + allocatedUsd;
-  const hasNonUsdPositions = activePositions.some(
-    (p) => p.underlying !== 'USDC' && p.underlying !== 'EURC',
-  );
-
-  const unallocatedFormatted =
-    unallocatedBalance !== undefined
-      ? `${Number(formatUnits(unallocatedBalance, assetDecimals)).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${assetSymbol}`
-      : '—';
+  const totalUsd = allocatedUsd + unallocatedUsd;
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       <StatCard
         label="Total Value"
-        value={hasNonUsdPositions ? '~' + formatUsd(totalUsd) : formatUsd(totalUsd)}
+        value={formatUsd(totalUsd)}
         subValue="treasury holdings"
         icon={Wallet}
         accent
       />
       <StatCard
         label="Allocated"
-        value={
-          activePositions.length > 0
-            ? allocatedUsd > 0
-              ? formatUsd(allocatedUsd)
-              : `${activePositions.length} vault${activePositions.length > 1 ? 's' : ''}`
-            : '$0.00'
-        }
+        value={allocatedUsd > 0 ? formatUsd(allocatedUsd) : '$0.00'}
         subValue="earning yield"
         icon={TrendingUp}
       />
       <StatCard
         label="Unallocated"
-        value={tokenPriceUsd ? formatUsd(unallocatedUsd) : unallocatedFormatted}
-        subValue={tokenPriceUsd ? unallocatedFormatted : 'idle funds'}
+        value={formatUsd(unallocatedUsd)}
+        subValue="idle funds"
         icon={Layers}
       />
       <div className="relative bg-yo-dark rounded-lg p-4 border border-white/5 overflow-hidden group">
